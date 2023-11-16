@@ -13,57 +13,78 @@ import Text.Parser.Expression
 %default total
 
 -- For people who want to make use of this code and have never used monad parser before,
--- You should try making one one your own. Haskell's monad parser is similar and will also be good for learning.
+-- You should try making one on your own. Haskell's monad parser is similar and will also be good for learning.
 -- To do this, you should see the cookbook of lambda calculus parser shown in below.
 
 -- this program was made referencing "Documentation for the Idris 2 Language/Cookbook/Parsing"
 -- https://idris2.readthedocs.io/en/latest/cookbook/parsing.html
 
--- <Infix> ::= 
---     <Symbol>
---   | '`' [名前に使用可能な文字]+ '`'
--- <Name> ::= 
---     [名前に使用可能な文字]+
---   | '(' <Symbol> ')'
--- <Symbol> ::= [:!#$%&*+./<=>?@\^|-~]+
--- <LParen> ::= '('
--- <RParen> ::= ')'
 
--- # リテラルを追加するなら次も加える
--- <TextLiteral> ::= '"' 任意の文字列 '"'
--- <NaturalLiteral> ::= ['1'-'9']+['0'-'9']* | '0'
+-- ##Token##
+-- <SESymbol> ::= [:!#$%&*+./<=>?@\^|-~]+
+-- <SELParen> ::= '('
+-- <SERParen> ::= ')'
+-- <SEIdentifier> ::= [a-zA-Z][a-zA-Z0-9]+
+-- <SEIgnore> ::= [空白文字]+
+-- <SEBackquote> ::= [`]
+-- <SENatLiteral> ::= [0-9]+
+-- <SEDoubleLiteral> ::= [0-9]+[.][0-9]([e][+-]?[0-9]+)?
+-- <SEStringLiteral> ::= ["](\\.|.)["]
 
--- #構文
--- <AtomicSimpleExpr> ::=
---     <Identifier>
---   | <Literal>
---   | <LParen> <SimpleExpr> <RParen>
+-- ##Syntax##
+-- <expr> ::=
+--     <expr> <infixOperator> <expr>
+--   | <expr> <infixFunction> <expr>
+--   | <lterm>
 
--- <Apply> ::=
---   | <SimpleExpr> <AtomicSimpleExpr>
+-- <lterm> ::=
+--     <lterm> <term>
+--   | <term>
 
+-- <term> ::=
+--     <var>
+--   | <literal>
+--   | <paren>
 
--- <SimpleExpr> ::=
---   | <AtomicSimpleExpr>
---   | <SimpleExpr> <AtomicSimpleExpr>
---   | <SimpleExpr> <Infix> <SimpleExpr>
+-- <var> ::= <SEIdentifier>
 
--- <expr> ::= 
+-- <literal> ::=
+--     <SEIntLiteral>
+--   | <SEDoubleLiteral>
+--   | <SEStringLiteral>
 
--- 抽象構文
--- <SimpleExpr> ::= <Name> | <SimpleExpr> <SimpleExpr>
+-- <paren> ::= <SELParen> <expr> <SERParen> 
+
+-- <infixOperator> ::= <SESymbol>
+
+-- <infixFunction> ::= <SEBackquote> <SEIdentifier> <SEBackquote>
+
+-- ## Abstract Syntax Tree ##
+-- <SimpleExpr> ::= <Var> | <App> | <IntegerLiteral> | <DoubleLiteral> | <StringLiteral>
+-- <Var> ::= String
+-- <App> ::= <SimpleExpr> <SimpleExpr>
+-- <IntegerLiteral> ::= Nat
+-- <DoubleLiteral> ::= Double
+-- <StringLiteral> ::= String
 
 -- ---data type defentions---
 
 -- the data type for AST of SimpleExpr
-data SimpleExpr = Term String | App SimpleExpr SimpleExpr | NatLiteral Nat | DoubleLiteral Double
+-- <SimpleExpr> ::= <Var> | <App> | <IntegerLiteral> | <DoubleLiteral> | <StringLiteral>
+-- <Var> ::= String
+-- <App> ::= <SimpleExpr> <SimpleExpr>
+-- <IntegerLiteral> ::= Nat
+-- <DoubleLiteral> ::= Double
+-- <StringLiteral> ::= String
+data SimpleExpr = Var String | App SimpleExpr SimpleExpr | NatLiteral Nat | DoubleLiteral Double | StringLiteral String
 
 -- application is bracketed if needed
 Show SimpleExpr where
-    showPrec d (Term str) = str
+    showPrec d (Var str) = str
     showPrec d (App x y) = showParens (d == Prelude.App) (showPrec (User 0) x ++ " " ++ showPrec App y)
     showPrec d (NatLiteral n) = show n
     showPrec d (DoubleLiteral n) = show n
+    showPrec d (StringLiteral s) = show s
 
 -- data to identify tokens
 data SimpleExprTokenKind =
@@ -72,7 +93,7 @@ data SimpleExprTokenKind =
     | SELParen
     | SERParen
     | SEIdentifier
-    | SEBackQuote
+    | SEBackquote
     | SENatLiteral
     | SEDoubleLiteral
     | SEStringLiteral
@@ -87,7 +108,7 @@ Eq SimpleExprTokenKind where
   (==) SELParen SELParen = True
   (==) SERParen SERParen = True
   (==) SEIdentifier SEIdentifier = True
-  (==) SEBackQuote SEBackQuote = True
+  (==) SEBackquote SEBackquote = True
   (==) SENatLiteral SENatLiteral = True
   (==) SEDoubleLiteral SEDoubleLiteral = True
   (==) SEStringLiteral SEStringLiteral = True
@@ -104,7 +125,7 @@ Show SimpleExprTokenKind where
   show SELParen = "SELParen"
   show SERParen = "SERParen"
   show SEIdentifier = "SEIdentifier"
-  show SEBackQuote = "SEBackQuote"
+  show SEBackquote = "SEBackquote"
   show SENatLiteral = "SENatLiteral"
   show SEDoubleLiteral = "SEDoubleLiteral"
   show SEStringLiteral = "SEStringLiteral"
@@ -129,10 +150,10 @@ TokenKind SimpleExprTokenKind where
   tokValue SELParen _ = ()
   tokValue SERParen _ = ()
   tokValue SEIdentifier s = s
-  tokValue SEBackQuote _ = ()
+  tokValue SEBackquote _ = ()
   tokValue SENatLiteral s = stringToNatOrZ s
   tokValue SEDoubleLiteral s = fromMaybe 0 $ parseDouble s
-  tokValue SEStringLiteral s = s
+  tokValue SEStringLiteral s = strSubstr 1 (strLength s - 2) s -- Kind of bad since strSubstr is Int -> Int -> String -> String
 
 --  ---lexer related functions---
 
@@ -170,13 +191,21 @@ multilineBegin = many (is '#') <+> (exact "\"\"\"") <+>
 multilineEnd : Nat -> String
 multilineEnd hashtag = "\"\"\"" ++ replicate hashtag '#'
 
-
 -- from cookbook
 -- need a support on underscore
 idLexer : Lexer
 idLexer = alpha <+> many alphaNum
 
 -- token map to tell what lexes to what
+-- <SESymbol> ::= [:!#$%&*+./<=>?@\^|-~]+
+-- <SELParen> ::= '('
+-- <SERParen> ::= ')'
+-- <SEIdentifier> ::= [a-zA-Z][a-zA-Z0-9]+
+-- <SEIgnore> ::= [空白文字]+
+-- <SEBackquote> ::= [`]
+-- <SENatLiteral> ::= [0-9]+
+-- <SEDoubleLiteral> ::= [0-9]+[.][0-9]([e][+-]?[0-9]+)?
+-- <SEStringLiteral> ::= ["](\\.|.)["]
 simpleExprTokenMap : TokenMap SimpleExprToken
 simpleExprTokenMap = toTokenMap [(spaces, SEIgnore)] ++
     toTokenMap [(idLexer, SEIdentifier )] ++
@@ -185,9 +214,10 @@ simpleExprTokenMap = toTokenMap [(spaces, SEIgnore)] ++
     (exact "(", SELParen),
     (exact ")", SERParen)
     ] ++
-    toTokenMap [(exact "`", SEBackQuote)] ++
+    toTokenMap [(exact "`", SEBackquote)] ++
     toTokenMap [(digits, SENatLiteral)] ++
-    toTokenMap [(doubleLit, SEDoubleLiteral)]
+    toTokenMap [(doubleLit, SEDoubleLiteral)] ++
+    toTokenMap [(stringLit, SEStringLiteral)]
 
 -- the main lexer. uses token map
 lexSimpleExpr : String -> Maybe (List (WithBounds SimpleExprToken))
@@ -206,11 +236,15 @@ ignored _ = False
 -- converting infix into application form
 -- used in main parser
 simpleExprInf2App : String -> SimpleExpr -> SimpleExpr -> SimpleExpr
-simpleExprInf2App inid t1 t2 = App (App (Term  inid) t1) t2
+simpleExprInf2App inid t1 t2 = App (App (Var  inid) t1) t2
 
 -- the main parser
 -- starts in expr
 mutual
+    -- <expr> ::=
+    --     <expr> <infixOperator> <expr>
+    --   | <expr> <infixFunction> <expr>
+    --   | <lterm>
     expr : Grammar state SimpleExprToken True SimpleExpr
     expr =
         buildExpressionParser 
@@ -221,28 +255,41 @@ mutual
       <|>
         lterm
 
+    -- <lterm> ::=
+    --     <lterm> <term>
+    --   | <term>
     lterm : Grammar state SimpleExprToken True SimpleExpr
     lterm =
     do
       t <- term
       app t <|> pure t
 
-    term : Grammar state SimpleExprToken True SimpleExpr
-    term =
-        var <|> literal <|> paren 
-      
-
+    -- subfunction for lterm
     app : SimpleExpr -> Grammar state SimpleExprToken True SimpleExpr
     app e1 = do
       e2 <- term
       app1 $ App e1 e2
 
+    -- subfunction for lterm
     app1 : SimpleExpr -> Grammar state SimpleExprToken False SimpleExpr
     app1 e = app e <|> pure e
 
-    var : Grammar state SimpleExprToken True SimpleExpr
-    var = map Term $ match SEIdentifier
+    -- <term> ::=
+    --     <var>
+    --   | <literal>
+    --   | <paren>
+    term : Grammar state SimpleExprToken True SimpleExpr
+    term =
+        var <|> literal <|> paren 
 
+    -- <var> ::= <SEIdentifier>
+    var : Grammar state SimpleExprToken True SimpleExpr
+    var = map Var $ match SEIdentifier
+
+    -- <literal> ::=
+    --     <SEIntLiteral>
+    --   | <SEDoubleLiteral>
+    --   | <SEStringLiteral>
     literal : Grammar state SimpleExprToken True SimpleExpr
     literal =
       do
@@ -252,8 +299,12 @@ mutual
       do
         n <- match SEDoubleLiteral
         pure $ DoubleLiteral n
+      <|>
+      do
+        s <- match SEStringLiteral
+        pure $ StringLiteral s
       
-
+    -- <paren> ::= <SELParen> <expr> <SERParen> 
     paren : Grammar state SimpleExprToken True SimpleExpr
     paren =
       do
@@ -262,20 +313,23 @@ mutual
         match SERParen
         pure e
 
+    -- <infixOperator> ::= <SESymbol>
     infixOperator : Grammar state SimpleExprToken True (SimpleExpr -> SimpleExpr -> SimpleExpr)
     infixOperator =
       do
         sym <- match SESymbol
         pure $ simpleExprInf2App $ "(" ++ sym ++ ")"
 
+    -- <infixFunction> ::= <SEBackquote> <SEIdentifier> <SEBackquote>
     infixFunction : Grammar state SimpleExprToken True (SimpleExpr -> SimpleExpr -> SimpleExpr)
     infixFunction =
       do
-        match SEBackQuote
+        match SEBackquote
         id <- match SEIdentifier
-        match SEBackQuote
+        match SEBackquote
         pure $ simpleExprInf2App id
-      
+
+-- parses token list
 parseSimpleExpr : List (WithBounds SimpleExprToken) -> Either String SimpleExpr
 parseSimpleExpr toks =
   case parse expr $ filter (not . ignored) toks of
@@ -283,6 +337,7 @@ parseSimpleExpr toks =
     Right (l, xs) => Left (show xs)
     Left e => Left (show e)
 
+-- parses string to AST
 parse : String -> Either String SimpleExpr
 parse x =
   case lexSimpleExpr x of
@@ -306,6 +361,8 @@ parse x =
 --     putStrLn ?rhs
 
 
+-- test5 doesn't work properly, don't know why
+-- test1-test4 means the same as test5
 test1 : List String
 test1 = ["hoge", "fuga"]
 
@@ -328,7 +385,11 @@ test4 = map (foldl Prelude.String.(++) "") test3
 --   in
 --     sub4
 
+-- ## string literal in Idris ##
+str : String
+str = "this is substr!"
+
 texta : String
-texta = ##"" \\#{test}\#  #""# "#"##
+texta = ##"" \##{str}\#  #""# "#"##
 
 
