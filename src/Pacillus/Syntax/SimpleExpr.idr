@@ -32,6 +32,9 @@ import Text.Parser.Expression
 -- <SEIdentifier> ::= [a-zA-Z][a-zA-Z0-9]+
 -- <SEIgnore> ::= [空白文字]+
 -- <SEBackquote> ::= [`]
+-- <SEArrow> ::= [-][>]
+-- <SEEqual> ::= [=]
+-- <SEColon> ::= 
 -- <SENatLiteral> ::= [0-9]+
 -- <SEDoubleLiteral> ::= [0-9]+[.][0-9]([e][+-]?[0-9]+)?
 -- <SEStringLiteral> ::= ["](\\.|.)["]
@@ -40,8 +43,11 @@ import Text.Parser.Expression
 -- <typed> ::= <arrow>
 
 -- <arrow> ::= 
---   | <equal> <SEArrow> <arrow>
+--     <equal> <SEArrow> <arrow>
+--   | <SELParen> <signature> <SERParen> <SEArrow> <arrow>
 --   | <equal>
+
+-- <signature> ::= <SEIdentifier> <SEColon> <arrow>
 
 -- <equal> ::=
 --    <expr> <SEEqual> <expr>
@@ -93,7 +99,7 @@ import Text.Parser.Expression
 -- <IntegerLiteral> ::= Nat
 -- <DoubleLiteral> ::= Double
 -- <StringLiteral> ::= String
-data SimpleExpr = Var String | App SimpleExpr SimpleExpr | Equality SimpleExpr SimpleExpr | Arrow SimpleExpr SimpleExpr | NatLiteral Nat | DoubleLiteral Double | StringLiteral String
+data SimpleExpr = Var String | App SimpleExpr SimpleExpr | Equality SimpleExpr SimpleExpr | Arrow SimpleExpr SimpleExpr | Signature String SimpleExpr | NatLiteral Nat | DoubleLiteral Double | StringLiteral String
 
 -- information of operator used for parsing
 data OpRecord = OpInfoTriple String Nat Assoc
@@ -116,6 +122,7 @@ Show SimpleExpr where
     showPrec d (App x y) = showParens (d == Prelude.App) (showPrec (User 0) x ++ " " ++ showPrec App y)
     showPrec d (Equality x y) = showPrec Equal x ++ "=" ++ showPrec Equal y
     showPrec d (Arrow x y) = showParens (d == (User 1)) (showPrec (User 1) x ++ "->" ++ showPrec (User 0) y)
+    showPrec d (Signature var typeexpr) = var ++ ":" ++ show typeexpr
     showPrec d (NatLiteral n) = show n
     showPrec d (DoubleLiteral n) = show n
     showPrec d (StringLiteral s) = show s
@@ -130,6 +137,7 @@ data SimpleExprTokenKind =
     | SEBackquote
     | SEArrow
     | SEEqual
+    | SEColon
     | SENatLiteral
     | SEDoubleLiteral
     | SEStringLiteral
@@ -147,6 +155,7 @@ Eq SimpleExprTokenKind where
   (==) SEBackquote SEBackquote = True
   (==) SEArrow SEArrow = True
   (==) SEEqual SEEqual = True
+  (==) SEColon SEColon = True
   (==) SENatLiteral SENatLiteral = True
   (==) SEDoubleLiteral SEDoubleLiteral = True
   (==) SEStringLiteral SEStringLiteral = True
@@ -166,6 +175,7 @@ Show SimpleExprTokenKind where
   show SEBackquote = "SEBackquote"
   show SEArrow =  "SEArrow"
   show SEEqual = "SEEqual"
+  show SEColon = "SEColon"
   show SENatLiteral = "SENatLiteral"
   show SEDoubleLiteral = "SEDoubleLiteral"
   show SEStringLiteral = "SEStringLiteral"
@@ -193,6 +203,7 @@ TokenKind SimpleExprTokenKind where
   tokValue SEBackquote _ = ()
   tokValue SEArrow _ = ()
   tokValue SEEqual _ = ()
+  tokValue SEColon _ = ()
   tokValue SENatLiteral s = stringToNatOrZ s
   tokValue SEDoubleLiteral s = fromMaybe 0 $ parseDouble s
   tokValue SEStringLiteral s = strSubstr 1 (strLength s - 2) s -- Kind of bad since strSubstr is Int -> Int -> String -> String
@@ -207,6 +218,13 @@ isOpChar c = c `elem` (unpack ":!#$%&*+./<=>?@\\^|-~")
 -- same from Idris Source "Parser.Lexer.Source.validSymbol" 
 symbolLexer : Lexer
 symbolLexer = some (pred isOpChar)
+
+reservedSyms : List (String, SimpleExprTokenKind)
+reservedSyms = [
+  ("->", SEArrow),
+  ("=", SEEqual),
+  (":", SEColon)
+]
 
 -- same from Idris Source "Parser.Lexer.Source.doubleLit"
 doubleLit : Lexer
@@ -252,19 +270,25 @@ idLexer =
 -- <SEDoubleLiteral> ::= [0-9]+[.][0-9]([e][+-]?[0-9]+)?
 -- <SEStringLiteral> ::= ["](\\.|.)["]
 simpleExprTokenMap : TokenMap SimpleExprToken
-simpleExprTokenMap = toTokenMap [(spaces, SEIgnore)] ++
+simpleExprTokenMap =
+    toTokenMap [(spaces, SEIgnore)] ++
     toTokenMap [(idLexer, SEIdentifier )] ++
-    toTokenMap [
-    (exact "(", SELParen),
-    (exact ")", SERParen)
+    --toTokenMap [(symbolLexer, SESymbol)] ++
+    [(symbolLexer, \s =>
+      case lookup s reservedSyms of
+        (Just kind) => Tok kind s
+        Nothing => Tok SESymbol s
+      )
     ] ++
-    toTokenMap [(exact "`", SEBackquote)] ++
-    toTokenMap [(exact "->", SEArrow)] ++
-    toTokenMap [(exact "=", SEEqual)] ++
-    toTokenMap [(symbolLexer, SESymbol)] ++
-    toTokenMap [(digits, SENatLiteral)] ++
-    toTokenMap [(doubleLit, SEDoubleLiteral)] ++
-    toTokenMap [(stringLit, SEStringLiteral)]
+    toTokenMap [
+      (exact "(", SELParen),
+      (exact ")", SERParen),
+      (exact "`", SEBackquote),
+      (digits, SENatLiteral),
+      (doubleLit, SEDoubleLiteral),
+      (stringLit, SEStringLiteral)
+    ]
+
 
 -- the main lexer. uses the token map created above
 lexSimpleExpr : String -> Maybe (List (WithBounds SimpleExprToken))
@@ -379,6 +403,10 @@ mutual
     typed opmap =
       arrow opmap
 
+    -- <arrow> ::= 
+    --     <equal> <SEArrow> <arrow>
+    --   | <SELParen> <signature> <SERParen> <SEArrow> <arrow>
+    --   | <equal>
     arrow : InOperatorMap -> Grammar state SimpleExprToken True SimpleExpr
     arrow opmap =
       do
@@ -387,7 +415,24 @@ mutual
         ex2 <- arrow opmap
         pure $ Arrow ex1 ex2
       <|>
+      do
+        match SELParen
+        sig <- signature opmap
+        match SERParen
+        match SEArrow
+        expr <- arrow opmap
+        pure $ Arrow sig expr
+      <|>
         equal opmap
+
+    -- <signature> ::= <SEIdentifier> <SEColon> <arrow>
+    signature : InOperatorMap -> Grammar state SimpleExprToken True SimpleExpr
+    signature opmap =
+      do
+        v <- match SEIdentifier
+        match SEColon
+        expr <- arrow opmap
+        pure $ Signature v expr
 
     -- "=" is a non associative operator
     -- <equal> ::=
@@ -476,7 +521,7 @@ mutual
 -- parses token list
 parseSimpleExpr : List (WithBounds SimpleExprToken) -> Either String SimpleExpr
 parseSimpleExpr toks =
-  case parse (typed [OpInfoTriple "$" 0 AssocRight, OpInfoTriple "+" 8 AssocLeft, OpInfoTriple "*" 9 AssocLeft]) $ filter (not . ignored) toks of
+  case parse (typed [OpInfoTriple "$" 0 AssocRight, OpInfoTriple "+" 8 AssocLeft, OpInfoTriple "*" 9 AssocLeft, (OpInfoTriple "===" 6 AssocNone)]) $ filter (not . ignored) toks of
     Right (l, []) => Right l
     Right (l, xs) => Left (show xs)
     Left e => Left (show e)
