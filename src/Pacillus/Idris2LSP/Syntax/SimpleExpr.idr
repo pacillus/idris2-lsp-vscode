@@ -358,7 +358,72 @@ simpleExprInf2App : String -> SimpleExpr -> SimpleExpr -> SimpleExpr
 simpleExprInf2App inid t1 t2 = App (App (Var  inid) t1) t2
 
 
+-- <infixOperator> ::= <SESymbol>
+infixOperator : (symbol_name : String) -> Grammar state SimpleExprToken True (SimpleExpr -> SimpleExpr -> SimpleExpr)
+infixOperator symbol_name =
+  do
+    sym <- match SESymbol
+    when (sym /= symbol_name) $ fail "not a matching operator" -- only parses the symbol of arg
+    pure $ simpleExprInf2App $ "(" ++ sym ++ ")"
 
+-- <singleOperator> ::= <SESymbol>
+singleOperator : Grammar state SimpleExprToken True SimpleExpr
+singleOperator =
+  do
+    sym <- match SESymbol
+    pure $ Var $ "(" ++ sym ++ ")"
+
+-- <infixFunction> ::= <SEBackquote> <SEIdentifier> <SEBackquote>
+infixFunction : Grammar state SimpleExprToken True (SimpleExpr -> SimpleExpr -> SimpleExpr)
+infixFunction =
+  do
+    match SEBackquote
+    id <- match SEIdentifier
+    match SEBackquote
+    pure $ simpleExprInf2App id
+
+-- dynnamically constructs a OperatorTable for parsing expr
+dynOperatorTable : InOperatorMap -> OperatorTable state SimpleExprToken SimpleExpr
+dynOperatorTable opmap =
+  let
+    -- below is the data flow
+    -- opmap -> norm_opmap -> mergerd_norm -> grouped -> sorted -> return!
+    -- type for normalized Operator information. state is passed by arg
+    OpNorm : Type -> Type
+    OpNorm state = (Nat, Op state SimpleExprToken SimpleExpr)
+
+    -- normalizes OpRecord
+    norm_oprec : OpRecord -> OpNorm state
+    norm_oprec (MkOpRecord name prec assoc) = (prec, Infix (infixOperator name) assoc)
+
+    -- converted to OpNorm
+    norm_opmap : List (OpNorm state)
+    norm_opmap = map norm_oprec opmap
+
+    -- add infix functions
+    -- proccess of adding prefix will later be added
+    merged_norm : List (OpNorm state)
+    merged_norm = (1, Infix infixFunction AssocNone) :: norm_opmap
+
+    -- defines the equality of OpNorm, which is a equality of precedence
+    -- then group them by the equality
+    grouping : OpNorm state -> OpNorm state -> Bool
+    grouping (prec1, _) (prec2, _) = prec1 == prec2
+    grouped = groupBy grouping merged_norm
+
+    -- defines the ordering of OpNorm, which is an ordering of OpNorm
+    -- then order each group by the ordering
+    -- arg of compare is opposite to make the ordering a descending order
+    sorting : List1 (OpNorm state) -> List1 (OpNorm state) -> Ordering
+    sorting ((prec1, _) ::: _) ((prec2, _) ::: _) = compare prec2 prec1
+    sorted = sortBy sorting grouped
+
+    -- forget any extra information, and converts type into final form
+    -- List1 to List and OpNorm to Op
+    forgetAll : List1 (OpNorm state) -> List (Op state SimpleExprToken SimpleExpr)
+    forgetAll xs = map snd $ forget xs
+  in
+    map forgetAll sorted
 
 -- the main parser
 -- starts in expr
@@ -367,78 +432,78 @@ mutual
     --      <simpleExpr>
     --    | <arrow>
     --    | <equal>
-    expr : InOperatorMap -> Grammar state SimpleExprToken True Expr
-    expr opmap =
+    expr : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True Expr
+    expr optable =
       do
-        e <- arrow opmap
+        e <- arrow optable
         pure $ ArrExpr e
       <|>
       do
-        e <- equal opmap
+        e <- equal optable
         pure $ EqExpr e
       <|>
       do
-        e <- simOrParen opmap
+        e <- simOrParen optable
         pure $ e
 
     -- <arrow> ::= 
     --     <equal> <SEArrow> <expr>
     --   | <simOrParen> <SEArrow> <expr>
     --   | <SELParen> <signature> <SERParen> <SEArrow> <expr>
-    arrow : InOperatorMap -> Grammar state SimpleExprToken True Arrow
-    arrow opmap =
+    arrow : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True Arrow
+    arrow optable =
       do
-        e1 <- equal opmap
+        e1 <- equal optable
         match SEArrow
-        e2 <- expr opmap
+        e2 <- expr optable
         pure $ ExExArr (EqExpr e1) e2
       <|>
       do
-        e1 <- simOrParen opmap
+        e1 <- simOrParen optable
         match SEArrow
-        e2 <- expr opmap
+        e2 <- expr optable
         pure $ ExExArr e1 e2
       <|>
       do
         match SELParen
-        sig <- signature opmap
+        sig <- signature optable
         match SERParen
         match SEArrow
-        e <- expr opmap
+        e <- expr optable
         pure $ SiExArr sig e
     
 
     -- <signature> ::= <SEIdentifier> <SEColon> <expr>
-    signature : InOperatorMap -> Grammar state SimpleExprToken True Signature
-    signature opmap = 
+    signature : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True Signature
+    signature optable = 
       do
         id <- match SEIdentifier
         match SEColon
-        e <- expr opmap
+        e <- expr optable
         pure $ MkSignature id e
 
     -- "=" is a non associative operator
     -- <equal> ::= <simOrParen> <SEEqual> <simOrParen>
-    equal : InOperatorMap -> Grammar state SimpleExprToken True Equality
-    equal opmap =
+    equal : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True Equality
+    equal optable =
       do
-        e1 <- simOrParen opmap
+        e1 <- simOrParen optable
         match SEEqual
-        e2 <- simOrParen opmap
+        e2 <- simOrParen optable
         pure $ MkEquality e1 e2
 
     -- <simOrParen> ::= 
     --     <simpleExpr>
     --    | <SELParen> <expr> <SERParen>
-    simOrParen : InOperatorMap -> Grammar state SimpleExprToken True Expr
-    simOrParen opmap =
+    simOrParen : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True Expr
+    simOrParen optable =
       do
-        e <- simpleExpr opmap
+        e <- simpleExpr optable
         pure $ SmplExpr e
       <|>
       do
         match SELParen
-        e <- expr opmap
+        e <- expr optable
         match SERParen
         pure e
 
@@ -447,38 +512,38 @@ mutual
     --     <expr> <infixOperator> <expr>
     --   | <expr> <infixFunction> <expr>
     --   | <lterm>
-    simpleExpr : InOperatorMap -> Grammar state SimpleExprToken True SimpleExpr
-    simpleExpr opmap =
-        buildExpressionParser (dynOperatorTable opmap) (lterm opmap)
+    simpleExpr : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True SimpleExpr
+    simpleExpr optable =
+        buildExpressionParser optable (lterm optable)
       <|>
         singleOperator
 
     -- <lterm> ::=
     --     <lterm> <term>
     --   | <term>
-    lterm : InOperatorMap -> Grammar state SimpleExprToken True SimpleExpr
-    lterm opmap =
+    lterm : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True SimpleExpr
+    lterm optable =
     do
-      t <- term opmap
-      app opmap t <|> pure t
+      t <- term optable
+      app optable t <|> pure t
 
     -- subfunction for lterm
-    app : InOperatorMap -> SimpleExpr -> Grammar state SimpleExprToken True SimpleExpr
-    app opmap e1 = do
-      e2 <- term opmap
-      app1 opmap $ App e1 e2
+    app : OperatorTable state SimpleExprToken SimpleExpr -> SimpleExpr -> Grammar state SimpleExprToken True SimpleExpr
+    app optable e1 = do
+      e2 <- term optable
+      app1 optable $ App e1 e2
 
     -- subfunction for lterm
-    app1 : InOperatorMap -> SimpleExpr -> Grammar state SimpleExprToken False SimpleExpr
-    app1 opmap e = app opmap e <|> pure e
+    app1 : OperatorTable state SimpleExprToken SimpleExpr -> SimpleExpr -> Grammar state SimpleExprToken False SimpleExpr
+    app1 optable e = app optable e <|> pure e
 
     -- <term> ::=
     --     <var>
     --   | <literal>
     --   | <paren>
-    term : InOperatorMap -> Grammar state SimpleExprToken True SimpleExpr
-    term opmap =
-        var <|> literal <|> paren opmap
+    term : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True SimpleExpr
+    term optable =
+        var <|> literal <|> paren optable
 
     -- <var> ::= <SEIdentifier>
     var : Grammar state SimpleExprToken True SimpleExpr
@@ -503,80 +568,15 @@ mutual
         pure $ StringLiteral s
       
     -- <paren> ::= <SELParen> <expr> <SERParen> 
-    paren : InOperatorMap -> Grammar state SimpleExprToken True SimpleExpr
-    paren opmap =
+    paren : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True SimpleExpr
+    paren optable =
       do
         match SELParen
-        e <-  simpleExpr opmap
+        e <-  simpleExpr optable
         match SERParen
         pure e
     
-    -- <infixOperator> ::= <SESymbol>
-    infixOperator : (symbol_name : String) -> Grammar state SimpleExprToken True (SimpleExpr -> SimpleExpr -> SimpleExpr)
-    infixOperator symbol_name =
-      do
-        sym <- match SESymbol
-        when (sym /= symbol_name) $ fail "not a matching operator" -- only parses the symbol of arg
-        pure $ simpleExprInf2App $ "(" ++ sym ++ ")"
 
-    -- <singleOperator> ::= <SESymbol>
-    singleOperator : Grammar state SimpleExprToken True SimpleExpr
-    singleOperator =
-      do
-        sym <- match SESymbol
-        pure $ Var $ "(" ++ sym ++ ")"
-
-    -- <infixFunction> ::= <SEBackquote> <SEIdentifier> <SEBackquote>
-    infixFunction : Grammar state SimpleExprToken True (SimpleExpr -> SimpleExpr -> SimpleExpr)
-    infixFunction =
-      do
-        match SEBackquote
-        id <- match SEIdentifier
-        match SEBackquote
-        pure $ simpleExprInf2App id
-    
-    -- dynnamically constructs a OperatorTable for parsing expr
-    dynOperatorTable : InOperatorMap -> OperatorTable state SimpleExprToken SimpleExpr
-    dynOperatorTable opmap =
-      let
-        -- below is the data flow
-        -- opmap -> norm_opmap -> mergerd_norm -> grouped -> sorted -> return!
-        -- type for normalized Operator information. state is passed by arg
-        OpNorm : Type -> Type
-        OpNorm state = (Nat, Op state SimpleExprToken SimpleExpr)
-
-        -- normalizes OpRecord
-        norm_oprec : OpRecord -> OpNorm state
-        norm_oprec (MkOpRecord name prec assoc) = (prec, Infix (infixOperator name) assoc)
-
-        -- converted to OpNorm
-        norm_opmap : List (OpNorm state)
-        norm_opmap = map norm_oprec opmap
-
-        -- add infix functions
-        -- proccess of adding prefix will later be added
-        merged_norm : List (OpNorm state)
-        merged_norm = (1, Infix infixFunction AssocNone) :: norm_opmap
-
-        -- defines the equality of OpNorm, which is a equality of precedence
-        -- then group them by the equality
-        grouping : OpNorm state -> OpNorm state -> Bool
-        grouping (prec1, _) (prec2, _) = prec1 == prec2
-        grouped = groupBy grouping merged_norm
-
-        -- defines the ordering of OpNorm, which is an ordering of OpNorm
-        -- then order each group by the ordering
-        -- arg of compare is opposite to make the ordering a descending order
-        sorting : List1 (OpNorm state) -> List1 (OpNorm state) -> Ordering
-        sorting ((prec1, _) ::: _) ((prec2, _) ::: _) = compare prec2 prec1
-        sorted = sortBy sorting grouped
-
-        -- forget any extra information, and converts type into final form
-        -- List1 to List and OpNorm to Op
-        forgetAll : List1 (OpNorm state) -> List (Op state SimpleExprToken SimpleExpr)
-        forgetAll xs = map snd $ forget xs
-      in
-        map forgetAll sorted
     
 
 opMap : InOperatorMap
@@ -589,10 +589,13 @@ opMap =
         MkOpRecord "++" 7 AssocRight
     ]
 
+opTable : OperatorTable state SimpleExprToken SimpleExpr
+opTable = dynOperatorTable opMap
+
 -- parses token list
 parseSimpleExpr : List (WithBounds SimpleExprToken) -> Either String Expr
 parseSimpleExpr toks =
-  case parse (expr opMap) $ filter (not . ignored) toks of
+  case parse (expr opTable) $ filter (not . ignored) toks of
     Right (l, []) => Right l
     Right (l, xs) => Left $show xs -- Left "contains tokens that were not consumed"
     Left e => Left (show e)
