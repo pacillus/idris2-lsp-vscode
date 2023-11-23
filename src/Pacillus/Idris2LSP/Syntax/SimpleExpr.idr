@@ -61,8 +61,9 @@ import Pacillus.Idris2LSP.Syntax.Lexer
 --   | <appWithParen>
 
 
--- <parenApp> ::=
---     <LParen> <appWithParen> <RParen>
+
+-- <appWithParen> ::=
+--     <SELParen> <app> <SERParen>
 
 
 -- <term> ::=
@@ -95,8 +96,7 @@ import Pacillus.Idris2LSP.Syntax.Lexer
 -- <ArwTerm> ::= <Arrow>
 
 -- <Application> ::=
---     <Application> <SimpleExpr>
---   | <Identifier> <SimpleExpr>
+--     <SimpleExpr> <SimpleExpr>
 
 -- <Identifier> ::= String
 
@@ -168,23 +168,17 @@ forgetSig : Arrow b -> Arrow True
 forgetSig (ExExArr x y) = ExExArr x y
 forgetSig (SiExArr (MkSignature str x) y) = ExExArr x y
 
--- Eq SimpleExpr where
---     (==) (IdTerm id1) (IdTerm id2) = id1 == id2
---     (==) (App f1 x1) (App f2 x2) = f1 == f2 && x1 == x2
---     (==) (NatLiteral k1) (NatLiteral k2) = k1 == k2
---     (==) (DoubleLiteral dbl1) (DoubleLiteral dbl2) = dbl1 == dbl2
---     (==) (StringLiteral str1) (StringLiteral str2) = str1 == str2
---     (==) _ _ = False
-
+export
 Eq Identifier where
     (==) (MkId str) (MkId str1) = str == str1
 
 mutual
+    export
     exEquality : SimpleExpr -> SimpleExpr -> Bool
     exEquality (IdTerm x) (IdTerm y) = x == y
-    exEquality (AppTerm x) (AppTerm y) = ?rhs_1
-    exEquality (ArwTerm x) y = ?rhs_2
-    exEquality (EqTerm x) y = ?rhs_3
+    exEquality (AppTerm x) (AppTerm y) = appEquality x y
+    exEquality (ArwTerm x) (ArwTerm y) = sameTypeArw x y
+    exEquality (EqTerm x) (EqTerm y) = eqEquality x y
     exEquality (NatLiteral k1) (NatLiteral k2) = k1 == k2
     exEquality (DoubleLiteral dbl1) (DoubleLiteral dbl2) = dbl1 == dbl2
     exEquality (StringLiteral str1) (StringLiteral str2) = str1 == str2
@@ -209,8 +203,26 @@ mutual
           MkSignature _ yex = y
         in exEquality xex z && exEquality yex w
 
+mutual
+  export
+  showSimpleExpr : Nat -> SimpleExpr -> String
+  showSimpleExpr d (IdTerm (MkId name)) = name
+  showSimpleExpr d (AppTerm x) = showApp d x
+  showSimpleExpr d (ArwTerm x) = showArw d x
+  showSimpleExpr d (EqTerm x) = showEq d x
+  showSimpleExpr d (NatLiteral k) = show k
+  showSimpleExpr d (DoubleLiteral dbl) = show dbl
+  showSimpleExpr d (StringLiteral str) = str
 
+  showApp : Nat -> Application -> String
+  showApp d (MkApp x y) = showParens (d >= 3) $ showSimpleExpr 2 x ++ " " ++ showSimpleExpr 3 y
 
+  showArw : Nat -> Arrow False -> String
+  showArw d (ExExArr x y) = showParens (d >= 2) $ showSimpleExpr 2 x ++ " -> " ++ showSimpleExpr 2 y
+  showArw d (SiExArr (MkSignature str x) y) = showParens (d >= 2) $ "(" ++ str ++ " : " ++ showSimpleExpr 0 x ++ ") -> " ++ showSimpleExpr 2 y
+
+  showEq : Nat -> Equality -> String
+  showEq d (MkEquality x y) = showParens (d >= 1) $ showSimpleExpr 1 x ++ "=" ++ showSimpleExpr 1 y
 
 -- information of operator used for parsing
 data OpRecord = MkOpRecord String Nat Assoc
@@ -242,6 +254,7 @@ sortOpMap opmap = (sortBy compRec opmap)
 
 -- ---Parser related functions---
 -- defining what Tokens to ignore
+export
 ignored : WithBounds SimpleExprToken -> Bool
 ignored (MkBounded (Tok SEIgnore _) _ _) = True
 ignored _ = False
@@ -324,6 +337,13 @@ dynOperatorTable opmap =
   in
     map forgetAll sorted
 
+-- this is parsed using optable
+equality : Grammar state SimpleExprToken True (SimpleExpr -> SimpleExpr -> SimpleExpr)
+equality =
+  do
+    match SEEqual
+    pure $ \x,y => EqTerm (MkEquality x y)
+
 -- the main parser
 -- starts in expr
 mutual
@@ -372,6 +392,7 @@ mutual
         singleOperator
 
     -- <signature> ::= <SEIdentifier> <SEColon> <expr>
+    export
     signature : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True Signature
     signature optable = 
       do
@@ -380,17 +401,12 @@ mutual
         e <- simpleExpr optable
         pure $ MkSignature id e
 
-    -- this is parsed using optable
-    -- <equal> ::= <simOrParen> <SEEqual> <simOrParen>
-    equality : Grammar state SimpleExprToken True (SimpleExpr -> SimpleExpr -> SimpleExpr)
-    equality =
-      do
-        match SEEqual
-        pure $ \x,y => EqTerm (MkEquality x y)
 
+
+    -- left most part of application must be a identifier
     -- <app> ::=
     --     <app> <term>
-    --   | <identifier>
+    --   | <identifier> <term>
     --   | <appWithParen>
     app : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True Application
     app optable =
@@ -404,6 +420,8 @@ mutual
         t <- term optable
         appSub1 optable a
 
+    -- <appWithParen> ::=
+    --     <SELParen> <app> <SERParen>
     appWithParen :  OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True Application
     appWithParen optable =
       do
@@ -412,11 +430,11 @@ mutual
         match SERParen
         pure $ a
 
-    -- subfunction for lterm
+    -- subfunction for app
     appSub1 : OperatorTable state SimpleExprToken SimpleExpr -> Application -> Grammar state SimpleExprToken False Application
     appSub1 optable e = appSub2 optable e <|> pure e
 
-    -- subfunction for lterm
+    -- subfunction for app
     appSub2 : OperatorTable state SimpleExprToken SimpleExpr -> Application -> Grammar state SimpleExprToken True Application
     appSub2 optable app = do
       t <- term optable
@@ -462,7 +480,7 @@ mutual
         s <- match SEStringLiteral
         pure $ StringLiteral s
       
-    -- <paren> ::= <SELParen> <expr> <SERParen> 
+    -- <paren> ::= <SELParen> <simplExpr> <SERParen> 
     paren : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True SimpleExpr
     paren optable =
       do
@@ -484,6 +502,7 @@ opMap =
         MkOpRecord "++" 7 AssocRight
     ]
 
+export
 opTable : OperatorTable state SimpleExprToken SimpleExpr
 opTable = dynOperatorTable opMap
 
@@ -502,22 +521,6 @@ parse x =
   case lexSimpleExpr x of
     Just toks => parseSimpleExpr toks
     Nothing => Left "Failed to lex."
-
--- main : IO ()
--- main = 
---   let
---     caseList = 
---     [ "x", 
---       "x+x" ]
---     parsedListM = map lexSimpleExpr caseList
---     -- parsedList = map (fromMaybe []) parsedListM
---     test1 = map (fromMaybe []) [Just [], Just []]
---     test2 = ["hoge", "fuga"]
---     test3 = map (\x => Just [Prelude.String.(++) x "!"]) test2
---     test4 = map (fromMaybe []) test3
---     test5 = map (\x => foldl Prelude.String.(++) "" x) test4
---   in
---     putStrLn ?rhs
 
 
 -- test5 doesn't work properly, don't know why

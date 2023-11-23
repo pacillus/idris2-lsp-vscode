@@ -28,6 +28,11 @@ testPatternch02 =
 
 -- mytestPattern : List String
 
+-- [((IdTerm (MkId "x")), (IdTerm (MkId "True")))]
+
+-- unify [((AppTerm (MkApp (AppTerm (MkApp (IdTerm (MkId "Vect")) (IdTerm (MkId "n")))) (IdTerm (MkId "ty")))), (AppTerm (MkApp (AppTerm (MkApp (IdTerm (MkId "Vect")) (NatLiteral 4))) (IdTerm (MkId "String")))))]
+
+-- (labelImplicit . nonImplicitList) (ArwTerm (SiExArr (MkSignature "x" (IdTerm (MkId "Bool"))) (AppTerm (MkApp (IdTerm (MkId "StringOrInt")) (IdTerm (MkId "x"))))))
 
 -- parseSmpl : String -> Either String Expr
 -- parseSmpl = parse
