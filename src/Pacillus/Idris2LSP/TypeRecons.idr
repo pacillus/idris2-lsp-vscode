@@ -196,7 +196,7 @@ applyConstraints ((y, z) :: xs) x =
 
 
 export covering
-getAppliedType : Signature -> Signature -> Either String Signature
+getAppliedType : (f : Signature) -> (x : Signature) -> Either String Signature
 getAppliedType (MkSignature str1 (ArwTerm f)) (MkSignature str2 x) =
   let
     result_name = str1 ++ " " ++ str2
@@ -213,5 +213,5 @@ getAppliedType (MkSignature str1 (ArwTerm f)) (MkSignature str2 x) =
     cons <- unify [(arg, x)]
     applied <- applyConstraints cons ret
     Right $ MkSignature result_name $ assign applied
-getAppliedType _ _ = Left "not an applyable form"
+getAppliedType _ _ = Left "left side not an applyable form"
 
