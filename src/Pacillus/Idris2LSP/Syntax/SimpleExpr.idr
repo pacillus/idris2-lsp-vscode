@@ -18,10 +18,9 @@ import Pacillus.Idris2LSP.Syntax.Lexer
 -- https://idris2.readthedocs.io/en/latest/cookbook/parsing.html
 
 
--- TODO Make Pair
--- TODO Add unit
 -- TODO Add prefix to OpTable
 -- TODO Arrow with bracketed Signature
+-- TODO Partially filled infix notation
 
 -- ##Token##
 -- <SESymbol> ::= [:!#$%&*+./<=>?@\^|-~]+
@@ -37,8 +36,11 @@ import Pacillus.Idris2LSP.Syntax.Lexer
 -- <SEDoubleLiteral> ::= [0-9]+[.][0-9]([e][+-]?[0-9]+)?
 -- <SEStringLiteral> ::= ["](\\.|.)["]
 
+
 -- ##Syntax##
 -- <simpleExpr> ::=
+--     <pair>
+--     <unit>
 --     <arrow>
 --   | <operation>
 
@@ -60,11 +62,7 @@ import Pacillus.Idris2LSP.Syntax.Lexer
 --   | <identifier>
 --   | <appWithParen>
 
-
-
--- <appWithParen> ::=
---     <SELParen> <app> <SERParen>
-
+-- <appWithParen> ::= <SELParen> <app> <SERParen>
 
 -- <term> ::=
 --     <identifier>
@@ -78,15 +76,24 @@ import Pacillus.Idris2LSP.Syntax.Lexer
 --   | <SEDoubleLiteral>
 --   | <SEStringLiteral>
 
-
 -- <paren> ::= <SELParen> <simpleExpr> <SERParen> 
 
 -- <infixOperator> ::= <SESymbol>
 
 -- <infixFunction> ::= <SEBackquote> <SEIdentifier> <SEBackquote>
 
+
 -- ## Abstract Syntax Tree ##
--- <SimpleExpr> ::= <IdTerm> | <AppTerm> | <EqTerm> | <ArwTerm> | <IntegerLiteral> | <DoubleLiteral> | <StringLiteral> 
+-- <SimpleExpr> ::=
+--    <IdTerm>
+--  | <AppTerm>
+--  | <EqTerm>
+--  | <ArwTerm>
+--  | <IntegerLiteral>
+--  | <DoubleLiteral>
+--  | <StringLiteral>
+--  | <PrTerm>
+--  | Unit
 -- <AppTerm> ::= <Application>
 -- <IntegerLiteral> ::= Integer
 -- <DoubleLiteral> ::= Double
@@ -94,6 +101,7 @@ import Pacillus.Idris2LSP.Syntax.Lexer
 -- <EqTerm> ::= <Equality>
 -- <IdTerm> ::= <Identifier>
 -- <ArwTerm> ::= <Arrow>
+-- <PrTerm> ::= <Pair>
 
 -- <Application> ::= <SimpleExpr> <SimpleExpr>
 
@@ -105,20 +113,25 @@ import Pacillus.Idris2LSP.Syntax.Lexer
 --     <SimpleExpr> <SimpleExpr>
 --   | <Signature> <SimpleExpr>
 
--- <Signature> ::= String <Expr>
+-- <Pair> ::=
+--     <SimpleExpr> <SimpleExpr>
+
+-- <Signature> ::= String <SimpleExpr>
+
 
 -- ---data type defentions---
 
--- the data type for AST of SimpleExpr
--- <SimpleExpr> ::= <IdTerm> | <AppTerm> | <EqTerm> | <ArwTerm> | <IntegerLiteral> | <DoubleLiteral> | <StringLiteral> 
--- <AppTerm> ::= <Application>
--- <IntegerLiteral> ::= Integer
--- <DoubleLiteral> ::= Double
--- <StringLiteral> ::= String
--- <EqTerm> ::= <Equality>
--- <IdTerm> ::= <Identifier>
--- <ArwTerm> ::= <Arrow>
+
 mutual
+    -- the data type for AST of SimpleExpr
+    -- <SimpleExpr> ::= <IdTerm> | <AppTerm> | <EqTerm> | <ArwTerm> | <IntegerLiteral> | <DoubleLiteral> | <StringLiteral> 
+    -- <AppTerm> ::= <Application>
+    -- <IntegerLiteral> ::= Integer
+    -- <DoubleLiteral> ::= Double
+    -- <StringLiteral> ::= String
+    -- <EqTerm> ::= <Equality>
+    -- <IdTerm> ::= <Identifier>
+    -- <ArwTerm> ::= <Arrow>
     public export
     data SimpleExpr : Type where
         IdTerm : Identifier -> SimpleExpr
@@ -128,6 +141,8 @@ mutual
         NatLiteral : Nat -> SimpleExpr
         DoubleLiteral : Double -> SimpleExpr
         StringLiteral : String -> SimpleExpr
+        PrTerm : Pair -> SimpleExpr
+        UnitTerm : SimpleExpr
 
     -- <Identifier> ::= String
     public export
@@ -145,14 +160,18 @@ mutual
 
     -- Arrow True eliminates the pattern of SiExArr
     -- <Arrow> ::=
-    --     <Expr> <Expr>
-    --   | <Signature> <Expr>
+    --     <SimpleExpr> <SimpleExpr>
+    --   | <Signature> <SimpleExpr>
     public export
     data Arrow : (nosig : Bool) -> Type where
         ExExArr : {b : Bool} -> SimpleExpr -> SimpleExpr -> Arrow b
         SiExArr : Signature -> SimpleExpr -> Arrow False
 
-    -- <Signature> ::= String <Expr>
+    public export
+    data Pair : Type where
+        MkPair : SimpleExpr -> SimpleExpr -> Pair
+
+    -- <Signature> ::= String <SimpleExpr>
     public export
     data Signature = MkSignature String SimpleExpr
 
@@ -173,9 +192,11 @@ mutual
     exEquality (AppTerm x) (AppTerm y) = appEquality x y
     exEquality (ArwTerm x) (ArwTerm y) = sameTypeArw x y
     exEquality (EqTerm x) (EqTerm y) = eqEquality x y
+    exEquality (PrTerm x) (PrTerm y) = prEquality x y
     exEquality (NatLiteral k1) (NatLiteral k2) = k1 == k2
     exEquality (DoubleLiteral dbl1) (DoubleLiteral dbl2) = dbl1 == dbl2
     exEquality (StringLiteral str1) (StringLiteral str2) = str1 == str2
+    exEquality UnitTerm UnitTerm = True
     exEquality _ _ = False
 
     appEquality : Application -> Application -> Bool
@@ -184,6 +205,8 @@ mutual
     eqEquality : Equality -> Equality -> Bool
     eqEquality (MkEquality le1 re1) (MkEquality le2 re2) = exEquality le1 le2 && exEquality re1 re2
 
+    prEquality : Pair -> Pair -> Bool
+    prEquality (MkPair lfst lsnd) (MkPair rfst rsnd) = exEquality lfst rfst && exEquality lsnd rsnd
 
     sameTypeArw : Arrow b1 -> Arrow b2 -> Bool
     sameTypeArw (ExExArr x z) (ExExArr y w) = exEquality x z && exEquality y w
@@ -204,9 +227,11 @@ mutual
   showSimpleExpr d (AppTerm x) = showApp d x
   showSimpleExpr d (ArwTerm x) = showArw d x
   showSimpleExpr d (EqTerm x) = showEq d x
+  showSimpleExpr d (PrTerm x) = showPr d x
   showSimpleExpr d (NatLiteral k) = show k
   showSimpleExpr d (DoubleLiteral dbl) = show dbl
-  showSimpleExpr d (StringLiteral str) = str
+  showSimpleExpr d (StringLiteral str) = show str
+  showSimpleExpr d UnitTerm = "()"
 
   showApp : Nat -> Application -> String
   showApp d (MkApp x y) = showParens (d >= 3) $ showSimpleExpr 2 x ++ " " ++ showSimpleExpr 3 y
@@ -217,6 +242,13 @@ mutual
 
   showEq : Nat -> Equality -> String
   showEq d (MkEquality x y) = showParens (d >= 1) $ showSimpleExpr 1 x ++ "=" ++ showSimpleExpr 1 y
+
+  showPr : Nat -> Pair -> String
+  showPr d x = "(" ++ showPrNoBracket x ++ ")"
+
+  showPrNoBracket : Pair -> String
+  showPrNoBracket (MkPair x (PrTerm y)) = showSimpleExpr 0 x ++ ", " ++ showPrNoBracket y
+  showPrNoBracket (MkPair x y) = showSimpleExpr 0 x ++ ", " ++ showSimpleExpr 0 y
 
 export
 Show Signature where
@@ -233,20 +265,6 @@ sortOpMap opmap = (sortBy compRec opmap)
   where
     compRec : OpRecord -> OpRecord -> Ordering
     compRec (MkOpRecord str n1 x) (MkOpRecord str1 n2 y) = compare n1 n2
-
-
-
--- application is bracketed if needed
--- the argorithm is not thought through and probably needs improvement
--- Show SimpleExpr where
---     showPrec d ( str) = str
---     showPrec d (App x y) = showParens (d == Prelude.App) (showPrec (User 0) x ++ " " ++ showPrec App y)
---     -- showPrec d (Equality x y) = showPrec Equal x ++ "=" ++ showPrec Equal y
---     -- showPrec d (Arrow x y) = showParens (d == (User 1)) (showPrec (User 1) x ++ "->" ++ showPrec (User 0) y)
---     -- showPrec d (Signature var typeexpr) = var ++ ":" ++ show typeexpr
---     showPrec d (NatLiteral n) = show n
---     showPrec d (DoubleLiteral n) = show n
---     showPrec d (StringLiteral s) = show s
 
 
 
@@ -351,10 +369,31 @@ mutual
     simpleExpr : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True SimpleExpr
     simpleExpr optable =
       do
-        e <- arrow optable
-        pure $ ArwTerm e
+        map ArwTerm $ arrow optable
       <|>
         operation optable
+
+    pair : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True Pair
+    pair optable = 
+      do
+        match SELParen
+        p <- pairSub optable
+        match SERParen
+        pure p
+
+    pairSub : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True Pair
+    pairSub optable =
+      do
+        e <- simpleExpr optable
+        match SEComma
+        p <- pairSub optable
+        pure $ (MkPair e $ PrTerm p)
+      <|>
+      do
+        e1 <- simpleExpr optable
+        match SEComma
+        e2 <- simpleExpr optable
+        pure $ (MkPair e1 e2)
 
     -- <arrow> ::= 
     --   | <operation> <SEArrow> <expr>
@@ -375,6 +414,8 @@ mutual
         e <- simpleExpr optable
         pure $ SiExArr sig e
     
+    -- specially parsed using optable
+    -- includes infix function, infix operation, and equality
     -- <operation>
     --   | <operation> <infixOperator> <operation>
     --   | <operation> <infixFunction> <operation>
@@ -389,7 +430,7 @@ mutual
       <|>
         singleOperator
 
-    -- <signature> ::= <SEIdentifier> <SEColon> <expr>
+    -- <signature> ::= <SEIdentifier> <SEColon> <SimpleExpr>
     export
     signature : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True Signature
     signature optable = 
@@ -418,8 +459,7 @@ mutual
         t <- term optable
         appSub1 optable a
 
-    -- <appWithParen> ::=
-    --     <SELParen> <app> <SERParen>
+    -- <appWithParen> ::= <SELParen> <app> <SERParen>
     appWithParen :  OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True Application
     appWithParen optable =
       do
@@ -439,11 +479,21 @@ mutual
       appSub1 optable $ MkApp (AppTerm app) t
 
     -- <term> ::=
+    --     <unit>
+    --     <pair>
     --     <var>
     --   | <literal>
     --   | <paren>
     term : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True SimpleExpr
     term optable =
+      do
+        match SELParen
+        match SERParen
+        pure UnitTerm
+      <|>
+      do
+        map PrTerm $ pair optable
+      <|>
       do
         id <- identifier 
         pure $ IdTerm id
@@ -486,9 +536,6 @@ mutual
         e <-  simpleExpr optable
         match SERParen
         pure e
-    
-
-    
 
 opMap : InOperatorMap
 opMap = 
@@ -497,7 +544,9 @@ opMap =
         MkOpRecord "+" 8 AssocLeft, 
         MkOpRecord "*" 9 AssocLeft, 
         MkOpRecord "===" 6 AssocNone,
-        MkOpRecord "++" 7 AssocRight
+        MkOpRecord "++" 7 AssocRight,
+        MkOpRecord ">=" 6 AssocNone,
+        MkOpRecord "::" 7 AssocRight
     ]
 
 export
@@ -521,35 +570,6 @@ parse x =
     Nothing => Left "Failed to lex."
 
 
--- test5 doesn't work properly, don't know why
--- test1-test4 means the same as test5
-test1 : List String
-test1 = ["hoge", "fuga"]
 
-test2 : List (Maybe (List String))
-test2 = map (\x => Just [Prelude.String.(++) x "!"]) test1
-
-test3 : List (List String)
-test3 = map (fromMaybe []) test2
-
-test4 : List String
-test4 = map (foldl Prelude.String.(++) "") test3
-
--- test5 : List String
--- test5 =
---   let 
---     sub1 = ["hoge", "fuga"]
---     sub2 = map (\x => Just [Prelude.String.(++) x "!"]) sub1
---     sub3 = map (fromMaybe []) sub2
---     sub4 = map (foldl Prelude.String.(++) "") sub3
---   in
---     sub4
-
--- ## string literal in Idris ##
-str : String
-str = "this is substr!"
-
-texta : String
-texta = ##"" \##{str}\#  #""# "#"##
 
 

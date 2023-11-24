@@ -16,6 +16,7 @@ data SimpleExprTokenKind =
     | SEArrow
     | SEEqual
     | SEColon
+    | SEComma
     | SEIntLiteral
     | SEDoubleLiteral
     | SEStringLiteral
@@ -35,6 +36,7 @@ Eq SimpleExprTokenKind where
   (==) SEArrow SEArrow = True
   (==) SEEqual SEEqual = True
   (==) SEColon SEColon = True
+  (==) SEComma SEComma = True
   (==) SEIntLiteral SEIntLiteral = True
   (==) SEDoubleLiteral SEDoubleLiteral = True
   (==) SEStringLiteral SEStringLiteral = True
@@ -51,6 +53,7 @@ Show SimpleExprTokenKind where
     show SEArrow =  "SEArrow"
     show SEEqual = "SEEqual"
     show SEColon = "SEColon"
+    show SEComma = "SEComma"
     show SEIntLiteral = "SEIntLiteral"
     show SEDoubleLiteral = "SEDoubleLiteral"
     show SEStringLiteral = "SEStringLiteral"
@@ -86,6 +89,7 @@ TokenKind SimpleExprTokenKind where
   tokValue SEArrow _ = ()
   tokValue SEEqual _ = ()
   tokValue SEColon _ = ()
+  tokValue SEComma _ = ()
   tokValue SEIntLiteral s = stringToNatOrZ s
   tokValue SEDoubleLiteral s = fromMaybe 0 $ parseDouble s
   tokValue SEStringLiteral s = strSubstr 1 (strLength s - 2) s -- Kind of bad since strSubstr is Int -> Int -> String -> String
@@ -165,6 +169,7 @@ simpleExprTokenMap =
       (exact "(", SELParen),
       (exact ")", SERParen),
       (exact "`", SEBackquote),
+      (exact ",", SEComma),
       (digits, SEIntLiteral),
       (doubleLit, SEDoubleLiteral),
       (stringLit, SEStringLiteral)

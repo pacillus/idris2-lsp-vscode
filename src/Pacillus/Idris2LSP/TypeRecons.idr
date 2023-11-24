@@ -10,6 +10,7 @@ Constraints = List (SimpleExpr, SimpleExpr)
 
 -- lowercase and not applied to anything
 
+-- variables from left and variables from right are separated
 
 mutual
     assignExpr : (target : SimpleExpr)  -> (var : SimpleExpr) -> (replace : SimpleExpr) -> SimpleExpr
@@ -25,6 +26,8 @@ mutual
             (NatLiteral k) => NatLiteral k
             (DoubleLiteral dbl) => DoubleLiteral dbl
             (StringLiteral str) => StringLiteral str
+            (PrTerm x) => PrTerm $ assignPr x var replace
+            UnitTerm => ?rjs_8
 
     assignApp : (target : Application) -> (var : SimpleExpr) -> (replace : SimpleExpr) -> Application
     assignApp (MkApp x y) var replace = MkApp (assignExpr x var replace) (assignExpr y var replace)
@@ -34,10 +37,13 @@ mutual
     assignArw (SiExArr x y) var replace = SiExArr (assignSig x var replace) (assignExpr y var replace)
 
     assignSig : (target : Signature) -> (var : SimpleExpr) -> (expr : SimpleExpr) -> Signature
-    assignSig (MkSignature str x) var expr = MkSignature str (assignExpr x var expr)
+    assignSig (MkSignature str x) var expr = MkSignature str $ assignExpr x var expr
 
     assignEq : (target : Equality) -> (var : SimpleExpr) -> (replace : SimpleExpr) -> Equality
     assignEq (MkEquality x y) var replace = MkEquality (assignExpr x var replace) (assignExpr y var replace)
+
+    assignPr : (target : Pair) -> (var : SimpleExpr) -> (replace : SimpleExpr) -> Pair
+    assignPr (MkPair x y) var replace = MkPair (assignExpr x var replace) (assignExpr y var replace)
 
 assignL : (constraints : Constraints) -> (var : SimpleExpr) -> (expr : SimpleExpr) -> Constraints
 assignL [] var expr = []
@@ -65,9 +71,11 @@ mutual
     nonImplicitList (AppTerm x) = nonImplicitListApp x
     nonImplicitList (ArwTerm x) = nonImplicitListArw x
     nonImplicitList (EqTerm x) = nonImplicitListEq x
+    nonImplicitList (PrTerm x) = nonImplicitListPr x
     nonImplicitList (NatLiteral k) = []
     nonImplicitList (DoubleLiteral dbl) = []
     nonImplicitList (StringLiteral str) = []
+    nonImplicitList UnitTerm = []
 
     nonImplicitListApp : Application -> List Identifier
     nonImplicitListApp (MkApp (IdTerm x) y) = x :: nonImplicitList y
@@ -80,6 +88,9 @@ mutual
     nonImplicitListEq : Equality -> List Identifier
     nonImplicitListEq (MkEquality x y) = nonImplicitList x ++ nonImplicitList y
 
+    nonImplicitListPr : Pair -> List Identifier
+    nonImplicitListPr (MkPair x y) = nonImplicitList x ++ nonImplicitList y
+
 mutual
     labelImplicit : List Identifier -> SimpleExpr -> SimpleExpr
     labelImplicit nimp (IdTerm (MkId name)) = 
@@ -89,9 +100,11 @@ mutual
     labelImplicit nimp (AppTerm x) = AppTerm $ labelImplicitApp nimp x
     labelImplicit nimp (ArwTerm x) = ArwTerm $ labelImplicitArw nimp x
     labelImplicit nimp (EqTerm x) = EqTerm $ labelImplicitEq nimp x
+    labelImplicit nimp (PrTerm x) = PrTerm $ labelImplicitPr nimp x
     labelImplicit nimp (NatLiteral k) = NatLiteral k
     labelImplicit nimp (DoubleLiteral dbl) = DoubleLiteral dbl
     labelImplicit nimp (StringLiteral str) = StringLiteral str
+    labelImplicit nimp UnitTerm = UnitTerm
 
     labelImplicitApp : List Identifier -> Application -> Application
     labelImplicitApp nimp (MkApp x y) = MkApp (labelImplicit nimp x) (labelImplicit nimp y)
@@ -103,22 +116,21 @@ mutual
     labelImplicitEq : List Identifier -> Equality -> Equality
     labelImplicitEq nimp (MkEquality x y) = MkEquality (labelImplicit nimp x) (labelImplicit nimp y)
 
+    labelImplicitPr : List Identifier -> Pair -> Pair
+    labelImplicitPr nimp (MkPair x y) = MkPair (labelImplicit nimp x) (labelImplicit nimp y)
+
 labelImplicitMain : SimpleExpr -> SimpleExpr
 labelImplicitMain x = (labelImplicit . nonImplicitList) x x
 
 mutual
     -- halting is guranteed due to the proof in "Types and Programming Languages" pg.327
-
-    -- unifySmplExpr : (constraints : Constraints) -> SimpleExpr -> SimpleExpr -> Maybe Constraints
-    -- unifySmplExpr constraints (Var argid) (Var appid) = Just [(SmplExpr (Var argid), SmplExpr (Var appid))]
-    -- -- unifySmplExpr constraints (App argf argx) (App appf appx) =
-    -- --   do
-    -- --     fconstraints <- unifySmplExpr constraints argf appf
-    -- unifySmplExpr constraints (NatLiteral k) applying = ?rhs_2
-    -- unifySmplExpr constraints (DoubleLiteral dbl) applying = ?rhs_3
-    -- unifySmplExpr constraints (StringLiteral str) applying = ?rhs_4
-    -- unifySmplExpr _ _ _ = Nothing
-
+    covering
+    unify : Constraints -> Either String Constraints
+    unify [] = Right []
+    unify ((arg, app) :: xs) =
+      if exEquality arg app
+        then unify xs
+        else unifyExpr xs arg app
 
     covering
     unifyExpr : (constraints : Constraints) -> (arg : SimpleExpr) -> (applied : SimpleExpr) -> Either String Constraints
@@ -137,6 +149,7 @@ mutual
     unifyExpr constraints (AppTerm arg) (AppTerm applied) = unifyApp constraints arg applied
     unifyExpr constraints (ArwTerm arg) (ArwTerm applied) = unifyArw constraints arg applied
     unifyExpr constraints (EqTerm arg) (EqTerm applied) = unifyEq constraints arg applied
+    unifyExpr constraints (PrTerm arg) (PrTerm applied) = unifyPr constraints arg applied
     unifyExpr _ _ _ = Left "unification failed"
     
     covering
@@ -154,13 +167,9 @@ mutual
     unifyEq : (constraints : Constraints) -> (arg : Equality) -> (applied : Equality) -> Either String Constraints
     unifyEq constraints (MkEquality x y) (MkEquality z w) = unify $ (x, z) :: (y, w) :: constraints
 
-    covering
-    unify : Constraints -> Either String Constraints
-    unify [] = Right []
-    unify ((arg, app) :: xs) =
-      if exEquality arg app
-        then unify xs
-        else unifyExpr xs arg app
+    covering 
+    unifyPr: (constraints : Constraints) -> (arg : Pair) -> (applied : Pair) -> Either String Constraints
+    unifyPr constraints (MkPair x y) (MkPair z w) = unify $ (x, z) :: (y, w) :: constraints
 
     covering
     leafL : (constraints : Constraints) -> (var : SimpleExpr) -> (expr : SimpleExpr) -> Either String Constraints
@@ -182,20 +191,23 @@ applyConstraints : Constraints -> SimpleExpr -> Either String SimpleExpr
 applyConstraints [] x = Right x
 applyConstraints ((y, z) :: xs) x =
   case (y, z) of
-    (IdTerm var1, IdTerm var2) => ?rhs
+    (IdTerm var1, IdTerm var2) =>
+        case (isImplicitVar var1, isImplicitVar var2) of
+            (False, False) => Left "unexpected error: illegal constraints"
+            (False, True) => applyConstraints xs $ assignExpr x (IdTerm var2) (IdTerm var1)
+            (True, False) => applyConstraints xs $ assignExpr x (IdTerm var1) (IdTerm var2)
+            (True, True) => applyConstraints xs x
     (IdTerm var, w) =>
       if isImplicitVar var
-        then applyConstraints xs $ (assignExpr x (IdTerm var) w)
+        then applyConstraints xs $ assignExpr x (IdTerm var) w
         else Left "unexpected error: illegal constraints"
     (w, IdTerm var) =>
       if isImplicitVar var
-        then applyConstraints xs $ (assignExpr x (IdTerm var) w)
+        then applyConstraints xs $ assignExpr x (IdTerm var) w
         else Left "unexpected error: illegal constraints"
     (_, _) => Left "unexpected error: illegal constraints"
 
-
-
-export covering
+export
 getAppliedType : (f : Signature) -> (x : Signature) -> Either String Signature
 getAppliedType (MkSignature str1 (ArwTerm f)) (MkSignature str2 x) =
   let
@@ -205,13 +217,15 @@ getAppliedType (MkSignature str1 (ArwTerm f)) (MkSignature str2 x) =
     ret = labelImplicitMain retraw
     assign : SimpleExpr -> SimpleExpr
     assign target =
-        case f of
-            (ExExArr y z) => target
-            (SiExArr (MkSignature str y) z) => assignExpr target (IdTerm $ MkId str) y
+      case f of
+        (ExExArr y z) => target
+        (SiExArr (MkSignature str y) z) => assignExpr target (IdTerm $ MkId str) y
   in
   do
-    cons <- unify [(arg, x)]
+    cons <- assert_total $ unify [(arg, x)]
     applied <- applyConstraints cons ret
     Right $ MkSignature result_name $ assign applied
-getAppliedType _ _ = Left "left side not an applyable form"
+getAppliedType _ _ = Left "left side not an appliable form"
 
+-- Right $ MkSignature result_name $ assign applied
+--
