@@ -43,7 +43,7 @@ import Pacillus.Idris2LSP.Syntax.Lexer
 --   | <operation>
 
 -- <arrow> ::= 
---   | <operation> <SEArrow> <expr>
+--   | <operation> <SEArrow> <simpleExpr>
 --   | <SELParen> <signature> <SERParen> <SEArrow> <arrow>
 
 -- <operation>
@@ -95,8 +95,7 @@ import Pacillus.Idris2LSP.Syntax.Lexer
 -- <IdTerm> ::= <Identifier>
 -- <ArwTerm> ::= <Arrow>
 
--- <Application> ::=
---     <SimpleExpr> <SimpleExpr>
+-- <Application> ::= <SimpleExpr> <SimpleExpr>
 
 -- <Identifier> ::= String
 
@@ -106,25 +105,19 @@ import Pacillus.Idris2LSP.Syntax.Lexer
 --     <SimpleExpr> <SimpleExpr>
 --   | <Signature> <SimpleExpr>
 
-
--- <Equality> ::= <Expr> <Expr>
-
--- <Expr> ::=
---     <SimpleExpr>
---   | <Arrow>
---   | <Equality>
-
 -- <Signature> ::= String <Expr>
 
 -- ---data type defentions---
 
 -- the data type for AST of SimpleExpr
--- <SimpleExpr> ::= <Var> | <App> | <IntegerLiteral> | <DoubleLiteral> | <StringLiteral> 
--- <Var> ::= String
--- <App> ::= <SimpleExpr> <SimpleExpr>
+-- <SimpleExpr> ::= <IdTerm> | <AppTerm> | <EqTerm> | <ArwTerm> | <IntegerLiteral> | <DoubleLiteral> | <StringLiteral> 
+-- <AppTerm> ::= <Application>
 -- <IntegerLiteral> ::= Integer
 -- <DoubleLiteral> ::= Double
 -- <StringLiteral> ::= String
+-- <EqTerm> ::= <Equality>
+-- <IdTerm> ::= <Identifier>
+-- <ArwTerm> ::= <Arrow>
 mutual
     public export
     data SimpleExpr : Type where
@@ -136,10 +129,12 @@ mutual
         DoubleLiteral : Double -> SimpleExpr
         StringLiteral : String -> SimpleExpr
 
+    -- <Identifier> ::= String
     public export
     data Identifier : Type where
         MkId : String -> Identifier
 
+    -- <Application> ::= <SimpleExpr> <SimpleExpr>
     public export
     data Application : Type where
         MkApp : SimpleExpr -> SimpleExpr -> Application
@@ -148,12 +143,11 @@ mutual
     public export
     data Equality = MkEquality SimpleExpr SimpleExpr
 
-
-    public export
     -- Arrow True eliminates the pattern of SiExArr
     -- <Arrow> ::=
     --     <Expr> <Expr>
     --   | <Signature> <Expr>
+    public export
     data Arrow : (nosig : Bool) -> Type where
         ExExArr : {b : Bool} -> SimpleExpr -> SimpleExpr -> Arrow b
         SiExArr : Signature -> SimpleExpr -> Arrow False
@@ -218,11 +212,15 @@ mutual
   showApp d (MkApp x y) = showParens (d >= 3) $ showSimpleExpr 2 x ++ " " ++ showSimpleExpr 3 y
 
   showArw : Nat -> Arrow False -> String
-  showArw d (ExExArr x y) = showParens (d >= 2) $ showSimpleExpr 2 x ++ " -> " ++ showSimpleExpr 2 y
+  showArw d (ExExArr x y) = showParens (d >= 2) $ showSimpleExpr 2 x ++ " -> " ++ showSimpleExpr 1 y
   showArw d (SiExArr (MkSignature str x) y) = showParens (d >= 2) $ "(" ++ str ++ " : " ++ showSimpleExpr 0 x ++ ") -> " ++ showSimpleExpr 2 y
 
   showEq : Nat -> Equality -> String
   showEq d (MkEquality x y) = showParens (d >= 1) $ showSimpleExpr 1 x ++ "=" ++ showSimpleExpr 1 y
+
+export
+Show Signature where
+  show (MkSignature str x) = str ++ " : " ++ showSimpleExpr 0 x
 
 -- information of operator used for parsing
 data OpRecord = MkOpRecord String Nat Assoc
