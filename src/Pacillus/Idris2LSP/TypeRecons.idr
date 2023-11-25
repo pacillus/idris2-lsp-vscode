@@ -8,6 +8,8 @@ Constraints : Type
 Constraints = List (SimpleExpr, SimpleExpr)
 
 
+($) : {0 b : a -> Type} -> ((x : a) -> b x) -> (x : a) -> b x
+($) x y = x y
 -- lowercase and not applied to anything
 
 -- variables from left and variables from right are separated
@@ -27,7 +29,7 @@ mutual
             (DoubleLiteral dbl) => DoubleLiteral dbl
             (StringLiteral str) => StringLiteral str
             (PrTerm x) => PrTerm $ assignPr x var replace
-            UnitTerm => ?rjs_8
+            UnitTerm => UnitTerm
 
     assignApp : (target : Application) -> (var : SimpleExpr) -> (replace : SimpleExpr) -> Application
     assignApp (MkApp x y) var replace = MkApp (assignExpr x var replace) (assignExpr y var replace)
@@ -228,4 +230,9 @@ getAppliedType (MkSignature str1 (ArwTerm f)) (MkSignature str2 x) =
 getAppliedType _ _ = Left "left side not an appliable form"
 
 -- Right $ MkSignature result_name $ assign applied
---
+-- 
+
+
+
+
+

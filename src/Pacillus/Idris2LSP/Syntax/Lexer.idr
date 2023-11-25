@@ -92,7 +92,7 @@ TokenKind SimpleExprTokenKind where
   tokValue SEComma _ = ()
   tokValue SEIntLiteral s = stringToNatOrZ s
   tokValue SEDoubleLiteral s = fromMaybe 0 $ parseDouble s
-  tokValue SEStringLiteral s = strSubstr 1 (strLength s - 2) s -- Kind of bad since strSubstr is Int -> Int -> String -> String
+  tokValue SEStringLiteral s = Data.String.strSubstr 1 (strLength s - 2) s -- Kind of bad since strSubstr is Int -> Int -> String -> String
 
 --  ---lexer related functions---
 
@@ -138,12 +138,19 @@ doubleLit
 -- multilineEnd : Nat -> String
 -- multilineEnd hashtag = "\"\"\"" ++ replicate hashtag '#'
 
+
+
 -- from cookbook
 -- need a support on underscore
+nameLexer : Lexer
+nameLexer =
+    alpha <+> many alphaNum 
+  <|>
+    is '(' <+> many spaces <+> symbolLexer <+> many spaces <+> is ')'
+
 idLexer : Lexer
 idLexer =
-  alpha <+> many alphaNum
-
+  many (alpha <+> many alphaNum <+> is '.') <+> nameLexer
 
 -- token map to tell what lexes to what
 -- <SESymbol> ::= [:!#$%&*+./<=>?@\^|-~]+

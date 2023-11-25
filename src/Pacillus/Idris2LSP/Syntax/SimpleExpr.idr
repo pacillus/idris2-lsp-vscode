@@ -10,114 +10,115 @@ import Pacillus.Idris2LSP.Syntax.Lexer
 
 %default total
 
--- For people who want to make use of this code and have never used monad parser before,
--- I recommend you to try making one on your own. Haskell's monad parser is similar and will also be good for learning.
--- For reference, cookbook of lambda calculus parser shown in below is a good example.
+{-
+For people who want to make use of this code and have never used monad parser before,
+I recommend you to try making one on your own. Haskell's monad parser is similar and will also be good for learning.
+For reference, cookbook of lambda calculus parser shown in below is a good example.
 
--- this program was made referencing "Documentation for the Idris 2 Language/Cookbook/Parsing"
--- https://idris2.readthedocs.io/en/latest/cookbook/parsing.html
-
-
--- TODO Add prefix to OpTable
--- TODO Arrow with bracketed Signature
--- TODO Partially filled infix notation
-
--- ##Token##
--- <SESymbol> ::= [:!#$%&*+./<=>?@\^|-~]+
--- <SELParen> ::= '('
--- <SERParen> ::= ')'
--- <SEIdentifier> ::= [a-zA-Z][a-zA-Z0-9]+
--- <SEIgnore> ::= [空白文字]+
--- <SEBackquote> ::= [`]
--- <SEArrow> ::= [-][>]
--- <SEEqual> ::= [=]
--- <SEColon> ::= 
--- <SEIntLiteral> ::= [0-9]+
--- <SEDoubleLiteral> ::= [0-9]+[.][0-9]([e][+-]?[0-9]+)?
--- <SEStringLiteral> ::= ["](\\.|.)["]
+this program was made referencing "Documentation for the Idris 2 Language/Cookbook/Parsing"
+https://idris2.readthedocs.io/en/latest/cookbook/parsing.html
 
 
--- ##Syntax##
--- <simpleExpr> ::=
---     <pair>
---     <unit>
---     <arrow>
---   | <operation>
+TODO Add prefix to OpTable
+TODO Arrow with bracketed Signature
+TODO Partially filled infix notation
 
--- <arrow> ::= 
---   | <operation> <SEArrow> <simpleExpr>
---   | <SELParen> <signature> <SERParen> <SEArrow> <arrow>
-
--- <operation>
---   | <operation> <infixOperator> <operation>
---   | <operation> <infixFunction> <operation>
---   | <operation> <SEEqual> <operation>
---   | <app>
---   | <term>
-
--- <signature> ::= <SEIdentifier> <SEColon> <expr>
-
--- <app> ::=
---     <app> <term>
---   | <identifier>
---   | <appWithParen>
-
--- <appWithParen> ::= <SELParen> <app> <SERParen>
-
--- <term> ::=
---     <identifier>
---   | <literal>
---   | <paren>
-
--- <identifier> ::= <SEIdentifier>
-
--- <literal> ::=
---     <SEIntLiteral>
---   | <SEDoubleLiteral>
---   | <SEStringLiteral>
-
--- <paren> ::= <SELParen> <simpleExpr> <SERParen> 
-
--- <infixOperator> ::= <SESymbol>
-
--- <infixFunction> ::= <SEBackquote> <SEIdentifier> <SEBackquote>
+##Token##
+<SESymbol> ::= [:!#$%&*+./<=>?@\^|-~]+
+<SELParen> ::= '('
+<SERParen> ::= ')'
+<SEIdentifier> ::= [a-zA-Z][a-zA-Z0-9]+
+<SEIgnore> ::= [空白文字]+
+<SEBackquote> ::= [`]
+<SEArrow> ::= [-][>]
+<SEEqual> ::= [=]
+<SEColon> ::= 
+<SEIntLiteral> ::= [0-9]+
+<SEDoubleLiteral> ::= [0-9]+[.][0-9]([e][+-]?[0-9]+)?
+<SEStringLiteral> ::= ["](\\.|.)["]
 
 
--- ## Abstract Syntax Tree ##
--- <SimpleExpr> ::=
---    <IdTerm>
---  | <AppTerm>
---  | <EqTerm>
---  | <ArwTerm>
---  | <IntegerLiteral>
---  | <DoubleLiteral>
---  | <StringLiteral>
---  | <PrTerm>
---  | Unit
--- <AppTerm> ::= <Application>
--- <IntegerLiteral> ::= Integer
--- <DoubleLiteral> ::= Double
--- <StringLiteral> ::= String
--- <EqTerm> ::= <Equality>
--- <IdTerm> ::= <Identifier>
--- <ArwTerm> ::= <Arrow>
--- <PrTerm> ::= <Pair>
+##Syntax##
+<simpleExpr> ::=
+    <pair>
+    <unit>
+    <arrow>
+  | <operation>
 
--- <Application> ::= <SimpleExpr> <SimpleExpr>
+<arrow> ::= 
+  | <operation> <SEArrow> <simpleExpr>
+  | <SELParen> <signature> <SERParen> <SEArrow> <arrow>
 
--- <Identifier> ::= String
+<operation>
+  | <operation> <infixOperator> <operation>
+  | <operation> <infixFunction> <operation>
+  | <operation> <SEEqual> <operation>
+  | <app>
+  | <term>
 
--- <Equality> ::= <SimpleExpr> <SimpleExpr>
+<signature> ::= <SEIdentifier> <SEColon> <expr>
 
--- <Arrow> ::=
---     <SimpleExpr> <SimpleExpr>
---   | <Signature> <SimpleExpr>
+<app> ::=
+    <app> <term>
+  | <identifier>
+  | <appWithParen>
 
--- <Pair> ::=
---     <SimpleExpr> <SimpleExpr>
+<appWithParen> ::= <SELParen> <app> <SERParen>
 
--- <Signature> ::= String <SimpleExpr>
+<term> ::=
+    <identifier>
+  | <literal>
+  | <paren>
 
+<identifier> ::= <SEIdentifier>
+
+<literal> ::=
+    <SEIntLiteral>
+  | <SEDoubleLiteral>
+  | <SEStringLiteral>
+
+<paren> ::= <SELParen> <simpleExpr> <SERParen> 
+
+<infixOperator> ::= <SESymbol>
+
+<infixFunction> ::= <SEBackquote> <SEIdentifier> <SEBackquote>
+
+
+## Abstract Syntax Tree ##
+<SimpleExpr> ::=
+   <IdTerm>
+ | <AppTerm>
+ | <EqTerm>
+ | <ArwTerm>
+ | <IntegerLiteral>
+ | <DoubleLiteral>
+ | <StringLiteral>
+ | <PrTerm>
+ | Unit
+<AppTerm> ::= <Application>
+<IntegerLiteral> ::= Integer
+<DoubleLiteral> ::= Double
+<StringLiteral> ::= String
+<EqTerm> ::= <Equality>
+<IdTerm> ::= <Identifier>
+<ArwTerm> ::= <Arrow>
+<PrTerm> ::= <Pair>
+
+<Application> ::= <SimpleExpr> <SimpleExpr>
+
+<Identifier> ::= String
+
+<Equality> ::= <SimpleExpr> <SimpleExpr>
+
+<Arrow> ::=
+    <SimpleExpr> <SimpleExpr>
+  | <Signature> <SimpleExpr>
+
+<Pair> ::=
+    <SimpleExpr> <SimpleExpr>
+
+<Signature> ::= String <SimpleExpr>
+-}
 
 -- ---data type defentions---
 
