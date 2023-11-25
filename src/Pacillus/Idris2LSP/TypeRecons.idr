@@ -2,17 +2,51 @@ module Pacillus.Idris2LSP.TypeRecons
 
 import Pacillus.Idris2LSP.Syntax.SimpleExpr
 
+import Data.String
+
 %default total
 
 Constraints : Type
 Constraints = List (SimpleExpr, SimpleExpr)
 
-
-($) : {0 b : a -> Type} -> ((x : a) -> b x) -> (x : a) -> b x
-($) x y = x y
 -- lowercase and not applied to anything
 
 -- variables from left and variables from right are separated
+
+public export
+data PartialExprSignature : Type where
+    MkSpSig : (name : SimpleExpr) -> SimpleExpr -> PartialExprSignature
+
+export
+toSpSig : Signature -> PartialExprSignature
+toSpSig (MkSignature name x) = MkSpSig (IdTerm name) x
+
+getSpSigExpr : PartialExprSignature -> SimpleExpr
+getSpSigExpr (MkSpSig name x) = x
+
+
+public export
+data ReconsTree : Type where
+    MkStatement : PartialExprSignature -> ReconsTree
+    Conclude : List ReconsTree -> PartialExprSignature -> ReconsTree
+
+-- converts to normal signature then show
+Show PartialExprSignature where
+    show (MkSpSig name x) = show $ MkSignature (MkId $ showSimpleExpr 0 name) x
+
+covering export
+Show ReconsTree where
+    show (MkStatement sig) = show sig
+    show (Conclude xs x) =
+      let
+        pres = map ((++) "| ") $ foldl (++) [] $ map (lines . show) xs
+      in
+        unlines $ pres ++ ["----------", show x]
+
+
+getConclusion : ReconsTree -> PartialExprSignature
+getConclusion (MkStatement x) = x
+getConclusion (Conclude xs x) = x
 
 mutual
     assignExpr : (target : SimpleExpr)  -> (var : SimpleExpr) -> (replace : SimpleExpr) -> SimpleExpr
@@ -25,7 +59,7 @@ mutual
             (AppTerm x) => AppTerm $ assignApp x var replace
             (ArwTerm x) => ArwTerm $ assignArw x var replace
             (EqTerm x) => EqTerm $ assignEq x var replace
-            (NatLiteral k) => NatLiteral k
+            (IntegerLiteral k) => IntegerLiteral k
             (DoubleLiteral dbl) => DoubleLiteral dbl
             (StringLiteral str) => StringLiteral str
             (PrTerm x) => PrTerm $ assignPr x var replace
@@ -74,7 +108,7 @@ mutual
     nonImplicitList (ArwTerm x) = nonImplicitListArw x
     nonImplicitList (EqTerm x) = nonImplicitListEq x
     nonImplicitList (PrTerm x) = nonImplicitListPr x
-    nonImplicitList (NatLiteral k) = []
+    nonImplicitList (IntegerLiteral k) = []
     nonImplicitList (DoubleLiteral dbl) = []
     nonImplicitList (StringLiteral str) = []
     nonImplicitList UnitTerm = []
@@ -85,7 +119,7 @@ mutual
 
     nonImplicitListArw : Arrow False -> List Identifier
     nonImplicitListArw (ExExArr x y) = nonImplicitList x ++ nonImplicitList y
-    nonImplicitListArw (SiExArr (MkSignature name x) y) = MkId name :: nonImplicitList x ++ nonImplicitList y
+    nonImplicitListArw (SiExArr (MkSignature name x) y) = name :: nonImplicitList x ++ nonImplicitList y
 
     nonImplicitListEq : Equality -> List Identifier
     nonImplicitListEq (MkEquality x y) = nonImplicitList x ++ nonImplicitList y
@@ -103,7 +137,7 @@ mutual
     labelImplicit nimp (ArwTerm x) = ArwTerm $ labelImplicitArw nimp x
     labelImplicit nimp (EqTerm x) = EqTerm $ labelImplicitEq nimp x
     labelImplicit nimp (PrTerm x) = PrTerm $ labelImplicitPr nimp x
-    labelImplicit nimp (NatLiteral k) = NatLiteral k
+    labelImplicit nimp (IntegerLiteral k) = IntegerLiteral k
     labelImplicit nimp (DoubleLiteral dbl) = DoubleLiteral dbl
     labelImplicit nimp (StringLiteral str) = StringLiteral str
     labelImplicit nimp UnitTerm = UnitTerm
@@ -121,6 +155,7 @@ mutual
     labelImplicitPr : List Identifier -> Pair -> Pair
     labelImplicitPr nimp (MkPair x y) = MkPair (labelImplicit nimp x) (labelImplicit nimp y)
 
+export
 labelImplicitMain : SimpleExpr -> SimpleExpr
 labelImplicitMain x = (labelImplicit . nonImplicitList) x x
 
@@ -134,25 +169,33 @@ mutual
         then unify xs
         else unifyExpr xs arg app
 
+    showUniError : SimpleExpr -> SimpleExpr -> String
+    showUniError x y = "unification failed between " ++ show x ++ " and " ++ show y
+
     covering
     unifyExpr : (constraints : Constraints) -> (arg : SimpleExpr) -> (applied : SimpleExpr) -> Either String Constraints
+    unifyExpr constraints (IdTerm arg) (IdTerm applied) =
+      case (isImplicitVar arg, isImplicitVar applied) of
+        (True, _) => leafL constraints (IdTerm arg) (IdTerm applied)
+        (False, False) =>
+          if arg == applied
+            then unify constraints
+            else Left $ showUniError (IdTerm arg) (IdTerm applied)
+        (False, True) => leafR constraints (IdTerm arg) (IdTerm applied)
     unifyExpr constraints (IdTerm arg) applied =
       if isImplicitVar arg
         then leafL constraints (IdTerm arg) applied
-        else Left "unification failed"
+        else Left $ showUniError (IdTerm arg) applied
     unifyExpr constraints arg (IdTerm applied) = 
       if isImplicitVar applied
         then leafR constraints arg (IdTerm applied)
-        else Left "unification failed"
-    unifyExpr constraints (IdTerm arg) (IdTerm applied) =
-      if arg == applied
-        then unify constraints
-        else Left "unification failed"
+        else Left $ showUniError arg (IdTerm applied)
     unifyExpr constraints (AppTerm arg) (AppTerm applied) = unifyApp constraints arg applied
     unifyExpr constraints (ArwTerm arg) (ArwTerm applied) = unifyArw constraints arg applied
     unifyExpr constraints (EqTerm arg) (EqTerm applied) = unifyEq constraints arg applied
     unifyExpr constraints (PrTerm arg) (PrTerm applied) = unifyPr constraints arg applied
-    unifyExpr _ _ _ = Left "unification failed"
+    unifyExpr _ arg applied = Left $ showUniError arg applied
+    
     
     covering
     unifyApp : (constraints : Constraints) -> (arg : Application) -> (applied : Application) -> Either String Constraints
@@ -210,23 +253,24 @@ applyConstraints ((y, z) :: xs) x =
     (_, _) => Left "unexpected error: illegal constraints"
 
 export
-getAppliedType : (f : Signature) -> (x : Signature) -> Either String Signature
-getAppliedType (MkSignature str1 (ArwTerm f)) (MkSignature str2 x) =
+getAppliedType : (f : PartialExprSignature) -> (x : PartialExprSignature) -> Either String PartialExprSignature
+getAppliedType (MkSpSig name1 (ArwTerm f)) (MkSpSig name2 x) =
   let
-    result_name = str1 ++ " " ++ str2
+    result_name = MkApp name1 name2
     ExExArr argraw retraw = forgetSig f
     arg = labelImplicitMain argraw
     ret = labelImplicitMain retraw
+    x' = labelImplicitMain x
     assign : SimpleExpr -> SimpleExpr
     assign target =
       case f of
         (ExExArr y z) => target
-        (SiExArr (MkSignature str y) z) => assignExpr target (IdTerm $ MkId str) y
+        (SiExArr (MkSignature name y) z) => assignExpr target (IdTerm name) y
   in
   do
-    cons <- assert_total $ unify [(arg, x)]
+    cons <- assert_total $ unify [(arg, x')]
     applied <- applyConstraints cons ret
-    Right $ MkSignature result_name $ assign applied
+    Right $ MkSpSig (AppTerm result_name) $ assign applied
 getAppliedType _ _ = Left "left side not an appliable form"
 
 -- Right $ MkSignature result_name $ assign applied
@@ -236,3 +280,81 @@ getAppliedType _ _ = Left "left side not an appliable form"
 
 
 
+
+mutual
+    export
+    getPartialType : (sigs : List Signature) -> SimpleExpr -> Either String ReconsTree
+    getPartialType sigs (IdTerm x) = getIdType sigs x
+    getPartialType sigs (AppTerm x) = getAppType sigs x
+    getPartialType sigs (ArwTerm x) = assert_total $ getArwType sigs x -- in get ArwType value of x always decreases
+    getPartialType sigs (EqTerm x) = assert_total $ getEqType sigs x -- totality reasoning is same as aboves
+    getPartialType sigs (IntegerLiteral k) = ?getPartialType_rhs_4
+    getPartialType sigs (DoubleLiteral dbl) = ?getPartialType_rhs_5
+    getPartialType sigs (StringLiteral str) = ?getPartialType_rhs_6
+    getPartialType sigs (PrTerm x) = ?getPartialType_rhs_7
+    getPartialType sigs UnitTerm =
+      let
+        sig = MkSpSig (IdTerm $ MkId "MkUnit") UnitTerm
+      in
+        Right $ MkStatement sig
+
+    getIdType : (sigs : List Signature) -> Identifier -> Either String ReconsTree
+    getIdType [] y = Left ""
+    getIdType (sig :: sigs) y =
+      let
+        MkSignature (MkId sig_id) sig_expr = sig
+        MkId name = y
+      in
+      if sig_id == name
+        then Right $ MkStatement (toSpSig sig)
+        else getIdType sigs y
+
+
+
+    getAppType : (sigs : List Signature) -> Application -> Either String ReconsTree
+    getAppType sigs (MkApp f x) =
+      do
+        ftree <- getPartialType sigs f
+        xtree <- getPartialType sigs x
+        appty <- getAppliedType (getConclusion ftree) (getConclusion xtree)
+        pure $ Conclude [ftree, xtree] appty
+
+    getArwType : (sigs : List Signature) -> Arrow False -> Either String ReconsTree
+    getArwType sigs x =
+      let
+        ExExArr argty retty = forgetSig x
+
+        tycnst : SimpleExpr
+        tycnst = IdTerm $ MkId "Type"
+
+        isType : PartialExprSignature -> Bool
+        isType sig = exEquality (getSpSigExpr sig) tycnst
+      in
+      do
+        argsig <- getPartialType sigs argty
+        retsig <- getPartialType sigs retty
+        if
+            isType (getConclusion argsig)
+            &&
+            isType (getConclusion retsig)
+          then Right (Conclude [argsig, retsig] (MkSpSig (ArwTerm x) tycnst))
+          else Left #"Found none "Type" identifier in arrow"#
+
+    getEqType : (sigs : List Signature) -> Equality -> Either String ReconsTree
+    getEqType sigs x =
+      let
+        MkEquality lty rty = x
+
+        tycnst : SimpleExpr
+        tycnst = IdTerm $ MkId "Type"
+
+        isSameTy : PartialExprSignature -> PartialExprSignature -> Bool
+        isSameTy (MkSpSig _ ty1) (MkSpSig _ ty2) = exEquality ty1 ty2
+      in
+      do
+        lsig <- getPartialType sigs lty
+        rsig <- getPartialType sigs rty
+        if
+            isSameTy (getConclusion lsig) $ getConclusion rsig
+          then Right (Conclude [lsig, rsig] (MkSpSig (EqTerm x) tycnst))
+          else Left #"Found none "Type" identifier in arrow"#

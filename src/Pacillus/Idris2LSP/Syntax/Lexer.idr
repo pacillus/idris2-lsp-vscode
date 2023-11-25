@@ -75,7 +75,7 @@ export
 TokenKind SimpleExprTokenKind where
   TokType SEIdentifier = String
   TokType SESymbol = String
-  TokType SEIntLiteral = Nat
+  TokType SEIntLiteral = Integer
   TokType SEDoubleLiteral = Double
   TokType SEStringLiteral = String
   TokType _ = ()
@@ -90,7 +90,7 @@ TokenKind SimpleExprTokenKind where
   tokValue SEEqual _ = ()
   tokValue SEColon _ = ()
   tokValue SEComma _ = ()
-  tokValue SEIntLiteral s = stringToNatOrZ s
+  tokValue SEIntLiteral s = fromMaybe 0 $ parseInteger s
   tokValue SEDoubleLiteral s = fromMaybe 0 $ parseDouble s
   tokValue SEStringLiteral s = Data.String.strSubstr 1 (strLength s - 2) s -- Kind of bad since strSubstr is Int -> Int -> String -> String
 
@@ -144,7 +144,7 @@ doubleLit
 -- need a support on underscore
 nameLexer : Lexer
 nameLexer =
-    alpha <+> many alphaNum 
+    alpha <+> many (alphaNum <|> is '_' <|> is '\'')
   <|>
     is '(' <+> many spaces <+> symbolLexer <+> many spaces <+> is ')'
 

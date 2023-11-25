@@ -117,7 +117,7 @@ TODO Partially filled infix notation
 <Pair> ::=
     <SimpleExpr> <SimpleExpr>
 
-<Signature> ::= String <SimpleExpr>
+<Signature> ::= <Identifier> <SimpleExpr>
 -}
 
 -- ---data type defentions---
@@ -139,7 +139,7 @@ mutual
         AppTerm : Application -> SimpleExpr 
         ArwTerm : Arrow False -> SimpleExpr
         EqTerm : Equality -> SimpleExpr
-        NatLiteral : Nat -> SimpleExpr
+        IntegerLiteral : Integer -> SimpleExpr
         DoubleLiteral : Double -> SimpleExpr
         StringLiteral : String -> SimpleExpr
         PrTerm : Pair -> SimpleExpr
@@ -172,15 +172,17 @@ mutual
     data Pair : Type where
         MkPair : SimpleExpr -> SimpleExpr -> Pair
 
-    -- <Signature> ::= String <SimpleExpr>
+    -- <Signature> ::= <SimpleExpr> <SimpleExpr>
     public export
-    data Signature = MkSignature String SimpleExpr
+    data Signature : Type where
+      MkSignature : (name : Identifier) -> SimpleExpr -> Signature
 
 -- Arrow 
 export
 forgetSig : Arrow b -> Arrow True
 forgetSig (ExExArr x y) = ExExArr x y
 forgetSig (SiExArr (MkSignature str x) y) = ExExArr x y
+
 
 export
 Eq Identifier where
@@ -194,7 +196,7 @@ mutual
     exEquality (ArwTerm x) (ArwTerm y) = sameTypeArw x y
     exEquality (EqTerm x) (EqTerm y) = eqEquality x y
     exEquality (PrTerm x) (PrTerm y) = prEquality x y
-    exEquality (NatLiteral k1) (NatLiteral k2) = k1 == k2
+    exEquality (IntegerLiteral k1) (IntegerLiteral k2) = k1 == k2
     exEquality (DoubleLiteral dbl1) (DoubleLiteral dbl2) = dbl1 == dbl2
     exEquality (StringLiteral str1) (StringLiteral str2) = str1 == str2
     exEquality UnitTerm UnitTerm = True
@@ -221,6 +223,10 @@ mutual
           MkSignature _ yex = y
         in exEquality xex z && exEquality yex w
 
+export
+Show Identifier where
+  show (MkId str) = str
+
 mutual
   export
   showSimpleExpr : Nat -> SimpleExpr -> String
@@ -229,7 +235,7 @@ mutual
   showSimpleExpr d (ArwTerm x) = showArw d x
   showSimpleExpr d (EqTerm x) = showEq d x
   showSimpleExpr d (PrTerm x) = showPr d x
-  showSimpleExpr d (NatLiteral k) = show k
+  showSimpleExpr d (IntegerLiteral k) = show k
   showSimpleExpr d (DoubleLiteral dbl) = show dbl
   showSimpleExpr d (StringLiteral str) = show str
   showSimpleExpr d UnitTerm = "()"
@@ -239,7 +245,7 @@ mutual
 
   showArw : Nat -> Arrow False -> String
   showArw d (ExExArr x y) = showParens (d >= 2) $ showSimpleExpr 2 x ++ " -> " ++ showSimpleExpr 1 y
-  showArw d (SiExArr (MkSignature str x) y) = showParens (d >= 2) $ "(" ++ str ++ " : " ++ showSimpleExpr 0 x ++ ") -> " ++ showSimpleExpr 2 y
+  showArw d (SiExArr (MkSignature name x) y) = showParens (d >= 2) $ "(" ++ show name ++ " : " ++ showSimpleExpr 0 x ++ ") -> " ++ showSimpleExpr 2 y
 
   showEq : Nat -> Equality -> String
   showEq d (MkEquality x y) = showParens (d >= 1) $ showSimpleExpr 1 x ++ "=" ++ showSimpleExpr 1 y
@@ -252,8 +258,12 @@ mutual
   showPrNoBracket (MkPair x y) = showSimpleExpr 0 x ++ ", " ++ showSimpleExpr 0 y
 
 export
+Show SimpleExpr where
+  show x = showSimpleExpr 0 x
+
+export
 Show Signature where
-  show (MkSignature str x) = str ++ " : " ++ showSimpleExpr 0 x
+  show (MkSignature name x) = show name ++ " : " ++ showSimpleExpr 0 x
 
 -- information of operator used for parsing
 data OpRecord = MkOpRecord String Nat Assoc
@@ -294,13 +304,6 @@ infixOperator symbol_name =
     sym <- match SESymbol
     when (sym /= symbol_name) $ fail "not a matching operator" -- only parses the symbol of arg
     pure $ simpleExprInf2App $ "(" ++ sym ++ ")"
-
--- <singleOperator> ::= <SESymbol>
-singleOperator : Grammar state SimpleExprToken True SimpleExpr
-singleOperator =
-  do
-    sym <- match SESymbol
-    pure $ IdTerm $ MkId $ "(" ++ sym ++ ")"
 
 -- <infixFunction> ::= <SEBackquote> <SEIdentifier> <SEBackquote>
 infixFunction : Grammar state SimpleExprToken True (SimpleExpr -> SimpleExpr -> SimpleExpr)
@@ -428,8 +431,6 @@ mutual
         buildExpressionParser (optable ++ [[Infix equality AssocNone]]) (map AppTerm (app optable) <|> term optable)
       <|>
         term optable
-      <|>
-        singleOperator
 
     -- <signature> ::= <SEIdentifier> <SEColon> <SimpleExpr>
     export
@@ -439,7 +440,7 @@ mutual
         id <- match SEIdentifier
         match SEColon
         e <- simpleExpr optable
-        pure $ MkSignature id e
+        pure $ MkSignature (MkId id) e
 
 
 
@@ -519,7 +520,7 @@ mutual
     literal =
       do
         n <- match SEIntLiteral
-        pure $ NatLiteral n
+        pure $ IntegerLiteral n
       <|>
       do
         n <- match SEDoubleLiteral
@@ -547,7 +548,8 @@ opMap =
         MkOpRecord "===" 6 AssocNone,
         MkOpRecord "++" 7 AssocRight,
         MkOpRecord ">=" 6 AssocNone,
-        MkOpRecord "::" 7 AssocRight
+        MkOpRecord "::" 7 AssocRight,
+        MkOpRecord "." 9 AssocRight
     ]
 
 export
