@@ -1,39 +1,27 @@
 module Pacillus.Idris2LSP.TypeReconsTest
 
-import Text.Parser
-import Text.Parser.Expression
+import Data.String
 
 import Pacillus.Idris2LSP.Syntax.SimpleExpr
-import Pacillus.Idris2LSP.Syntax.Lexer
 import Pacillus.Idris2LSP.TypeRecons
 
 
-parseSignature : List (WithBounds SimpleExprToken) -> Either String Signature
-parseSignature toks =
-  case parse (signature opTable) $ filter (not . ignored) toks of
-    Right (l, []) => Right l
-    Right (l, xs) => Left "contains tokens that were not consumed"
-    Left e => Left (show e)
 
-parseSig : String -> Either String Signature
-parseSig x with (lexSimpleExpr x)
-  parseSig x | Just toks = parseSignature toks
-  parseSig x | Nothing = Left "Failed to lex."
   -- case lexSimpleExpr x of
   --   Just toks => parseSignature toks
   --   Nothing => Left "Failed to lex."
 
-test : String -> String -> Either String PartialExprSignature
-test str1 str2 =
-  let
-    maybast1 = parseSig str1
-    maybast2 = parseSig str2
-  in
-    case (maybast1, maybast2) of
-        ((Left x), (Left y)) => Left $ "Multiple errors:\n" ++ x ++ "\n" ++ y
-        ((Left x), (Right y)) => Left x
-        ((Right x), (Left y)) => Left y
-        ((Right x), (Right y)) => getAppliedType (toSpSig x) (toSpSig y)
+-- test : String -> String -> Either String PartialExprSignature
+-- test str1 str2 =
+--   let
+--     maybast1 = parseSig str1
+--     maybast2 = parseSig str2
+--   in
+--     case (maybast1, maybast2) of
+--         ((Left x), (Left y)) => Left $ "Multiple errors:\n" ++ x ++ "\n" ++ y
+--         ((Left x), (Right y)) => Left x
+--         ((Right x), (Left y)) => Left y
+--         ((Right x), (Right y)) => getAppliedType (toSpSig x) (toSpSig y)
 
 
 
@@ -46,43 +34,69 @@ convertInList2ListIn (mnd :: mnds) =
     x <- mnd
     pure $ x :: xs
 
+data TestCase : Type where
+    MkCase : (expr : String) -> (types : List String) -> TestCase
 
-outputTest : String
-outputTest =
+testSingleCase : TestCase -> String
+testSingleCase (MkCase expr types) =
   let
-    target : Either String SimpleExpr 
-    target = parse "ExExArr (assignExpr x var replace) (assignExpr y var replace)"
-    target2 : Either String SimpleExpr 
-    target2 = parse "test003 . test003_1"
-    target3 : Either String SimpleExpr
-    target3 = parse "xs ++ (y :: ys)"
-    sigList =[
-      parseSig "ExExArr : SimpleExpr -> SimpleExpr -> Arrow b",
-      parseSig "assignExpr : SimpleExpr -> SimpleExpr -> SimpleExpr -> SimpleExpr",
-      parseSig "x : SimpleExpr",
-      parseSig "var : SimpleExpr",
-      parseSig "replace : SimpleExpr",
-      parseSig "y : SimpleExpr"
-    ]
-    sigList2 = [
-      parseSig "test003 : Vect n String -> Vect (S n) String",
-      parseSig "(.) : (b -> c) -> (a -> b) -> a -> c",
-      parseSig "test003_1 : a -> Vect 4 a"
-    ]
-    sigList3 = [
-      parseSig "xs : Vect 4 Nat",
-      parseSig "(++) : (xs : Vect m elem) -> (ys : Vect n elem) -> Vect (m + n) elem",
-      parseSig "y : Nat",
-      parseSig "(::) : elem -> Vect len elem -> Vect (S len) elem",
-      parseSig "ys : Vect 2 Nat"
-    ]
+    target = parse expr
+    ty_list = map parseSig types
     result =
       do
-        sigs <- convertInList2ListIn sigList3
-        tgt <- target3
+        sigs <- convertInList2ListIn ty_list
+        tgt <- target
         getPartialType sigs tgt
-  in
-  
-      case result of
+  in 
+    case result of
         Left error => error
         Right tree => show tree
+
+testAllCase : List TestCase -> String
+testAllCase xs =
+  let
+    outputs = map testSingleCase xs
+    decorate : List String -> List String
+    decorate [] = []
+    decorate (str :: strs) = ("case" ++ (show $ S $ length strs) ++ ":\n" ++ str ++ "\n") :: decorate strs
+    decorate' : List String -> List String
+    decorate' = (reverse . decorate . reverse)
+
+  in trim $ foldl (\x,y => (x ++ "\n\n" ++ y)) "" $ decorate' outputs
+
+testCases : List TestCase
+testCases = 
+    [
+        MkCase "ExExArr (assignExpr x var replace) (assignExpr y var replace)" [
+            "ExExArr : SimpleExpr -> SimpleExpr -> Arrow b",
+            "assignExpr : SimpleExpr -> SimpleExpr -> SimpleExpr -> SimpleExpr",
+            "x : SimpleExpr",
+            "var : SimpleExpr",
+            "replace : SimpleExpr",
+            "y : SimpleExpr"
+        ],
+        MkCase "test003 . test003_1" [
+            "test003 : Vect n String -> Vect (S n) String",
+            "(.) : (b -> c) -> (a -> b) -> a -> c",
+            "test003_1 : a -> Vect 4 a"            
+        ],
+        MkCase "xs ++ (y :: ys)" [
+            "xs : Vect 4 Nat",
+            "(++) : (xs : Vect m elem) -> (ys : Vect n elem) -> Vect (m + n) elem",
+            "y : Nat",
+            "(::) : elem -> Vect len elem -> Vect (S len) elem",
+            "ys : Vect 2 Nat"
+        ],
+        MkCase "f x" [
+            "f : (a : Type) -> List a",
+            "x : Type"
+        ],
+        MkCase "RotateVec.onePlusNEqualNPlus0ne k" [
+          "RotateVec.onePlusNEqualNPlus0ne:(n:Nat)->1+n=n+1",
+          "k : Nat"
+        ]
+    ]
+
+
+test : IO ()
+test = putStrLn $ testAllCase testCases
