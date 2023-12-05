@@ -44,7 +44,7 @@ getSpSigExpr (MkSpSig name x) = x
 public export
 data ReconsTree : Type where
     MkStatement : PartialExprSignature -> ReconsTree
-    Conclude : List ReconsTree -> PartialExprSignature -> ReconsTree
+    Subgoal : List ReconsTree -> PartialExprSignature -> ReconsTree
 
 -- converts to normal signature then show
 Show PartialExprSignature where
@@ -53,7 +53,7 @@ Show PartialExprSignature where
 covering export
 Show ReconsTree where
     show (MkStatement sig) = show sig
-    show (Conclude xs x) =
+    show (Subgoal xs x) =
       let
         pres = map ((++) "| ") $ foldl (++) [] $ map (lines . show) xs
       in
@@ -62,7 +62,7 @@ Show ReconsTree where
 
 getConclusion : ReconsTree -> PartialExprSignature
 getConclusion (MkStatement x) = x
-getConclusion (Conclude xs x) = x
+getConclusion (Subgoal xs x) = x
 
 mutual
     assignExpr : (target : SimpleExpr)  -> (var : SimpleExpr) -> (replace : SimpleExpr) -> SimpleExpr
@@ -117,39 +117,13 @@ isImplicitVar (MkId str) =
     [] => False
     (x :: xs) => x == '?'
 
--- mutual
---     nonImplicitList : SimpleExpr -> List Identifier
---     nonImplicitList (IdTerm x) = []
---     nonImplicitList (AppTerm x) = nonImplicitListApp x
---     nonImplicitList (ArwTerm x) = nonImplicitListArw x
---     nonImplicitList (EqTerm x) = nonImplicitListEq x
---     nonImplicitList (PrTerm x) = nonImplicitListPr x
---     nonImplicitList (IntegerLiteral k) = []
---     nonImplicitList (DoubleLiteral dbl) = []
---     nonImplicitList (StringLiteral str) = []
---     nonImplicitList UnitTerm = []
-
---     nonImplicitListApp : Application -> List Identifier
---     nonImplicitListApp (MkApp (IdTerm x) y) = x :: nonImplicitList y
---     nonImplicitListApp (MkApp x y) = nonImplicitList x ++ nonImplicitList y
-
---     nonImplicitListArw : Arrow False -> List Identifier
---     nonImplicitListArw (ExExArr x y) = nonImplicitList x ++ nonImplicitList y
---     nonImplicitListArw (SiExArr (MkSignature name x) y) = name :: nonImplicitList x ++ nonImplicitList y
-
---     nonImplicitListEq : Equality -> List Identifier
---     nonImplicitListEq (MkEquality x y) = nonImplicitList x ++ nonImplicitList y
-
---     nonImplicitListPr : Pair -> List Identifier
---     nonImplicitListPr (MkPair x y) = nonImplicitList x ++ nonImplicitList y
-
 mutual
     labelmplicitExp : List Identifier -> SimpleExpr -> SimpleExpr
     labelmplicitExp nimp (IdTerm (MkId name)) = 
       if isHeadLower name && not ((MkId name) `elem` nimp)
         then IdTerm $ MkId $ "?" ++ name
         else IdTerm $ MkId name
-    labelmplicitExp nimp (AppTerm x) = AppTerm $ labelImplicitApp nimp x
+    labelmplicitExp nimp (AppTerm x) = AppTerm $ labelImplicitApp nimp x -- TODO if left is a var it might be defined
     labelmplicitExp nimp (ArwTerm x) = ArwTerm $ labelImplicitArw nimp x
     labelmplicitExp nimp (EqTerm x) = EqTerm $ labelImplicitEq nimp x
     labelmplicitExp nimp (PrTerm x) = PrTerm $ labelImplicitPr nimp x
@@ -159,6 +133,7 @@ mutual
     labelmplicitExp nimp UnitTerm = UnitTerm
 
     labelImplicitApp : List Identifier -> Application -> Application
+    labelImplicitApp nimp (MkApp (IdTerm x) y) = MkApp (IdTerm x) (labelmplicitExp nimp y) -- applying identifier is not a variable
     labelImplicitApp nimp (MkApp x y) = MkApp (labelmplicitExp nimp x) (labelmplicitExp nimp y)
 
     labelImplicitArw : List Identifier -> Arrow False -> Arrow False
@@ -339,7 +314,7 @@ mutual
         ftree <- getPartialType sigs f
         xtree <- getPartialType sigs x
         appty <- getAppliedType (getConclusion ftree) (getConclusion xtree)
-        pure $ Conclude [ftree, xtree] appty
+        pure $ Subgoal [ftree, xtree] appty
 
     getArwType : (sigs : List Signature) -> Arrow False -> Either String ReconsTree
     getArwType sigs x with (forgetSig x)
@@ -355,7 +330,7 @@ mutual
             argsig <- getPartialType sigs argty
             retsig <- getPartialType sigs retty
             if isType (getConclusion argsig) && isType (getConclusion retsig)
-                then Right (Conclude [argsig, retsig] (MkSpSig (ArwTerm x) tycnst))
+                then Right (Subgoal [argsig, retsig] (MkSpSig (ArwTerm x) tycnst))
                 else Left #"Found none "Type" identifier in arrow"#
 
     getEqType : (sigs : List Signature) -> Equality -> Either String ReconsTree
@@ -372,7 +347,7 @@ mutual
         rsig <- getPartialType sigs rty
         if
             isSameTy (getConclusion lsig) $ getConclusion rsig
-          then Right (Conclude [lsig, rsig] (MkSpSig (EqTerm $ MkEquality lty rty) tycnst))
+          then Right (Subgoal [lsig, rsig] (MkSpSig (EqTerm $ MkEquality lty rty) tycnst))
           else Left #"Found none "Type" identifier in arrow"#
 
     getPrType : (sigs : List Signature) -> Pair -> Either String ReconsTree
@@ -384,7 +359,7 @@ mutual
       do
         xsig <- getPartialType sigs x
         ysig <- getPartialType sigs y
-        Right (Conclude [xsig, ysig] (MkSpSig (PrTerm $ MkPair x y) $ mkpair xsig ysig))
+        Right (Subgoal [xsig, ysig] (MkSpSig (PrTerm $ MkPair x y) $ mkpair xsig ysig))
 
     getIntLitType : (sigs : List Signature) -> Integer -> Either String ReconsTree
     getIntLitType sigs k = ?rhs
@@ -392,4 +367,5 @@ mutual
     -- getLitType : (sigs : List Signature) -> (fromlitty : PartialExprSignature) -> (literal : SimpleExpr) -> Either String ReconsTree
     -- getLitType sigs fromlitty literal = ?getLitType_rhs
 
-    
+
+

@@ -114,8 +114,7 @@ TODO Partially filled infix notation
     <SimpleExpr> <SimpleExpr>
   | <Signature> <SimpleExpr>
 
-<Pair> ::=
-    <SimpleExpr> <SimpleExpr>
+<Pair> ::= <SimpleExpr> <SimpleExpr>
 
 <Signature> ::= <Identifier> <SimpleExpr>
 -}

@@ -94,9 +94,15 @@ testCases =
         MkCase "RotateVec.onePlusNEqualNPlus0ne k" [
           "RotateVec.onePlusNEqualNPlus0ne:(n:Nat)->1+n=n+1",
           "k : Nat"
+        ],
+        MkCase "f x " [
+          "f : (a, b) -> a -> b",
+          "x : (String, Nat)"
         ]
     ]
 
+tes : List x -> x -> List x
+tes xs x = x :: xs
 
 test : IO ()
 test = putStrLn $ testAllCase testCases
