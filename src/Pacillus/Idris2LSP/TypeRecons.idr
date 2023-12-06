@@ -43,7 +43,7 @@ getSpSigExpr (MkSpSig name x) = x
 
 public export
 data ReconsTree : Type where
-    MkStatement : PartialExprSignature -> ReconsTree
+    Start : PartialExprSignature -> ReconsTree
     Subgoal : List ReconsTree -> PartialExprSignature -> ReconsTree
 
 -- converts to normal signature then show
@@ -52,7 +52,7 @@ Show PartialExprSignature where
 
 covering export
 Show ReconsTree where
-    show (MkStatement sig) = show sig
+    show (Start sig) = show sig
     show (Subgoal xs x) =
       let
         pres = map ((++) "| ") $ foldl (++) [] $ map (lines . show) xs
@@ -60,9 +60,9 @@ Show ReconsTree where
         unlines $ pres ++ ["----------", show x]
 
 
-getConclusion : ReconsTree -> PartialExprSignature
-getConclusion (MkStatement x) = x
-getConclusion (Subgoal xs x) = x
+getSubgoal : ReconsTree -> PartialExprSignature
+getSubgoal (Start x) = x
+getSubgoal (Subgoal xs x) = x
 
 mutual
     assignExpr : (target : SimpleExpr)  -> (var : SimpleExpr) -> (replace : SimpleExpr) -> SimpleExpr
@@ -191,7 +191,7 @@ mutual
     unifyExpr constraints (ArwTerm arg) (ArwTerm applied) = unifyArw constraints arg applied
     unifyExpr constraints (EqTerm arg) (EqTerm applied) = unifyEq constraints arg applied
     unifyExpr constraints (PrTerm arg) (PrTerm applied) = unifyPr constraints arg applied
-    unifyExpr _ arg applied = Left $ showUniError arg applied
+    unifyExpr _ arg applied = Left $ showUniError arg applied -- error
     
     
     covering
@@ -270,8 +270,6 @@ getAppliedType (MkSpSig name1 f) x with (labelImplicit f)
     getAppliedType (MkSpSig name1 (ArwTerm f)) (MkSpSig name2 xraw) | _ = Left "unexpected error: arrow changed by labeling implicit"
     getAppliedType (MkSpSig name1 f) _ | _ = Left "left side not an appliable form"
 
--- Right $ MkSignature result_name $ assign applied
--- 
 
 
 
@@ -285,15 +283,15 @@ mutual
     getPartialType sigs (AppTerm x) = getAppType sigs x
     getPartialType sigs (ArwTerm x) = assert_total $ getArwType sigs x -- in getArwType, value of x always decreases
     getPartialType sigs (EqTerm x) = getEqType sigs x
-    getPartialType sigs (IntegerLiteral k) = Right $ MkStatement $ MkSpSig (IdTerm $ MkId $ show k) $ IdTerm $ MkId "Integer"
-    getPartialType sigs (DoubleLiteral dbl) = Right $ MkStatement $ MkSpSig (IdTerm $ MkId $ show dbl) $ IdTerm $ MkId "Double"
-    getPartialType sigs (StringLiteral str) = Right $ MkStatement $ MkSpSig (IdTerm $ MkId $ show str) $ IdTerm $ MkId "String"
+    getPartialType sigs (IntegerLiteral k) = Right $ Start $ MkSpSig (IdTerm $ MkId $ show k) $ IdTerm $ MkId "Integer"
+    getPartialType sigs (DoubleLiteral dbl) = Right $ Start $ MkSpSig (IdTerm $ MkId $ show dbl) $ IdTerm $ MkId "Double"
+    getPartialType sigs (StringLiteral str) = Right $ Start $ MkSpSig (IdTerm $ MkId $ show str) $ IdTerm $ MkId "String"
     getPartialType sigs (PrTerm x) = getPrType sigs x
     getPartialType sigs UnitTerm =
       let
         sig = MkSpSig (IdTerm $ MkId "MkUnit") UnitTerm
       in
-        Right $ MkStatement sig
+        Right $ Start sig
 
     getIdType : (sigs : List Signature) -> Identifier -> Either String ReconsTree
     getIdType [] y = Left $ "could not find the type of identifier " ++ show y
@@ -302,8 +300,8 @@ mutual
         MkSignature (MkId sig_id) sig_expr = sig
         MkId name = y
       in
-      if sig_id == name
-        then Right $ MkStatement (toSpSig sig)
+      if sig_id == name -- TODO Equality here can be agreed between namespaced and non-namespaced id e.g. "A.b" and "b"
+        then Right $ Start (toSpSig sig)
         else getIdType sigs y
 
 
@@ -313,7 +311,7 @@ mutual
       do
         ftree <- getPartialType sigs f
         xtree <- getPartialType sigs x
-        appty <- getAppliedType (getConclusion ftree) (getConclusion xtree)
+        appty <- getAppliedType (getSubgoal ftree) (getSubgoal xtree)
         pure $ Subgoal [ftree, xtree] appty
 
     getArwType : (sigs : List Signature) -> Arrow False -> Either String ReconsTree
@@ -329,7 +327,7 @@ mutual
           do
             argsig <- getPartialType sigs argty
             retsig <- getPartialType sigs retty
-            if isType (getConclusion argsig) && isType (getConclusion retsig)
+            if isType (getSubgoal argsig) && isType (getSubgoal retsig)
                 then Right (Subgoal [argsig, retsig] (MkSpSig (ArwTerm x) tycnst))
                 else Left #"Found none "Type" identifier in arrow"#
 
@@ -346,7 +344,7 @@ mutual
         lsig <- getPartialType sigs lty
         rsig <- getPartialType sigs rty
         if
-            isSameTy (getConclusion lsig) $ getConclusion rsig
+            isSameTy (getSubgoal lsig) $ getSubgoal rsig
           then Right (Subgoal [lsig, rsig] (MkSpSig (EqTerm $ MkEquality lty rty) tycnst))
           else Left #"Found none "Type" identifier in arrow"#
 
@@ -354,7 +352,7 @@ mutual
     getPrType sigs (MkPair x y) =
       let
         mkpair : ReconsTree -> ReconsTree -> SimpleExpr
-        mkpair x y = PrTerm $ MkPair (getSpSigExpr $ getConclusion x) (getSpSigExpr $ getConclusion y)
+        mkpair x y = PrTerm $ MkPair (getSpSigExpr $ getSubgoal x) (getSpSigExpr $ getSubgoal y)
       in
       do
         xsig <- getPartialType sigs x

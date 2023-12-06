@@ -20,8 +20,11 @@ https://idris2.readthedocs.io/en/latest/cookbook/parsing.html
 
 
 TODO Add prefix to OpTable
-TODO Arrow with bracketed Signature
 TODO Partially filled infix notation
+TODO lambda expression
+TODO List
+TODO improve syntax in application where left side only allows <Application> or <Identifier>
+<Application> ::= <SimpleExpr> <SimpleExpr>
 
 ##Token##
 <SESymbol> ::= [:!#$%&*+./<=>?@\^|-~]+
@@ -450,6 +453,7 @@ mutual
     --   | <appWithParen>
     app : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True Application
     app optable =
+      -- the first two sytax corresponds to this part
       do
         id <- identifier
         t <- term optable

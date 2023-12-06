@@ -101,8 +101,6 @@ testCases =
         ]
     ]
 
-tes : List x -> x -> List x
-tes xs x = x :: xs
 
 test : IO ()
 test = putStrLn $ testAllCase testCases
