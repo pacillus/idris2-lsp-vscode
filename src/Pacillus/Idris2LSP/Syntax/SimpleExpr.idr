@@ -35,7 +35,7 @@ TODO improve syntax in application where left side only allows <Application> or 
 <SEBackquote> ::= [`]
 <SEArrow> ::= [-][>]
 <SEEqual> ::= [=]
-<SEColon> ::= 
+<SEColon> ::= :
 <SEIntLiteral> ::= [0-9]+
 <SEDoubleLiteral> ::= [0-9]+[.][0-9]([e][+-]?[0-9]+)?
 <SEStringLiteral> ::= ["](\\.|.)["]
@@ -127,7 +127,16 @@ TODO improve syntax in application where left side only allows <Application> or 
 
 mutual
     -- the data type for AST of SimpleExpr
-    -- <SimpleExpr> ::= <IdTerm> | <AppTerm> | <EqTerm> | <ArwTerm> | <IntegerLiteral> | <DoubleLiteral> | <StringLiteral> 
+    -- <SimpleExpr> ::=
+    --    <IdTerm>
+    --  | <AppTerm>
+    --  | <EqTerm>
+    --  | <ArwTerm>
+    --  | <IntegerLiteral>
+    --  | <DoubleLiteral>
+    --  | <StringLiteral>
+    --  | <PrTerm>
+    --  | Unit
     -- <AppTerm> ::= <Application>
     -- <IntegerLiteral> ::= Integer
     -- <DoubleLiteral> ::= Double
@@ -135,6 +144,7 @@ mutual
     -- <EqTerm> ::= <Equality>
     -- <IdTerm> ::= <Identifier>
     -- <ArwTerm> ::= <Arrow>
+    -- <PrTerm> ::= <Pair>
     public export
     data SimpleExpr : Type where
         IdTerm : Identifier -> SimpleExpr
@@ -192,38 +202,38 @@ Eq Identifier where
 
 mutual
     export
-    exEquality : SimpleExpr -> SimpleExpr -> Bool
-    exEquality (IdTerm x) (IdTerm y) = x == y
-    exEquality (AppTerm x) (AppTerm y) = appEquality x y
-    exEquality (ArwTerm x) (ArwTerm y) = sameTypeArw x y
-    exEquality (EqTerm x) (EqTerm y) = eqEquality x y
-    exEquality (PrTerm x) (PrTerm y) = prEquality x y
-    exEquality (IntegerLiteral k1) (IntegerLiteral k2) = k1 == k2
-    exEquality (DoubleLiteral dbl1) (DoubleLiteral dbl2) = dbl1 == dbl2
-    exEquality (StringLiteral str1) (StringLiteral str2) = str1 == str2
-    exEquality UnitTerm UnitTerm = True
-    exEquality _ _ = False
+    exprEquality : SimpleExpr -> SimpleExpr -> Bool
+    exprEquality (IdTerm x) (IdTerm y) = x == y
+    exprEquality (AppTerm x) (AppTerm y) = appEquality x y
+    exprEquality (ArwTerm x) (ArwTerm y) = sameTypeArw x y
+    exprEquality (EqTerm x) (EqTerm y) = eqEquality x y
+    exprEquality (PrTerm x) (PrTerm y) = prEquality x y
+    exprEquality (IntegerLiteral k1) (IntegerLiteral k2) = k1 == k2
+    exprEquality (DoubleLiteral dbl1) (DoubleLiteral dbl2) = dbl1 == dbl2
+    exprEquality (StringLiteral str1) (StringLiteral str2) = str1 == str2
+    exprEquality UnitTerm UnitTerm = True
+    exprEquality _ _ = False
 
     appEquality : Application -> Application -> Bool
-    appEquality (MkApp x z) (MkApp y w) = exEquality x y && exEquality z w
+    appEquality (MkApp x z) (MkApp y w) = exprEquality x y && exprEquality z w
 
     eqEquality : Equality -> Equality -> Bool
-    eqEquality (MkEquality le1 re1) (MkEquality le2 re2) = exEquality le1 le2 && exEquality re1 re2
+    eqEquality (MkEquality le1 re1) (MkEquality le2 re2) = exprEquality le1 le2 && exprEquality re1 re2
 
     prEquality : Pair -> Pair -> Bool
-    prEquality (MkPair lfst lsnd) (MkPair rfst rsnd) = exEquality lfst rfst && exEquality lsnd rsnd
+    prEquality (MkPair lfst lsnd) (MkPair rfst rsnd) = exprEquality lfst rfst && exprEquality lsnd rsnd
 
     sameTypeArw : Arrow b1 -> Arrow b2 -> Bool
-    sameTypeArw (ExExArr x z) (ExExArr y w) = exEquality x z && exEquality y w
+    sameTypeArw (ExExArr x z) (ExExArr y w) = exprEquality x z && exprEquality y w
     sameTypeArw (ExExArr x z) (SiExArr y w) =
-        let MkSignature _ yex = y in exEquality x z && exEquality yex w
+        let MkSignature _ yex = y in exprEquality x z && exprEquality yex w
     sameTypeArw (SiExArr x z) (ExExArr y w) =
-        let MkSignature _ xex = x in exEquality xex z && exEquality y w
+        let MkSignature _ xex = x in exprEquality xex z && exprEquality y w
     sameTypeArw (SiExArr x z) (SiExArr y w) =
         let 
           MkSignature _ xex = x
           MkSignature _ yex = y
-        in exEquality xex z && exEquality yex w
+        in exprEquality xex z && exprEquality yex w
 
 export
 Show Identifier where
@@ -250,7 +260,7 @@ mutual
   showArw d (SiExArr (MkSignature name x) y) = showParens (d >= 2) $ "(" ++ show name ++ " : " ++ showSimpleExpr 0 x ++ ") -> " ++ showSimpleExpr 2 y
 
   showEq : Nat -> Equality -> String
-  showEq d (MkEquality x y) = showParens (d >= 1) $ showSimpleExpr 1 x ++ "=" ++ showSimpleExpr 1 y
+  showEq d (MkEquality x y) = showParens (d >= 1) $ showSimpleExpr 1 x ++ " = " ++ showSimpleExpr 1 y
 
   showPr : Nat -> Pair -> String
   showPr d x = "(" ++ showPrNoBracket x ++ ")"

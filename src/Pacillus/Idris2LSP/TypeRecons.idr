@@ -67,7 +67,7 @@ getSubgoal (Subgoal xs x) = x
 mutual
     assignExpr : (target : SimpleExpr)  -> (var : SimpleExpr) -> (replace : SimpleExpr) -> SimpleExpr
     assignExpr target var replace =
-      if exEquality target var
+      if exprEquality target var
         then replace
         else
           case target of
@@ -162,7 +162,7 @@ mutual
     unify : Constraints -> Either String Constraints
     unify [] = Right []
     unify ((arg, app) :: xs) =
-      if exEquality arg app
+      if exprEquality arg app
         then unify xs
         else unifyExpr xs arg app
 
@@ -322,7 +322,7 @@ mutual
             tycnst = IdTerm $ MkId "Type"
 
             isType : PartialExprSignature -> Bool
-            isType sig = exEquality (getSpSigExpr sig) tycnst
+            isType sig = exprEquality (getSpSigExpr sig) tycnst
           in
           do
             argsig <- getPartialType sigs argty
@@ -338,7 +338,7 @@ mutual
         tycnst = IdTerm $ MkId "Type"
 
         isSameTy : PartialExprSignature -> PartialExprSignature -> Bool
-        isSameTy (MkSpSig _ ty1) (MkSpSig _ ty2) = exEquality ty1 ty2
+        isSameTy (MkSpSig _ ty1) (MkSpSig _ ty2) = exprEquality ty1 ty2
       in
       do
         lsig <- getPartialType sigs lty
