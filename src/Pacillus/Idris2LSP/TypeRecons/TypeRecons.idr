@@ -1,4 +1,4 @@
-module Pacillus.Idris2LSP.TypeRecons
+module Pacillus.Idris2LSP.TypeRecons.TypeRecons
 
 import Data.String
 import Text.Parser
@@ -343,10 +343,8 @@ mutual
       do
         lsig <- getPartialType sigs lty
         rsig <- getPartialType sigs rty
-        if
-            isSameTy (getSubgoal lsig) $ getSubgoal rsig
-          then Right (Subgoal [lsig, rsig] (MkSpSig (EqTerm $ MkEquality lty rty) tycnst))
-          else Left #"Found none "Type" identifier in arrow"#
+        Right (Subgoal [lsig, rsig] (MkSpSig (EqTerm $ MkEquality lty rty) tycnst))
+         
 
     getPrType : (sigs : List Signature) -> Pair -> Either String ReconsTree
     getPrType sigs (MkPair x y) =

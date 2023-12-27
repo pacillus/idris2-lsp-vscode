@@ -22,8 +22,12 @@ https://idris2.readthedocs.io/en/latest/cookbook/parsing.html
 TODO Add prefix to OpTable
 TODO Partially filled infix notation
 TODO lambda expression
+TODO quantified types
+TODO Dependent pair
 TODO List
-TODO improve syntax in application where left side only allows <Application> or <Identifier>
+
+Idea improve syntax in application where left side only allows <Application> or <Identifier>
+  <- its rather a type error and not a syntax error
 <Application> ::= <SimpleExpr> <SimpleExpr>
 
 ##Token##

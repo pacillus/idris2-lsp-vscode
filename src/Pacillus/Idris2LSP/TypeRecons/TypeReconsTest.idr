@@ -1,4 +1,4 @@
-module Pacillus.Idris2LSP.TypeReconsTest
+module Pacillus.Idris2LSP.TypeRecons.TypeReconsTest
 
 import Data.String
 
