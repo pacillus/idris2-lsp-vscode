@@ -3,6 +3,10 @@ node_modules
 .vscode-test
 *.ttc
 *.ttm
+*.so
+*.ss
 src/build/exec/_tmpchez
-src/build/exec/_tmpchez_app/_tmpchez.ss
-src/build/exec/_tmpchez_app/libidris2_support.so
+src/build/exec/echolex
+src/build/exec/echotype
+src/build/exec/echolex_app/compileChez
+src/build/exec/echotype_app/compileChez

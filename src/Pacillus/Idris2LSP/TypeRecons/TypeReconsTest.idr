@@ -1,27 +1,24 @@
 module Pacillus.Idris2LSP.TypeRecons.TypeReconsTest
 
 import Data.String
+import Text.Parser.Expression
 
 import Pacillus.Idris2LSP.Syntax.SimpleExpr
-import Pacillus.Idris2LSP.TypeRecons
+import Pacillus.Idris2LSP.TypeRecons.TypeRecons
 
+opMap : InOperatorMap
+opMap = 
+    [
+        MkOpRecord "$" 0 AssocRight,
+        MkOpRecord "+" 8 AssocLeft, 
+        MkOpRecord "*" 9 AssocLeft, 
+        MkOpRecord "===" 6 AssocNone,
+        MkOpRecord "++" 7 AssocRight,
+        MkOpRecord ">=" 6 AssocNone,
+        MkOpRecord "::" 7 AssocRight,
+        MkOpRecord "." 9 AssocRight
+    ]
 
-
-  -- case lexSimpleExpr x of
-  --   Just toks => parseSignature toks
-  --   Nothing => Left "Failed to lex."
-
--- test : String -> String -> Either String PartialExprSignature
--- test str1 str2 =
---   let
---     maybast1 = parseSig str1
---     maybast2 = parseSig str2
---   in
---     case (maybast1, maybast2) of
---         ((Left x), (Left y)) => Left $ "Multiple errors:\n" ++ x ++ "\n" ++ y
---         ((Left x), (Right y)) => Left x
---         ((Right x), (Left y)) => Left y
---         ((Right x), (Right y)) => getAppliedType (toSpSig x) (toSpSig y)
 
 
 
@@ -40,8 +37,8 @@ data TestCase : Type where
 testSingleCase : TestCase -> String
 testSingleCase (MkCase expr types) =
   let
-    target = parse expr
-    ty_list = map parseSig types
+    target = parse opMap expr
+    ty_list = map (parseSig opMap) types
     result =
       do
         sigs <- convertInList2ListIn ty_list

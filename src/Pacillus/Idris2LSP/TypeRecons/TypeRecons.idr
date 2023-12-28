@@ -12,22 +12,22 @@ import Pacillus.Idris2LSP.Syntax.Lexer
 Constraints : Type
 Constraints = List (SimpleExpr, SimpleExpr)
 
-parseSignature : List (WithBounds SimpleExprToken) -> Either String Signature
-parseSignature toks =
-  case parse (signature opTable) $ filter (not . ignored) toks of
+parseSignature : InOperatorMap -> List (WithBounds SimpleExprToken) -> Either String Signature
+parseSignature opmap toks =
+  case parse (signature $ opTable opmap) $ filter (not . ignored) toks of
     Right (l, []) => Right l
     Right (l, xs) => Left "contains tokens that were not consumed"
     Left e => Left (show e)
 
 export
-parseSig : String -> Either String Signature
-parseSig x with (lexSimpleExpr x)
-  parseSig x | Just toks = parseSignature toks
-  parseSig x | Nothing = Left "Failed to lex."
+parseSig : InOperatorMap -> String -> Either String Signature
+parseSig opmap x with (lexSimpleExpr x)
+  parseSig opmap x | Just toks = parseSignature opmap toks
+  parseSig opmap x | Nothing = Left "Failed to lex."
 
 -- lowercase and not applied to anything
 
--- variables from left and variables from right are separated
+-- variables from left and variables from right are separated on unification
 
 public export
 data PartialExprSignature : Type where

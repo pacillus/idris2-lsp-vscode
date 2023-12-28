@@ -1,8 +1,10 @@
-module Pacillus.ParseTest
+module Pacillus.Idris2LSP.Syntax.ParseTest
 
 import Data.List
 import Data.String
 import Data.Zippable
+import Text.Parser.Expression
+
 import Pacillus.Idris2LSP.Syntax.SimpleExpr
 
 testPatternch01 : List String
@@ -37,8 +39,21 @@ testPatternch02 =
 -- parseSmpl : String -> Either String Expr
 -- parseSmpl = parse
 
+opMap : InOperatorMap
+opMap = 
+    [
+        MkOpRecord "$" 0 AssocRight,
+        MkOpRecord "+" 8 AssocLeft, 
+        MkOpRecord "*" 9 AssocLeft, 
+        MkOpRecord "===" 6 AssocNone,
+        MkOpRecord "++" 7 AssocRight,
+        MkOpRecord ">=" 6 AssocNone,
+        MkOpRecord "::" 7 AssocRight,
+        MkOpRecord "." 9 AssocRight
+    ]
+
 parse_list : List String -> List (Either String SimpleExpr)
-parse_list xs = map parse xs
+parse_list xs = map (parse opMap) xs
 
 refineResult' : Nat -> List (Either String SimpleExpr) -> Either (List SimpleExpr) (String, Nat)
 refineResult' n [] = Left []
@@ -62,7 +77,7 @@ isSuccess (Right x) = ":O"
 parseNListResult : List String -> IO ()
 parseNListResult xs =
     let
-        parsed = map parse xs
+        parsed = map (parse opMap) xs
         results = map isSuccess parsed
         output = zipWith (++) xs results
     in 
