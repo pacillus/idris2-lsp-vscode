@@ -22,27 +22,34 @@ https://idris2.readthedocs.io/en/latest/cookbook/parsing.html
 TODO Add prefix to OpTable
 TODO Partially filled infix notation
 TODO lambda expression
-TODO quantified types
-TODO Dependent pair
-TODO List
+TODO quantitive types
+TODO Dependent pair sugar syntax
+TODO List sugar syntax
+TODO "x = y" is a sugar syntax for Equal x y
+TODO "(a, b)" is a sugar syntax for Pair a b when type context 
+      and "(x, y)" is a sugar syntax for MkPair x y when term context
+TODO () is a sugar syntax for Unit when type and MkUnit whne term context
 
-Idea improve syntax in application where left side only allows <Application> or <Identifier>
+List of things not gonna do
+・let, case, do, if, and other user defined syntax
+
+Idea : improve syntax in application where left side only allows <Application> or <Identifier>
   <- its rather a type error and not a syntax error
 <Application> ::= <SimpleExpr> <SimpleExpr>
 
 ##Token##
-<SESymbol> ::= [:!#$%&*+./<=>?@\^|-~]+
-<SELParen> ::= '('
-<SERParen> ::= ')'
+<SESymbol> ::= [:!#$%&*+./<=>?@\\^|-~]+
+<SELParen> ::= (
+<SERParen> ::= )
 <SEIdentifier> ::= [a-zA-Z][a-zA-Z0-9]+
 <SEIgnore> ::= [空白文字]+
-<SEBackquote> ::= [`]
-<SEArrow> ::= [-][>]
-<SEEqual> ::= [=]
+<SEBackquote> ::= `
+<SEArrow> ::= ->
+<SEEqual> ::= =
 <SEColon> ::= :
 <SEIntLiteral> ::= [0-9]+
-<SEDoubleLiteral> ::= [0-9]+[.][0-9]([e][+-]?[0-9]+)?
-<SEStringLiteral> ::= ["](\\.|.)["]
+<SEDoubleLiteral> ::= [0-9]+\.[0-9](e[\+\-]?[0-9]+)?
+<SEStringLiteral> ::= "(\\.|.)"
 
 
 ##Syntax##
@@ -282,8 +289,10 @@ Show Signature where
   show (MkSignature name x) = show name ++ " : " ++ showSimpleExpr 0 x
 
 -- information of operator used for parsing
+public export
 data OpRecord = MkOpRecord String Nat Assoc
 
+public export
 InOperatorMap : Type
 InOperatorMap = List OpRecord
 
@@ -556,37 +565,26 @@ mutual
         match SERParen
         pure e
 
-opMap : InOperatorMap
-opMap = 
-    [
-        MkOpRecord "$" 0 AssocRight,
-        MkOpRecord "+" 8 AssocLeft, 
-        MkOpRecord "*" 9 AssocLeft, 
-        MkOpRecord "===" 6 AssocNone,
-        MkOpRecord "++" 7 AssocRight,
-        MkOpRecord ">=" 6 AssocNone,
-        MkOpRecord "::" 7 AssocRight,
-        MkOpRecord "." 9 AssocRight
-    ]
+
 
 export
-opTable : OperatorTable state SimpleExprToken SimpleExpr
-opTable = dynOperatorTable opMap
+opTable : InOperatorMap -> OperatorTable state SimpleExprToken SimpleExpr
+opTable opmap = dynOperatorTable opmap
 
 -- parses token list
-parseSimpleExpr : List (WithBounds SimpleExprToken) -> Either String SimpleExpr
-parseSimpleExpr toks =
-  case parse (simpleExpr opTable) $ filter (not . ignored) toks of
+parseSimpleExpr : InOperatorMap -> List (WithBounds SimpleExprToken) -> Either String SimpleExpr
+parseSimpleExpr opmap toks =
+  case parse (simpleExpr $ opTable opmap) $ filter (not . ignored) toks of
     Right (l, []) => Right l
     Right (l, xs) => Left $ show xs -- Left "contains tokens that were not consumed"
     Left e => Left (show e)
 
 -- parses string to AST
 export
-parse : String -> Either String SimpleExpr
-parse x =
+parse : InOperatorMap -> String -> Either String SimpleExpr
+parse opmap x =
   case lexSimpleExpr x of
-    Just toks => parseSimpleExpr toks
+    Just toks => parseSimpleExpr opmap toks
     Nothing => Left "Failed to lex."
 
 
