@@ -297,10 +297,9 @@ mutual
     getIdType [] y = Left $ "could not find the type of identifier " ++ show y
     getIdType (sig :: sigs) y =
       let
-        MkSignature (MkId sig_id) sig_expr = sig
-        MkId name = y
+        MkSignature sig_id sig_expr = sig
       in
-      if sig_id == name -- TODO Equality here can be agreed between namespaced and non-namespaced id e.g. "A.b" and "b"
+      if sig_id == y -- TODO Equality here can be agreed between namespaced and non-namespaced id e.g. "A.b" and "b"
         then Right $ Start (toSpSig sig)
         else getIdType sigs y
 

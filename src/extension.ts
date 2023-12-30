@@ -16,10 +16,14 @@ import {
   LanguageClientOptions,
   ServerOptions,
   StreamInfo,
+  integer,
 } from 'vscode-languageclient/node';
 
 import { Readable } from 'stream';
 import * as process from 'process'
+
+import {Pacillus_Idris2LSP_Lex_lexAndOutput} from './echolex.js';
+import {Pacillus_Idris2LSP_GetType_process} from './echotype.js';
 
 const baseName = 'Idris 2 LSP';
 
@@ -132,6 +136,127 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
               }]
             );
           });
+      }
+    )
+  );
+  context.subscriptions.push(
+    commands.registerTextEditorCommand(
+      'idris2-lsp.pacillus.test',
+      (editor: TextEditor, _edit: TextEditorEdit, customCode) => {
+        const code: string = customCode || editor.document.getText(editor.selection);
+        const uri = editor.document.uri.fsPath
+        const pos = editor.selection.start;
+        const ln = pos.line;
+        const ch = pos.character;
+
+        if (code.length == 0) {
+          // clear decorations
+          editor.setDecorations(replDecorationType, []);
+          return;
+        }
+
+
+
+        var str : string = String(Pacillus_Idris2LSP_Lex_lexAndOutput(code))
+        var json = JSON.parse(str)
+        var tops : number[] = json.pos.map((x : string) => parseInt(x));
+        var sigs : string[] = new Array();
+        var ops : object[] = new Array();
+
+        
+        // magic code that makes all well
+        // made with recursion
+        const f = (tops : number [], i: number, max: number) => {
+          if (i < max) {
+            client
+            .sendRequest('textDocument/hover', {textDocument: {uri: "file://" + uri}, position: {line: ln, character: ch + tops[i]}})
+            .then((my_res: any) => {
+              const splited: any[] = my_res.contents.value.split("\n");
+              sigs.push(String(splited[splited.length - 2].trim()));
+              f(tops, i + 1, max);
+            })
+          } else {
+
+
+
+            const g = (syms : string[], i: number, max: number) => {
+              if (i < max) {
+                client
+                .sendRequest("workspace/executeCommand", { command: "repl", arguments: [":doc (" + syms[i] + ")"]})
+                .then((my_res: any) => {
+                  console.log(my_res);
+                  const splitedbyn: string[] = my_res.toString().split("\n");
+                  const splitedbyspace: string[] = splitedbyn[3].split(" ").filter((x : string) => x !== "");
+                  console.log(splitedbyspace);
+                  var assoc : string = splitedbyspace[2];
+                  console.log(assoc);
+                  var prec : string = splitedbyspace[5];
+                  console.log(prec);
+                  var op : object = {symbol : syms[i],assoc : assoc, prec : prec};
+                  ops.push(op);
+                  g(syms, i + 1, max);
+                })
+              } else {
+                var inputobj : object = {
+                  expr : code,
+                  ops : ops,
+                  sigs : sigs
+                };
+                var output = Pacillus_Idris2LSP_GetType_process(JSON.stringify(inputobj));
+                  editor.setDecorations(
+                    replDecorationType,
+                    [{
+                      range: editor.selection,
+                      hoverMessage: new MarkdownString().appendCodeblock(output, 'idris')
+                      // renderOptions: {
+                      //   after: {
+                      //     contentText: ' => ' + inlineReplPreviewFor(res.preview) + ' ',
+                      //   },
+                      // }
+                    }]
+                  );
+              }
+            };
+            g(json.syms, 0, json.syms.length);
+          }
+        };
+
+        f(tops, 0, tops.length);
+
+        
+        // client
+        //   .sendRequest("workspace/executeCommand", { command: "repl", arguments: [code] })
+        //   .then(
+        //     (res) => {
+        //       const code = res as string;
+        //       return {
+        //         hover: new MarkdownString().appendCodeblock(sigs.toString(), 'idris'),
+        //         preview: sigs.toString()
+        //       };
+        //     },
+        //     (e) => {
+        //       const error = `${e}`;
+        //       return {
+        //         hover: new MarkdownString().appendText(error),
+        //         preview: error
+        //       };
+        //     }
+        //   )
+        //   .then((res) => {
+        //     console.log(`>${res.preview}<`);
+        //     editor.setDecorations(
+        //       replDecorationType,
+        //       [{
+        //         range: editor.selection,
+        //         hoverMessage: res.hover,
+        //         renderOptions: {
+        //           after: {
+        //             contentText: ' => ' + inlineReplPreviewFor(res.preview) + ' ',
+        //           },
+        //         }
+        //       }]
+        //     );
+        //   });
       }
     )
   );

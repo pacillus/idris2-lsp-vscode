@@ -28,6 +28,10 @@
 				{
 					"command": "idris2-lsp.repl.eval",
 					"when": "editorLangId == idris"
+				},
+				{
+					"command": "idris2-lsp.pacillus.test",
+					"when": "editorLangId == idris"
 				}
 			]
 		},
@@ -41,6 +45,12 @@
 			{
 				"command": "idris2-lsp.repl.eval",
 				"title": "Idris: Evaluate selection",
+				"enablement": "editorLangId == idris",
+				"icon": "$(preview)"
+			},
+			{
+				"command": "idris2-lsp.pacillus.test",
+				"title": "Idris: Infer type of selection",
 				"enablement": "editorLangId == idris",
 				"icon": "$(preview)"
 			}

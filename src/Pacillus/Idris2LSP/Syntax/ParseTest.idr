@@ -18,7 +18,8 @@ testPatternch01 =
         #""Ninety four""#,
         "(x : Bool) -> StringOrInt x -> String",
         "cast val",
-        "val"
+        "val",
+        "Prelude.(+)"
     ]
 
 testPatternch02 : List String

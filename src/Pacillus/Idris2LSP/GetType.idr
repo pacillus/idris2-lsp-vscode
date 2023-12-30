@@ -41,9 +41,9 @@ json2OpMap (JObject xs) =
         conv3 ("assoc", (JString str)) = Right str
         conv3 _ = Left ""
         assocconv : String -> Either String Assoc
-        assocconv "right" = Right AssocRight
-        assocconv "left" = Right AssocLeft
-        assocconv "none" = Right AssocNone
+        assocconv "infixr" = Right AssocRight
+        assocconv "infixl" = Right AssocLeft
+        assocconv "infix" = Right AssocNone
         assocconv _ = Left #"Error : Invalid value at "ops.assoc" in input JSON"#
 json2OpMap _ = Left #"Invalid JSON format at "ops" in input JSON "#
 
@@ -96,12 +96,14 @@ inferType expr opmap types =
     (Left error) => error
     (Right tree) => show tree
 
-process : String -> Either String String
+process : String -> String
 process str =
-  do
-    info <- parseInput str
-    let (expr, opmap, types) = info
-    pure $ inferType expr opmap types
+  case parseInput str of
+    (Left err) => err
+    (Right info) =>
+      let (expr, opmap, types) = info in
+        inferType expr opmap types
+
 
 main : IO ()
 main =
@@ -111,4 +113,4 @@ main =
         [] => putStrLn "*Unknown Error : Something went wrong with arguments"
         (execname :: []) => putStrLn "*Error : No input arguments"
         (execname :: (input :: extra)) =>
-            putStrLn $ either id id (process input)
+            putStrLn $ process input

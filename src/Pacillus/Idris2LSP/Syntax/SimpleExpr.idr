@@ -3,6 +3,7 @@ module Pacillus.Idris2LSP.Syntax.SimpleExpr
 import Data.List
 import Data.List1
 import Data.Maybe
+import Data.String
 import Text.Parser
 import Text.Parser.Expression
 
@@ -18,7 +19,9 @@ For reference, cookbook of lambda calculus parser shown in below is a good examp
 this program was made referencing "Documentation for the Idris 2 Language/Cookbook/Parsing"
 https://idris2.readthedocs.io/en/latest/cookbook/parsing.html
 
+** SimpleExpr is NOT the SimpleExpr in Idris syntax so be careful **
 
+TODO Implicit arguments
 TODO Add prefix to OpTable
 TODO Partially filled infix notation
 TODO lambda expression
@@ -28,7 +31,7 @@ TODO List sugar syntax
 TODO "x = y" is a sugar syntax for Equal x y
 TODO "(a, b)" is a sugar syntax for Pair a b when type context 
       and "(x, y)" is a sugar syntax for MkPair x y when term context
-TODO () is a sugar syntax for Unit when type and MkUnit whne term context
+TODO () is a sugar syntax for Unit when type and MkUnit when term context
 
 List of things not gonna do
 ・let, case, do, if, and other user defined syntax
@@ -209,7 +212,12 @@ forgetSig (SiExArr (MkSignature str x) y) = ExExArr x y
 
 export
 Eq Identifier where
-    (==) (MkId str) (MkId str1) = str == str1
+    (==) (MkId str) (MkId str1) =
+      case (split (\x => x == '.') str, split (\x => x == '.') str1) of
+        ((head1 ::: []), (head2 ::: [])) => head1 == head2
+        (list@(head1 ::: (y :: xs)), (head2 ::: [])) => last list == head2
+        ((head1 ::: []), list@(head2 ::: (y :: xs))) => head2 == last list
+        (list1@(head1 ::: (z :: ys)), list2@(head2 ::: (y :: xs))) => list1 == list2
 
 mutual
     export
