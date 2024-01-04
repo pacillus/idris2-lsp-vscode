@@ -377,36 +377,48 @@ function x24tcOpt_9($0) {
    switch($0.a1.a1.a1.h) {
     case undefined: /* cons */ {
      switch($0.a1.a1.a1.a1) {
-      case 1: {
-       switch($0.a1.a1.a3.h) {
-        case undefined: /* record */ return {h: 1 /* {TcContinue9:1} */, a1: $0.a1.a2};
-        default: {
-         const $c = Pacillus_Idris2LSP_Lex_getTokPosx27($0.a1.a2);
-         return {h: 0 /* {TcDone:9} */, a1: {a1: {a1: $0.a1.a1.a3.a2, a2: Builtin_fst($c)}, a2: Builtin_snd($c)}};
-        }
-       }
-      }
       case 0: {
        switch($0.a1.a1.a3.h) {
         case undefined: /* record */ {
-         const $19 = Pacillus_Idris2LSP_Lex_getTokPosx27($0.a1.a2);
-         return {h: 0 /* {TcDone:9} */, a1: {a1: {a1: $0.a1.a1.a3.a2, a2: Builtin_fst($19)}, a2: {a1: $0.a1.a1.a1.a2, a2: Builtin_snd($19)}}};
+         const $a = {a1: 0, a2: $0.a1.a1.a1.a2};
+         switch(Pacillus_Idris2LSP_Lex_isNoType($a)) {
+          case 1: return {h: 1 /* {TcContinue9:1} */, a1: $0.a1.a2};
+          case 0: {
+           const $11 = Pacillus_Idris2LSP_Lex_getTokPosx27($0.a1.a2);
+           return {h: 0 /* {TcDone:9} */, a1: {a1: {a1: $0.a1.a1.a3.a2, a2: Builtin_fst($11)}, a2: {a1: $0.a1.a1.a1.a2, a2: Builtin_snd($11)}}};
+          }
+         }
         }
         default: {
-         const $28 = Pacillus_Idris2LSP_Lex_getTokPosx27($0.a1.a2);
-         return {h: 0 /* {TcDone:9} */, a1: {a1: {a1: $0.a1.a1.a3.a2, a2: Builtin_fst($28)}, a2: Builtin_snd($28)}};
+         switch(Pacillus_Idris2LSP_Lex_isNoType($0.a1.a1.a1)) {
+          case 1: return {h: 1 /* {TcContinue9:1} */, a1: $0.a1.a2};
+          case 0: {
+           const $24 = Pacillus_Idris2LSP_Lex_getTokPosx27($0.a1.a2);
+           return {h: 0 /* {TcDone:9} */, a1: {a1: {a1: $0.a1.a1.a3.a2, a2: Builtin_fst($24)}, a2: Builtin_snd($24)}};
+          }
+         }
         }
        }
       }
       default: {
-       const $35 = Pacillus_Idris2LSP_Lex_getTokPosx27($0.a1.a2);
-       return {h: 0 /* {TcDone:9} */, a1: {a1: {a1: $0.a1.a1.a3.a2, a2: Builtin_fst($35)}, a2: Builtin_snd($35)}};
+       switch(Pacillus_Idris2LSP_Lex_isNoType($0.a1.a1.a1)) {
+        case 1: return {h: 1 /* {TcContinue9:1} */, a1: $0.a1.a2};
+        case 0: {
+         const $35 = Pacillus_Idris2LSP_Lex_getTokPosx27($0.a1.a2);
+         return {h: 0 /* {TcDone:9} */, a1: {a1: {a1: $0.a1.a1.a3.a2, a2: Builtin_fst($35)}, a2: Builtin_snd($35)}};
+        }
+       }
       }
      }
     }
     default: {
-     const $42 = Pacillus_Idris2LSP_Lex_getTokPosx27($0.a1.a2);
-     return {h: 0 /* {TcDone:9} */, a1: {a1: {a1: $0.a1.a1.a3.a2, a2: Builtin_fst($42)}, a2: Builtin_snd($42)}};
+     switch(Pacillus_Idris2LSP_Lex_isNoType($0.a1.a1.a1)) {
+      case 1: return {h: 1 /* {TcContinue9:1} */, a1: $0.a1.a2};
+      case 0: {
+       const $46 = Pacillus_Idris2LSP_Lex_getTokPosx27($0.a1.a2);
+       return {h: 0 /* {TcDone:9} */, a1: {a1: {a1: $0.a1.a1.a3.a2, a2: Builtin_fst($46)}, a2: Builtin_snd($46)}};
+      }
+     }
     }
    }
   }
@@ -507,7 +519,26 @@ function Pacillus_Idris2LSP_Lex_main($0) {
 function Pacillus_Idris2LSP_Lex_lexAndOutput($0) {
  return Language_JSON_Data_show_Show_JSON(Pacillus_Idris2LSP_Lex_output(Prelude_Types_map_Functor_Maybe($7 => Pacillus_Idris2LSP_Lex_getTokPosx27($7), Pacillus_Idris2LSP_Syntax_Lexer_lexSimpleExpr($0))));
 }
-exports.Pacillus_Idris2LSP_Lex_lexAndOutput = Pacillus_Idris2LSP_Lex_lexAndOutput;
+exports.Pacillus_Idris2LSP_Lex_lexAndOutput = Pacillus_Idris2LSP_Lex_lexAndOutput
+
+/* Pacillus.Idris2LSP.Lex.isNoType : SimpleExprToken -> Bool */
+function Pacillus_Idris2LSP_Lex_isNoType($0) {
+ switch($0.a1) {
+  case 0: return 0;
+  case 1: return 1;
+  case 2: return 1;
+  case 3: return 1;
+  case 4: return 0;
+  case 5: return 1;
+  case 6: return 1;
+  case 7: return 1;
+  case 8: return 1;
+  case 9: return 1;
+  case 10: return 1;
+  case 11: return 1;
+  case 12: return 1;
+ }
+}
 
 /* Pacillus.Idris2LSP.Syntax.Lexer.symbolLexer : Lexer */
 const Pacillus_Idris2LSP_Syntax_Lexer_symbolLexer = __lazy(function () {

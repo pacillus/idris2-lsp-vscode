@@ -12,6 +12,7 @@ import Pacillus.Idris2LSP.Syntax.Lexer
 Constraints : Type
 Constraints = List (SimpleExpr, SimpleExpr)
 
+-- token to Signature AST
 parseSignature : InOperatorMap -> List (WithBounds SimpleExprToken) -> Either String Signature
 parseSignature opmap toks =
   case parse (signature $ opTable opmap) $ filter (not . ignored) toks of
@@ -19,6 +20,7 @@ parseSignature opmap toks =
     Right (l, xs) => Left "contains tokens that were not consumed"
     Left e => Left (show e)
 
+-- string to Signature AST
 export
 parseSig : InOperatorMap -> String -> Either String Signature
 parseSig opmap x with (lexSimpleExpr x)
@@ -29,14 +31,18 @@ parseSig opmap x with (lexSimpleExpr x)
 
 -- variables from left and variables from right are separated on unification
 
+-- normal signature is a signature where a single id is tied to the type
+-- this signature is an original syntax where partial expression comes to the left part and it's type to the right
 public export
 data PartialExprSignature : Type where
     MkSpSig : (name : SimpleExpr) -> SimpleExpr -> PartialExprSignature
 
+-- converts normal signature to spsig
 export
 toSpSig : Signature -> PartialExprSignature
 toSpSig (MkSignature name x) = MkSpSig (IdTerm name) x
 
+-- projects partial expression
 getSpSigExpr : PartialExprSignature -> SimpleExpr
 getSpSigExpr (MkSpSig name x) = x
 
@@ -173,19 +179,19 @@ mutual
     unifyExpr : (constraints : Constraints) -> (arg : SimpleExpr) -> (applied : SimpleExpr) -> Either String Constraints
     unifyExpr constraints (IdTerm arg) (IdTerm applied) =
       case (isImplicitVar arg, isImplicitVar applied) of
-        (True, _) => leafL constraints (IdTerm arg) (IdTerm applied)
+        (True, _) => uniVarExprL constraints (IdTerm arg) (IdTerm applied)
         (False, False) =>
           if arg == applied
             then unify constraints
             else Left $ showUniError (IdTerm arg) (IdTerm applied)
-        (False, True) => leafR constraints (IdTerm arg) (IdTerm applied)
+        (False, True) => uniVarExprR constraints (IdTerm arg) (IdTerm applied)
     unifyExpr constraints (IdTerm arg) applied =
       if isImplicitVar arg
-        then leafL constraints (IdTerm arg) applied
+        then uniVarExprL constraints (IdTerm arg) applied
         else Left $ showUniError (IdTerm arg) applied
     unifyExpr constraints arg (IdTerm applied) = 
       if isImplicitVar applied
-        then leafR constraints arg (IdTerm applied)
+        then uniVarExprR constraints arg (IdTerm applied)
         else Left $ showUniError arg (IdTerm applied)
     unifyExpr constraints (AppTerm arg) (AppTerm applied) = unifyApp constraints arg applied
     unifyExpr constraints (ArwTerm arg) (ArwTerm applied) = unifyArw constraints arg applied
@@ -214,15 +220,15 @@ mutual
     unifyPr constraints (MkPair x y) (MkPair z w) = unify $ (x, z) :: (y, w) :: constraints
 
     covering
-    leafL : (constraints : Constraints) -> (var : SimpleExpr) -> (expr : SimpleExpr) -> Either String Constraints
-    leafL constraints var expr =
+    uniVarExprL : (constraints : Constraints) -> (var : SimpleExpr) -> (expr : SimpleExpr) -> Either String Constraints
+    uniVarExprL constraints var expr =
       do
         unified <- unify $ assignL constraints var expr
         pure $ (var, expr) :: unified
 
     covering
-    leafR : (constraints : Constraints) -> (expr : SimpleExpr) -> (var : SimpleExpr) -> Either String Constraints
-    leafR constraints expr var =
+    uniVarExprR : (constraints : Constraints) -> (expr : SimpleExpr) -> (var : SimpleExpr) -> Either String Constraints
+    uniVarExprR constraints expr var =
       do
         unified <- unify $ assignR constraints var expr
         pure $ (expr, var) :: unified
@@ -277,6 +283,7 @@ getAppliedType (MkSpSig name1 f) x with (labelImplicit f)
 
 -- TODO after implementing unification for interface, add from[LiteralType] to all literals
 mutual
+    -- get type of partial expression with its process using the signatures
     export
     getPartialType : (sigs : List Signature) -> SimpleExpr -> Either String ReconsTree
     getPartialType sigs (IdTerm x) = getIdType sigs x
@@ -299,7 +306,7 @@ mutual
       let
         MkSignature sig_id sig_expr = sig
       in
-      if sig_id == y -- TODO Equality here can be agreed between namespaced and non-namespaced id e.g. "A.b" and "b"
+      if sig_id == y
         then Right $ Start (toSpSig sig)
         else getIdType sigs y
 

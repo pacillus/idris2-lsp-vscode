@@ -32,6 +32,7 @@ TODO "x = y" is a sugar syntax for Equal x y
 TODO "(a, b)" is a sugar syntax for Pair a b when type context 
       and "(x, y)" is a sugar syntax for MkPair x y when term context
 TODO () is a sugar syntax for Unit when type and MkUnit when term context
+TODO Unification between renamed type and not renamed
 
 List of things not gonna do
 ・let, case, do, if, and other user defined syntax

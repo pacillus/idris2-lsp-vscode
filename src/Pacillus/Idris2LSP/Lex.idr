@@ -8,23 +8,42 @@ import Text.Lexer
 
 import Pacillus.Idris2LSP.Syntax.Lexer
 
-
+isNoType : SimpleExprToken -> Bool
+isNoType (Tok SESymbol "$") = True
+isNoType (Tok SESymbol text) = False
+isNoType (Tok SEIgnore text) = True
+isNoType (Tok SELParen text) = True
+isNoType (Tok SERParen text) = True
+isNoType (Tok SEIdentifier text) = False
+isNoType (Tok SEBackquote text) = True
+isNoType (Tok SEArrow text) = True
+isNoType (Tok SEEqual text) = True
+isNoType (Tok SEColon text) = True
+isNoType (Tok SEComma text) = True
+isNoType (Tok SEIntLiteral text) = True
+isNoType (Tok SEDoubleLiteral text) = True
+isNoType (Tok SEStringLiteral text) = True
 
 
 getTokPos' : List (WithBounds SimpleExprToken) -> (List Int, List String)
 getTokPos' [] = ([], [])
-getTokPos' ((MkBounded (Tok SEIgnore text) isIrrelevant (MkBounds startLine startCol endLine endCol)) :: xs) =
-    getTokPos' xs
-getTokPos' ((MkBounded (Tok SESymbol sym) isIrrelevant (MkBounds startLine startCol endLine endCol)) :: xs) =
-  let
-    pr = getTokPos' xs
-  in
-    (startCol :: fst pr, sym :: snd pr)
-getTokPos' ((MkBounded _ isIrrelevant (MkBounds startLine startCol endLine endCol)) :: xs) =
-  let
-    pr = getTokPos' xs
-  in
-    (startCol :: fst pr, snd pr)
+getTokPos' ((MkBounded val@(Tok SESymbol sym) isIrrelevant (MkBounds startLine startCol endLine endCol)) :: xs) =
+  if isNoType val
+    then getTokPos' xs
+    else
+      let
+        pr = getTokPos' xs
+      in
+        (startCol :: fst pr, sym :: snd pr)
+getTokPos' ((MkBounded val isIrrelevant (MkBounds startLine startCol endLine endCol)) :: xs) =
+  if isNoType val
+    then getTokPos' xs
+    else
+      let
+        pr = getTokPos' xs
+      in
+        (startCol :: fst pr, snd pr)
+
 
 getTokPos : List (WithBounds SimpleExprToken) -> (List Int, List String)
 getTokPos xs =

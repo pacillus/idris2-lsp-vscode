@@ -171,6 +171,7 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
             client
             .sendRequest('textDocument/hover', {textDocument: {uri: "file://" + uri}, position: {line: ln, character: ch + tops[i]}})
             .then((my_res: any) => {
+              console.log(my_res);
               const splited: any[] = my_res.contents.value.split("\n");
               sigs.push(String(splited[splited.length - 2].trim()));
               f(tops, i + 1, max);
@@ -186,7 +187,14 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
                 .then((my_res: any) => {
                   console.log(my_res);
                   const splitedbyn: string[] = my_res.toString().split("\n");
-                  const splitedbyspace: string[] = splitedbyn[3].split(" ").filter((x : string) => x !== "");
+                  // search for "Fixity Declaration"
+                  var infopos : integer = 0;
+                  for (let i = 0; i < splitedbyn.length; i++){
+                    if (splitedbyn[i].includes("Fixity Declaration")){
+                      infopos = i
+                    }
+                  }
+                  const splitedbyspace: string[] = splitedbyn[infopos].split(" ").filter((x : string) => x !== "");
                   console.log(splitedbyspace);
                   var assoc : string = splitedbyspace[2];
                   console.log(assoc);
@@ -220,7 +228,7 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
             g(json.syms, 0, json.syms.length);
           }
         };
-
+        console.log(tops);
         f(tops, 0, tops.length);
 
         
