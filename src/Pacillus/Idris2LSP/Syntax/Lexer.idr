@@ -14,10 +14,13 @@ data SimpleExprTokenKind =
     | SEIdentifier
     | SEBackquote
     | SEArrow
+    | SEDoubleArrow
     | SEEqual
     | SEColon
     | SEComma
+    | SEDollar
     | SEIntLiteral
+    | SECharLiteral
     | SEDoubleLiteral
     | SEStringLiteral
 
@@ -34,11 +37,14 @@ Eq SimpleExprTokenKind where
   (==) SEIdentifier SEIdentifier = True
   (==) SEBackquote SEBackquote = True
   (==) SEArrow SEArrow = True
+  (==) SEDoubleArrow SEDoubleArrow = True
   (==) SEEqual SEEqual = True
   (==) SEColon SEColon = True
   (==) SEComma SEComma = True
+  (==) SEDollar SEDollar = True
   (==) SEIntLiteral SEIntLiteral = True
   (==) SEDoubleLiteral SEDoubleLiteral = True
+  (==) SECharLiteral SECharLiteral = True
   (==) SEStringLiteral SEStringLiteral = True
   (==) _ _ = False
 
@@ -51,11 +57,14 @@ Show SimpleExprTokenKind where
     show SEIdentifier = "SEIdentifier"
     show SEBackquote = "SEBackquote"
     show SEArrow =  "SEArrow"
+    show SEDoubleArrow = "SEDoubleArrow"
     show SEEqual = "SEEqual"
     show SEColon = "SEColon"
     show SEComma = "SEComma"
+    show SEDollar = "SEDollar"
     show SEIntLiteral = "SEIntLiteral"
     show SEDoubleLiteral = "SEDoubleLiteral"
+    show SECharLiteral = "SECharLiteral"
     show SEStringLiteral = "SEStringLiteral"
 
  -- renaming Token type
@@ -77,6 +86,7 @@ TokenKind SimpleExprTokenKind where
   TokType SESymbol = String
   TokType SEIntLiteral = Integer
   TokType SEDoubleLiteral = Double
+  TokType SECharLiteral = Char
   TokType SEStringLiteral = String
   TokType _ = ()
 
@@ -87,11 +97,18 @@ TokenKind SimpleExprTokenKind where
   tokValue SEIdentifier s = s
   tokValue SEBackquote _ = ()
   tokValue SEArrow _ = ()
+  tokValue SEDoubleArrow _ = ()
   tokValue SEEqual _ = ()
   tokValue SEColon _ = ()
   tokValue SEComma _ = ()
+  tokValue SEDollar _ = ()
   tokValue SEIntLiteral s = fromMaybe 0 $ parseInteger s
   tokValue SEDoubleLiteral s = fromMaybe 0 $ parseDouble s
+  tokValue SECharLiteral s =
+    case unpack s of
+      [] => '\0'
+      (x :: []) => '\0'
+      (x :: (y :: ys)) => y
   tokValue SEStringLiteral s = Data.String.strSubstr 1 (strLength s - 2) s -- Kind of bad since strSubstr is Int -> Int -> String -> String
 
 --  ---lexer related functions---
@@ -109,7 +126,8 @@ reservedSyms : List (String, SimpleExprTokenKind)
 reservedSyms = [
   ("->", SEArrow),
   ("=", SEEqual),
-  (":", SEColon)
+  (":", SEColon),
+  ("$", SEDollar)
 ]
 
 -- same from Idris Source "Parser.Lexer.Source.doubleLit"
@@ -152,16 +170,17 @@ idLexer : Lexer
 idLexer =
   many (alpha <+> many alphaNum <+> is '.') <+> nameLexer
 
+
 -- token map to tell what lexes to what
--- <SESymbol> ::= [:!#$%&*+./<=>?@\^|-~]+
--- <SELParen> ::= '('
--- <SERParen> ::= ')'
+-- <SESymbol> ::= [:!#$%&*+./<=>\?@\\^|-~]+
+-- <SELParen> ::= \(
+-- <SERParen> ::= \)
 -- <SEIdentifier> ::= [a-zA-Z][a-zA-Z0-9]+
 -- <SEIgnore> ::= [空白文字]+
--- <SEBackquote> ::= [`]
+-- <SEBackquote> ::= `
 -- <SEIntLiteral> ::= [0-9]+
--- <SEDoubleLiteral> ::= [0-9]+[.][0-9]([e][+-]?[0-9]+)?
--- <SEStringLiteral> ::= ["](\\.|.)["]
+-- <SEDoubleLiteral> ::= [0-9]+\\.[0-9]([e][+-]?[0-9]+)?
+-- <SEStringLiteral> ::= "(\\.|.)"
 simpleExprTokenMap : TokenMap SimpleExprToken
 simpleExprTokenMap =
     toTokenMap [(spaces, SEIgnore)] ++
@@ -179,6 +198,7 @@ simpleExprTokenMap =
       (exact ",", SEComma),
       (digits, SEIntLiteral),
       (doubleLit, SEDoubleLiteral),
+      (charLit, SECharLiteral),
       (stringLit, SEStringLiteral)
     ]
 

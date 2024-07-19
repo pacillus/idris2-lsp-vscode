@@ -141,6 +141,56 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
   );
   context.subscriptions.push(
     commands.registerTextEditorCommand(
+      'idris2-lsp.repl.typeat',
+      (editor: TextEditor, _edit: TextEditorEdit, customCode) => {
+        const code: string = customCode || editor.document.getText(editor.selection);
+        const uri = editor.document.uri.fsPath
+        const pos = editor.selection.start;
+        const ln = pos.line;
+        const ch = pos.character;
+        if (code.length == 0) {
+          // clear decorations
+          editor.setDecorations(replDecorationType, []);
+          return;
+        }
+        client
+          .sendRequest("workspace/executeCommand", { command: "repl", arguments: [":typeat " + ln + " " + ch + " " + code] })
+          .then(
+            (res) => {
+              const code = res as string;
+              return {
+                hover: new MarkdownString().appendCodeblock(code, 'idris'),
+                preview: code
+              };
+            },
+            (e) => {
+              const error = `${e}`;
+              return {
+                hover: new MarkdownString().appendText(error),
+                preview: error
+              };
+            }
+          )
+          .then((res) => {
+            console.log(`>${res.preview}<`);
+            editor.setDecorations(
+              replDecorationType,
+              [{
+                range: editor.selection,
+                hoverMessage: res.hover,
+                renderOptions: {
+                  after: {
+                    contentText: ' => ' + inlineReplPreviewFor(res.preview) + ' ',
+                  },
+                }
+              }]
+            );
+          });
+      }
+    )
+  );
+  context.subscriptions.push(
+    commands.registerTextEditorCommand(
       'idris2-lsp.pacillus.test',
       (editor: TextEditor, _edit: TextEditorEdit, customCode) => {
         const code: string = customCode || editor.document.getText(editor.selection);
@@ -162,6 +212,7 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
         var tops : number[] = json.pos.map((x : string) => parseInt(x));
         var sigs : string[] = new Array();
         var ops : object[] = new Array();
+        var syms :string[] = json.syms;
 
         
         // magic code that makes all well
@@ -173,7 +224,14 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
             .then((my_res: any) => {
               console.log(my_res);
               const splited: any[] = my_res.contents.value.split("\n");
-              sigs.push(String(splited[splited.length - 2].trim()));
+              var sig = String(splited[splited.length - 2].trim())
+              sigs.push(sig);
+              var str : string = String(Pacillus_Idris2LSP_Lex_lexAndOutput(sig));
+              console.log(str);
+              var json = JSON.parse(str);
+              console.log(json);
+              console.log(json.syms);
+              syms = syms.concat(json.syms);
               f(tops, i + 1, max);
             })
           } else {
@@ -185,7 +243,7 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
                 client
                 .sendRequest("workspace/executeCommand", { command: "repl", arguments: [":doc (" + syms[i] + ")"]})
                 .then((my_res: any) => {
-                  console.log(my_res);
+                  // console.log(my_res);
                   const splitedbyn: string[] = my_res.toString().split("\n");
                   // search for "Fixity Declaration"
                   var infopos : integer = 0;
@@ -195,11 +253,11 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
                     }
                   }
                   const splitedbyspace: string[] = splitedbyn[infopos].split(" ").filter((x : string) => x !== "");
-                  console.log(splitedbyspace);
+                  // console.log(splitedbyspace);
                   var assoc : string = splitedbyspace[2];
-                  console.log(assoc);
+                  // console.log(assoc);
                   var prec : string = splitedbyspace[5];
-                  console.log(prec);
+                  // console.log(prec);
                   var op : object = {symbol : syms[i],assoc : assoc, prec : prec};
                   ops.push(op);
                   g(syms, i + 1, max);
@@ -210,6 +268,8 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
                   ops : ops,
                   sigs : sigs
                 };
+                console.log(inputobj);
+                console.log(JSON.stringify(inputobj));
                 var output = Pacillus_Idris2LSP_GetType_process(JSON.stringify(inputobj));
                   editor.setDecorations(
                     replDecorationType,
@@ -225,10 +285,11 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
                   );
               }
             };
-            g(json.syms, 0, json.syms.length);
+            console.log(syms);
+            g(syms, 0, syms.length);
           }
         };
-        console.log(tops);
+        // console.log(tops);
         f(tops, 0, tops.length);
 
         

@@ -9,7 +9,7 @@ import Text.Lexer
 import Pacillus.Idris2LSP.Syntax.Lexer
 
 isNoType : SimpleExprToken -> Bool
-isNoType (Tok SESymbol "$") = True
+isNoType (Tok SEDollar text) = True
 isNoType (Tok SESymbol text) = False
 isNoType (Tok SEIgnore text) = True
 isNoType (Tok SELParen text) = True
@@ -17,11 +17,13 @@ isNoType (Tok SERParen text) = True
 isNoType (Tok SEIdentifier text) = False
 isNoType (Tok SEBackquote text) = True
 isNoType (Tok SEArrow text) = True
+isNoType (Tok SEDoubleArrow text) = True
 isNoType (Tok SEEqual text) = True
 isNoType (Tok SEColon text) = True
 isNoType (Tok SEComma text) = True
 isNoType (Tok SEIntLiteral text) = True
 isNoType (Tok SEDoubleLiteral text) = True
+isNoType (Tok SECharLiteral text) = True
 isNoType (Tok SEStringLiteral text) = True
 
 
@@ -57,7 +59,7 @@ output Nothing = JString "*Error : lex failed"
 output (Just (x, y)) = (JObject [("pos", JArray $ map (JString . show) x), ("syms", JArray $ map JString y)])
 
 lexAndOutput : String -> String
-lexAndOutput str = show $ output $ map getTokPos' $ lexSimpleExpr str
+lexAndOutput str = show $ output $ map getTokPos $ lexSimpleExpr str
 
 main : IO ()
 main =

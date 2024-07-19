@@ -19,27 +19,30 @@ For reference, cookbook of lambda calculus parser shown in below is a good examp
 this program was made referencing "Documentation for the Idris 2 Language/Cookbook/Parsing"
 https://idris2.readthedocs.io/en/latest/cookbook/parsing.html
 
-** SimpleExpr is NOT the SimpleExpr in Idris syntax so be careful **
+** SimpleExpr is NOT the SimpleExpr in Idris syntax so be careful! **
 
-TODO Implicit arguments
+TODO Auto Argument "type =>"
+TODO Operators with . will not work well
+TODO Implicit arguments "{a : Type} ->"
 TODO Add prefix to OpTable
-TODO Partially filled infix notation
-TODO lambda expression
-TODO quantitive types
-TODO Dependent pair sugar syntax
-TODO List sugar syntax
-TODO "x = y" is a sugar syntax for Equal x y
+TODO Partially filled infix notation "(+3)"
+TODO lambda expression "\x=>x"
+TODO quantitive types "(0 x : a) ->"
+TODO Dependent pair sugar syntax "(x : a ** f x)"
+TODO List sugar syntax  "[1, 2, 3]" for "1 :: 2 :: 3 :: Nil", "[]" for "Nil"
+TODO explicit argument "@{x}"
+TODO infer type of partial expression with holes
+TODO "x = y" is a sugar syntax for "Equal x y"
 TODO "(a, b)" is a sugar syntax for Pair a b when type context 
       and "(x, y)" is a sugar syntax for MkPair x y when term context
 TODO () is a sugar syntax for Unit when type and MkUnit when term context
-TODO Unification between renamed type and not renamed
+TODO Unification between renamed type and not renamed 
+TODO test case 8 error
+TODO Namespace A.B.f
+TODO projection sugar syntax "dat .member"
 
 List of things not gonna do
-・let, case, do, if, and other user defined syntax
-
-Idea : improve syntax in application where left side only allows <Application> or <Identifier>
-  <- its rather a type error and not a syntax error
-<Application> ::= <SimpleExpr> <SimpleExpr>
+・let, case, do, if, and user defined syntax
 
 ##Token##
 <SESymbol> ::= [:!#$%&*+./<=>?@\\^|-~]+
@@ -65,7 +68,7 @@ Idea : improve syntax in application where left side only allows <Application> o
 
 <arrow> ::= 
   | <operation> <SEArrow> <simpleExpr>
-  | <SELParen> <signature> <SERParen> <SEArrow> <arrow>
+  | <SELParen> <signature> <SERParen> <SEArrow> <simplExpr>
 
 <operation>
   | <operation> <infixOperator> <operation>
@@ -74,7 +77,7 @@ Idea : improve syntax in application where left side only allows <Application> o
   | <app>
   | <term>
 
-<signature> ::= <SEIdentifier> <SEColon> <expr>
+<signature> ::= <SEIdentifier> <SEColon> <simplExpr>
 
 <app> ::=
     <app> <term>
@@ -150,6 +153,7 @@ mutual
     --  | <IntegerLiteral>
     --  | <DoubleLiteral>
     --  | <StringLiteral>
+    --  | <CharLiteral>
     --  | <PrTerm>
     --  | Unit
     -- <AppTerm> ::= <Application>
@@ -161,68 +165,106 @@ mutual
     -- <ArwTerm> ::= <Arrow>
     -- <PrTerm> ::= <Pair>
     public export
-    data SimpleExpr : Type where
-        IdTerm : Identifier -> SimpleExpr
-        AppTerm : Application -> SimpleExpr 
-        ArwTerm : Arrow False -> SimpleExpr
-        EqTerm : Equality -> SimpleExpr
-        IntegerLiteral : Integer -> SimpleExpr
-        DoubleLiteral : Double -> SimpleExpr
-        StringLiteral : String -> SimpleExpr
-        PrTerm : Pair -> SimpleExpr
-        UnitTerm : SimpleExpr
+    data SimpleExprProt : Type ->Type where
+        IdTerm : {0 id : Type} -> IdentifierProt id -> SimpleExprProt id
+        AppTerm : {0 id : Type} -> ApplicationProt id -> SimpleExprProt id
+        ArwTerm : {0 id : Type} -> ArrowProt id False -> SimpleExprProt id
+        EqTerm : {0 id : Type} -> EqualityProt id -> SimpleExprProt id
+        IntegerLiteral : {0 id : Type} -> Integer -> SimpleExprProt id
+        DoubleLiteral : {0 id : Type} -> Double -> SimpleExprProt id
+        CharLiteral : {0 id : Type} -> Char -> SimpleExprProt id
+        StringLiteral : {0 id : Type} -> String -> SimpleExprProt id
+        PrTerm : {0 id : Type} -> PairProt id -> SimpleExprProt id
+        UnitTerm : {0 id : Type} -> SimpleExprProt id
 
     -- <Identifier> ::= String
     public export
-    data Identifier : Type where
-        MkId : String -> Identifier
+    data IdentifierProt : Type -> Type where
+        MkId : {0 id : Type} -> id -> IdentifierProt id
 
     -- <Application> ::= <SimpleExpr> <SimpleExpr>
     public export
-    data Application : Type where
-        MkApp : SimpleExpr -> SimpleExpr -> Application
+    data ApplicationProt : Type -> Type where
+        MkApp : {0 id : Type} -> SimpleExprProt id -> SimpleExprProt id -> ApplicationProt id
 
     -- <Equality> ::= <Expr> <Expr>
     public export
-    data Equality = MkEquality SimpleExpr SimpleExpr
+    data EqualityProt : Type -> Type where
+      MkEquality : {0 id : Type} -> SimpleExprProt id ->  SimpleExprProt id -> EqualityProt id
 
     -- Arrow True eliminates the pattern of SiExArr
     -- <Arrow> ::=
     --     <SimpleExpr> <SimpleExpr>
     --   | <Signature> <SimpleExpr>
     public export
-    data Arrow : (nosig : Bool) -> Type where
-        ExExArr : {b : Bool} -> SimpleExpr -> SimpleExpr -> Arrow b
-        SiExArr : Signature -> SimpleExpr -> Arrow False
+    data ArrowProt : Type -> (nosig : Bool) -> Type where
+        ExExArr : {0 id : Type} -> {0 b : Bool} -> SimpleExprProt id -> SimpleExprProt id -> ArrowProt id b
+        SiExArr : {0 id : Type} -> SignatureProt id -> SimpleExprProt id -> ArrowProt id False
 
     public export
-    data Pair : Type where
-        MkPair : SimpleExpr -> SimpleExpr -> Pair
+    data PairProt : Type -> Type where
+        MkPair : {0 id : Type} -> SimpleExprProt id -> SimpleExprProt id -> PairProt id
 
     -- <Signature> ::= <SimpleExpr> <SimpleExpr>
     public export
-    data Signature : Type where
-      MkSignature : (name : Identifier) -> SimpleExpr -> Signature
+    data SignatureProt : Type -> Type where
+      MkSignature : {0 id : Type} -> (name : IdentifierProt String) -> SimpleExprProt id -> SignatureProt id
+
+public export
+SimpleExpr : Type
+SimpleExpr = SimpleExprProt String
+
+public export
+Identifier : Type
+Identifier = IdentifierProt String
+
+public export
+Application : Type
+Application = ApplicationProt String
+
+public export
+Equality : Type
+Equality = EqualityProt String
+
+public export
+Arrow : Bool -> Type
+Arrow = ArrowProt String
+
+public export
+Pair :Type
+Pair = PairProt String
+
+public export
+Signature : Type
+Signature = SignatureProt String
 
 -- Arrow 
 export
-forgetSig : Arrow b -> Arrow True
+forgetSig : ArrowProt id b -> ArrowProt id True
 forgetSig (ExExArr x y) = ExExArr x y
 forgetSig (SiExArr (MkSignature str x) y) = ExExArr x y
 
+export
+nameeq : String -> String -> Bool
+nameeq str1 str2 = 
+  case (split (\x => x == '.') str1, split (\x => x == '.') str2) of
+    ((head1 ::: []), (head2 ::: [])) => head1 == head2
+    (list@(head1 ::: (y :: xs)), (head2 ::: [])) => last list == head2
+    ((head1 ::: []), list@(head2 ::: (y :: xs))) => head2 == last list
+    (list1@(head1 ::: (z :: ys)), list2@(head2 ::: (y :: xs))) => list1 == list2
 
 export
 Eq Identifier where
-    (==) (MkId str) (MkId str1) =
-      case (split (\x => x == '.') str, split (\x => x == '.') str1) of
-        ((head1 ::: []), (head2 ::: [])) => head1 == head2
-        (list@(head1 ::: (y :: xs)), (head2 ::: [])) => last list == head2
-        ((head1 ::: []), list@(head2 ::: (y :: xs))) => head2 == last list
-        (list1@(head1 ::: (z :: ys)), list2@(head2 ::: (y :: xs))) => list1 == list2
+    (==) (MkId str) (MkId str1) = nameeq str str1
+      -- case (split (\x => x == '.') str, split (\x => x == '.') str1) of
+      --   ((head1 ::: []), (head2 ::: [])) => head1 == head2
+      --   (list@(head1 ::: (y :: xs)), (head2 ::: [])) => last list == head2
+      --   ((head1 ::: []), list@(head2 ::: (y :: xs))) => head2 == last list
+      --   (list1@(head1 ::: (z :: ys)), list2@(head2 ::: (y :: xs))) => list1 == list2
 
 mutual
     export
-    exprEquality : SimpleExpr -> SimpleExpr -> Bool
+    exprEquality : {0 id : Type} -> Eq (IdentifierProt id) => SimpleExprProt id -> SimpleExprProt id -> Bool
     exprEquality (IdTerm x) (IdTerm y) = x == y
     exprEquality (AppTerm x) (AppTerm y) = appEquality x y
     exprEquality (ArwTerm x) (ArwTerm y) = sameTypeArw x y
@@ -234,16 +276,16 @@ mutual
     exprEquality UnitTerm UnitTerm = True
     exprEquality _ _ = False
 
-    appEquality : Application -> Application -> Bool
+    appEquality : {0 id : Type} -> Eq (IdentifierProt id) => ApplicationProt id -> ApplicationProt id -> Bool
     appEquality (MkApp x z) (MkApp y w) = exprEquality x y && exprEquality z w
 
-    eqEquality : Equality -> Equality -> Bool
+    eqEquality : {0 id : Type} -> Eq (IdentifierProt id) => EqualityProt id -> EqualityProt id -> Bool
     eqEquality (MkEquality le1 re1) (MkEquality le2 re2) = exprEquality le1 le2 && exprEquality re1 re2
 
-    prEquality : Pair -> Pair -> Bool
+    prEquality : {0 id : Type} -> Eq (IdentifierProt id) => PairProt id -> PairProt id -> Bool
     prEquality (MkPair lfst lsnd) (MkPair rfst rsnd) = exprEquality lfst rfst && exprEquality lsnd rsnd
 
-    sameTypeArw : Arrow b1 -> Arrow b2 -> Bool
+    sameTypeArw : {0 id : Type} -> Eq (IdentifierProt id) => ArrowProt id b1 -> ArrowProt id b2 -> Bool
     sameTypeArw (ExExArr x z) (ExExArr y w) = exprEquality x z && exprEquality y w
     sameTypeArw (ExExArr x z) (SiExArr y w) =
         let MkSignature _ yex = y in exprEquality x z && exprEquality yex w
@@ -257,41 +299,46 @@ mutual
 
 export
 Show Identifier where
-  show (MkId str) = str
+  show (MkId str) =
+    last $ split (\x => x == '.') str
+      
 
 mutual
   export
-  showSimpleExpr : Nat -> SimpleExpr -> String
-  showSimpleExpr d (IdTerm (MkId name)) = name
+  showSimpleExpr : {0 id : Type} -> Show (IdentifierProt id) => Nat -> SimpleExprProt id -> String
+  showSimpleExpr d (IdTerm id@(MkId name)) = show id
   showSimpleExpr d (AppTerm x) = showApp d x
   showSimpleExpr d (ArwTerm x) = showArw d x
   showSimpleExpr d (EqTerm x) = showEq d x
   showSimpleExpr d (PrTerm x) = showPr d x
   showSimpleExpr d (IntegerLiteral k) = show k
   showSimpleExpr d (DoubleLiteral dbl) = show dbl
+  showSimpleExpr d (CharLiteral c) = show c
   showSimpleExpr d (StringLiteral str) = show str
   showSimpleExpr d UnitTerm = "()"
 
-  showApp : Nat -> Application -> String
+  showApp :{0 id : Type} -> Show (IdentifierProt id) =>  Nat -> ApplicationProt id -> String
   showApp d (MkApp x y) = showParens (d >= 3) $ showSimpleExpr 2 x ++ " " ++ showSimpleExpr 3 y
 
-  showArw : Nat -> Arrow False -> String
+  showArw : {0 id : Type} -> Show (IdentifierProt id) => Nat -> ArrowProt id False -> String
   showArw d (ExExArr x y) = showParens (d >= 2) $ showSimpleExpr 2 x ++ " -> " ++ showSimpleExpr 1 y
   showArw d (SiExArr (MkSignature name x) y) = showParens (d >= 2) $ "(" ++ show name ++ " : " ++ showSimpleExpr 0 x ++ ") -> " ++ showSimpleExpr 2 y
 
-  showEq : Nat -> Equality -> String
+  showEq : {0 id : Type} -> Show (IdentifierProt id) => Nat -> EqualityProt id -> String
   showEq d (MkEquality x y) = showParens (d >= 1) $ showSimpleExpr 1 x ++ " = " ++ showSimpleExpr 1 y
 
-  showPr : Nat -> Pair -> String
+  showPr : {0 id : Type} -> Show (IdentifierProt id) => Nat -> PairProt id -> String
   showPr d x = "(" ++ showPrNoBracket x ++ ")"
 
-  showPrNoBracket : Pair -> String
+  showPrNoBracket : {0 id : Type} -> Show (IdentifierProt id) => PairProt id -> String
   showPrNoBracket (MkPair x (PrTerm y)) = showSimpleExpr 0 x ++ ", " ++ showPrNoBracket y
   showPrNoBracket (MkPair x y) = showSimpleExpr 0 x ++ ", " ++ showSimpleExpr 0 y
 
 export
-Show SimpleExpr where
-  show x = showSimpleExpr 0 x
+%hint
+ShowSimpleExprProtImpl : {0 id : Type} -> Show (IdentifierProt id) => Show (SimpleExprProt id)
+ShowSimpleExprProtImpl = MkShow (\x => showSimpleExpr 0 x) (\_, x => showSimpleExpr 0 x)
+  -- show x = showSimpleExpr 0 x
 
 export
 Show Signature where
@@ -398,6 +445,13 @@ equality =
     match SEEqual
     pure $ \x,y => EqTerm (MkEquality x y)
 
+-- this is parsed using optable
+appOp : Grammar state SimpleExprToken True (SimpleExpr -> SimpleExpr -> SimpleExpr)
+appOp =
+  do
+    match SEDollar
+    pure $ \x, y => AppTerm $ MkApp x y
+
 -- the main parser
 -- starts in expr
 mutual
@@ -435,7 +489,7 @@ mutual
 
     -- <arrow> ::= 
     --   | <operation> <SEArrow> <expr>
-    --   | <SELParen> <signature> <SERParen> <SEArrow> <arrow>
+    --   | <SELParen> <signature> <SERParen> <SEArrow> <expr>
     arrow : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True (Arrow False)
     arrow optable =
       do
@@ -462,7 +516,7 @@ mutual
     --   | <term>
     operation : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True SimpleExpr
     operation optable =
-        buildExpressionParser (optable ++ [[Infix equality AssocNone]]) (map AppTerm (app optable) <|> term optable)
+        buildExpressionParser (optable ++ [[Infix equality AssocNone, Infix appOp AssocRight]]) (map AppTerm (app optable) <|> term optable)
       <|>
         term optable
 
@@ -480,9 +534,11 @@ mutual
 
     -- left most part of application must be a identifier
     -- <app> ::=
-    --     <app> <term>
+    --     <identifier> <term> <appSub1> 
     --   | <identifier> <term>
     --   | <appWithParen>
+    -- <appSub1> ::= <appSub2> | ε
+    -- <appSub2> ::= <term> <appSub1>
     app : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True Application
     app optable =
       -- the first two sytax corresponds to this part
@@ -492,18 +548,9 @@ mutual
         appSub1 optable $ MkApp (IdTerm id) t
       <|>
       do
-        a <- appWithParen optable
+        a <- paren optable
         t <- term optable
-        appSub1 optable a
-
-    -- <appWithParen> ::= <SELParen> <app> <SERParen>
-    appWithParen :  OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True Application
-    appWithParen optable =
-      do
-        match SELParen
-        a <- app optable
-        match SERParen
-        pure $ a
+        appSub1 optable (MkApp a t)
 
     -- subfunction for app
     appSub1 : OperatorTable state SimpleExprToken SimpleExpr -> Application -> Grammar state SimpleExprToken False Application
@@ -550,6 +597,7 @@ mutual
     -- <literal> ::=
     --     <SEIntLiteral>
     --   | <SEDoubleLiteral>
+    --   | <SECharLiteral>
     --   | <SEStringLiteral>
     literal : Grammar state SimpleExprToken True SimpleExpr
     literal =
@@ -560,6 +608,10 @@ mutual
       do
         n <- match SEDoubleLiteral
         pure $ DoubleLiteral n
+      <|>
+      do
+        c <- match SECharLiteral
+        pure $ CharLiteral c
       <|>
       do
         s <- match SEStringLiteral
@@ -595,8 +647,5 @@ parse opmap x =
   case lexSimpleExpr x of
     Just toks => parseSimpleExpr opmap toks
     Nothing => Left "Failed to lex."
-
-
-
 
 

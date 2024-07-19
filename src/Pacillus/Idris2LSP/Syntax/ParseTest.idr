@@ -19,7 +19,10 @@ testPatternch01 =
         "(x : Bool) -> StringOrInt x -> String",
         "cast val",
         "val",
-        "Prelude.(+)"
+        "Prelude.(+)",
+        "(vec1 ++ vec2) ++ (vec3 ++ vec4)",
+        "f $ g x",
+        "(x * y) z"
     ]
 
 testPatternch02 : List String
@@ -43,7 +46,6 @@ testPatternch02 =
 opMap : InOperatorMap
 opMap = 
     [
-        MkOpRecord "$" 0 AssocRight,
         MkOpRecord "+" 8 AssocLeft, 
         MkOpRecord "*" 9 AssocLeft, 
         MkOpRecord "===" 6 AssocNone,
@@ -83,3 +85,6 @@ parseNListResult xs =
         output = zipWith (++) xs results
     in 
         putStrLn $ unlines output
+
+etest : IO ()
+etest = parseNListResult testPatternch01

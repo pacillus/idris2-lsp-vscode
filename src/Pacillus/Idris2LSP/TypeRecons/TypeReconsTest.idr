@@ -14,6 +14,8 @@ opMap =
         MkOpRecord "*" 9 AssocLeft, 
         MkOpRecord "===" 6 AssocNone,
         MkOpRecord "++" 7 AssocRight,
+        MkOpRecord "++" 7 AssocRight,
+        MkOpRecord "++" 7 AssocRight,
         MkOpRecord ">=" 6 AssocNone,
         MkOpRecord "::" 7 AssocRight,
         MkOpRecord "." 9 AssocRight
@@ -95,9 +97,42 @@ testCases =
         MkCase "f x " [
           "f : (a, b) -> a -> b",
           "x : (String, Nat)"
+        ],
+        MkCase "(vec1 ++ vec2) ++ (vec3 ++ vec4)" [
+          "Main.vec1 : Vect 1 Nat",
+          "Data.Vect.(++) : Vect m elem -> Vect n elem -> Vect (m + n) elem",
+          "Main.vec2 : Vect 2 Nat",
+          "Data.Vect.(++) : Vect m elem -> Vect n elem -> Vect (m + n) elem",
+          "Main.vec3 : Vect 3 Nat",
+          "Data.Vect.(++) : Vect m elem -> Vect n elem -> Vect (m + n) elem",
+          "Main.vec4 : Vect 4 Nat"
+        ],
+        MkCase "f $ g k" [
+          "f : x = y -> S x = S y",
+          "g : (n : Nat) -> n = n",
+          "k : Nat"
         ]
     ]
 
-
 test : IO ()
-test = putStrLn $ testAllCase testCases
+test = putStr (testAllCase testCases)
+
+0 Prop : Nat -> Type
+
+argex : Nat -> Type
+argex a =
+  let
+    sub : Prop a -> Prop a
+    sub x = ?hole
+  in
+    ?hole2 $ sub (?hole1 Prelude.List.reverse)
+
+sum : List Nat
+sum = (++) ((::) 2 [3, 4]) [5, 6]
+
+-- | sub : Prop a -> Prop a
+-- | ?hole1 : Prop a
+-- ------
+-- sub ?hole1 : Prop ?a
+
+-- reverse : List a -> List a
