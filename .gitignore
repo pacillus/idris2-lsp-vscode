@@ -5,12 +5,9 @@ node_modules
 *.ttm
 *.so
 *.ss
-src/build/exec/_tmpchez
-src/build/exec/echolex
-src/build/exec/echotype
-src/build/exec/echolex_app/compileChez
-src/build/exec/echotype_app/compileChez
-src/build/exec/exhotype.js
-src/build/exec/echotype.js
-src/build/exec/echolex.js
+src/build/exec/**
 .DS_Store
+idris2-lsp-0.7.1.vsix
+.gitignore
+src/echolex.js
+src/echotype.js

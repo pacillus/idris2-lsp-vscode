@@ -168,7 +168,7 @@ nameLexer =
 
 idLexer : Lexer
 idLexer =
-  many (alpha <+> many alphaNum <+> is '.') <+> nameLexer
+  many (pred isUpper <+> many alphaNum <+> is '.') <+> nameLexer
 
 
 -- token map to tell what lexes to what

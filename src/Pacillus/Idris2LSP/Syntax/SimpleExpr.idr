@@ -37,7 +37,6 @@ TODO "(a, b)" is a sugar syntax for Pair a b when type context
       and "(x, y)" is a sugar syntax for MkPair x y when term context
 TODO () is a sugar syntax for Unit when type and MkUnit when term context
 TODO Unification between renamed type and not renamed 
-TODO test case 8 error
 TODO Namespace A.B.f
 TODO projection sugar syntax "dat .member"
 

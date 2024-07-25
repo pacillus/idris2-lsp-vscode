@@ -316,7 +316,7 @@ function x24tcOpt_4($0) {
      switch($0.a3.h) {
       case 0: /* IdTerm */ {
        switch(Pacillus_Idris2LSP_TypeRecons_TypeRecons_isImplicitVar($0.a2.a1)) {
-        case 1: return {h: 0 /* {TcDone:4} */, a1: Pacillus_Idris2LSP_TypeRecons_TypeRecons_leafL($0.a1, {h: 0 /* IdTerm */, a1: $0.a2.a1}, {h: 0 /* IdTerm */, a1: $0.a3.a1})};
+        case 1: return {h: 0 /* {TcDone:4} */, a1: Pacillus_Idris2LSP_TypeRecons_TypeRecons_uniVarExprL($0.a1, {h: 0 /* IdTerm */, a1: $0.a2.a1}, {h: 0 /* IdTerm */, a1: $0.a3.a1})};
         case 0: {
          switch(Pacillus_Idris2LSP_TypeRecons_TypeRecons_isImplicitVar($0.a3.a1)) {
           case 0: {
@@ -325,14 +325,14 @@ function x24tcOpt_4($0) {
             case 0: return {h: 0 /* {TcDone:4} */, a1: {h: 0 /* Left */, a1: Pacillus_Idris2LSP_TypeRecons_TypeRecons_showUniError({h: 0 /* IdTerm */, a1: $0.a2.a1}, {h: 0 /* IdTerm */, a1: $0.a3.a1})}};
            }
           }
-          case 1: return {h: 0 /* {TcDone:4} */, a1: Pacillus_Idris2LSP_TypeRecons_TypeRecons_leafR($0.a1, {h: 0 /* IdTerm */, a1: $0.a2.a1}, {h: 0 /* IdTerm */, a1: $0.a3.a1})};
+          case 1: return {h: 0 /* {TcDone:4} */, a1: Pacillus_Idris2LSP_TypeRecons_TypeRecons_uniVarExprR($0.a1, {h: 0 /* IdTerm */, a1: $0.a2.a1}, {h: 0 /* IdTerm */, a1: $0.a3.a1})};
          }
         }
        }
       }
       default: {
        switch(Pacillus_Idris2LSP_TypeRecons_TypeRecons_isImplicitVar($0.a2.a1)) {
-        case 1: return {h: 0 /* {TcDone:4} */, a1: Pacillus_Idris2LSP_TypeRecons_TypeRecons_leafL($0.a1, {h: 0 /* IdTerm */, a1: $0.a2.a1}, $0.a3)};
+        case 1: return {h: 0 /* {TcDone:4} */, a1: Pacillus_Idris2LSP_TypeRecons_TypeRecons_uniVarExprL($0.a1, {h: 0 /* IdTerm */, a1: $0.a2.a1}, $0.a3)};
         case 0: return {h: 0 /* {TcDone:4} */, a1: {h: 0 /* Left */, a1: Pacillus_Idris2LSP_TypeRecons_TypeRecons_showUniError({h: 0 /* IdTerm */, a1: $0.a2.a1}, $0.a3)}};
        }
       }
@@ -342,7 +342,7 @@ function x24tcOpt_4($0) {
      switch($0.a3.h) {
       case 0: /* IdTerm */ {
        switch(Pacillus_Idris2LSP_TypeRecons_TypeRecons_isImplicitVar($0.a3.a1)) {
-        case 1: return {h: 0 /* {TcDone:4} */, a1: Pacillus_Idris2LSP_TypeRecons_TypeRecons_leafR($0.a1, $0.a2, {h: 0 /* IdTerm */, a1: $0.a3.a1})};
+        case 1: return {h: 0 /* {TcDone:4} */, a1: Pacillus_Idris2LSP_TypeRecons_TypeRecons_uniVarExprR($0.a1, $0.a2, {h: 0 /* IdTerm */, a1: $0.a3.a1})};
         case 0: return {h: 0 /* {TcDone:4} */, a1: {h: 0 /* Left */, a1: Pacillus_Idris2LSP_TypeRecons_TypeRecons_showUniError($0.a2, {h: 0 /* IdTerm */, a1: $0.a3.a1})}};
        }
       }
@@ -366,9 +366,9 @@ function x24tcOpt_4($0) {
           default: return {h: 0 /* {TcDone:4} */, a1: {h: 0 /* Left */, a1: Pacillus_Idris2LSP_TypeRecons_TypeRecons_showUniError($0.a2, $0.a3)}};
          }
         }
-        case 7: /* PrTerm */ {
+        case 8: /* PrTerm */ {
          switch($0.a3.h) {
-          case 7: /* PrTerm */ return {h: 6 /* {TcContinue4:6} */, a1: $0.a1, a2: $0.a2.a1, a3: $0.a3.a1};
+          case 8: /* PrTerm */ return {h: 6 /* {TcContinue4:6} */, a1: $0.a1, a2: $0.a2.a1, a3: $0.a3.a1};
           default: return {h: 0 /* {TcDone:4} */, a1: {h: 0 /* Left */, a1: Pacillus_Idris2LSP_TypeRecons_TypeRecons_showUniError($0.a2, $0.a3)}};
          }
         }
@@ -673,11 +673,11 @@ function Data_String_Extra_with__index_3642($0, $1, $2) {
 /* {$tcOpt:15} */
 function x24tcOpt_15($0) {
  switch($0.a1.h) {
-  case 0: /* nil */ return {h: 0 /* {TcDone:15} */, a1: {h: 0 /* Left */, a1: ('could not find the type of identifier '+$0.a2)}};
+  case 0: /* nil */ return {h: 0 /* {TcDone:15} */, a1: {h: 0 /* Left */, a1: ('could not find the type of identifier '+Pacillus_Idris2LSP_Syntax_SimpleExpr_show_Show_Identifier($0.a2))}};
   case undefined: /* cons */ {
-   const $8 = {a1: $0.a1.a1.a1, a2: $0.a1.a1.a2};
+   const $a = {a1: $0.a1.a1.a1, a2: $0.a1.a1.a2};
    switch(Pacillus_Idris2LSP_Syntax_SimpleExpr_x3dx3d_Eq_Identifier($0.a1.a1.a1, $0.a2)) {
-    case 1: return {h: 0 /* {TcDone:15} */, a1: {h: 1 /* Right */, a1: {h: 0 /* Start */, a1: Pacillus_Idris2LSP_TypeRecons_TypeRecons_toSpSig($8)}}};
+    case 1: return {h: 0 /* {TcDone:15} */, a1: {h: 1 /* Right */, a1: {h: 0 /* Start */, a1: Pacillus_Idris2LSP_TypeRecons_TypeRecons_toSpSig($a)}}};
     case 0: return {h: 1 /* {TcContinue15:1} */, a1: $0.a1.a2, a2: $0.a2};
    }
   }
@@ -835,7 +835,7 @@ function Pacillus_Idris2LSP_TypeRecons_TypeRecons_applyConstraints($0, $1) {
 }
 
 /* Pacillus.Idris2LSP.TypeRecons.TypeRecons.case block in applyConstraints */
-function Pacillus_Idris2LSP_TypeRecons_TypeRecons_case__applyConstraints_4158($0, $1, $2, $3, $4) {
+function Pacillus_Idris2LSP_TypeRecons_TypeRecons_case__applyConstraints_4235($0, $1, $2, $3, $4) {
  return __tailRec(x24tcOpt_21, {h: 2 /* {TcContinue21:2} */, a1: $0, a2: $1, a3: $2, a4: $3, a5: $4});
 }
 
@@ -874,9 +874,9 @@ function x24tcOpt_22($0) {
       default: return {h: 0 /* {TcDone:22} */, a1: 0};
      }
     }
-    case 7: /* PrTerm */ {
+    case 8: /* PrTerm */ {
      switch($0.a2.h) {
-      case 7: /* PrTerm */ return {h: 4 /* {TcContinue22:4} */, a1: $0.a1.a1, a2: $0.a2.a1};
+      case 8: /* PrTerm */ return {h: 4 /* {TcContinue22:4} */, a1: $0.a1.a1, a2: $0.a2.a1};
       default: return {h: 0 /* {TcDone:22} */, a1: 0};
      }
     }
@@ -892,15 +892,15 @@ function x24tcOpt_22($0) {
       default: return {h: 0 /* {TcDone:22} */, a1: 0};
      }
     }
-    case 6: /* StringLiteral */ {
+    case 7: /* StringLiteral */ {
      switch($0.a2.h) {
-      case 6: /* StringLiteral */ return {h: 0 /* {TcDone:22} */, a1: Prelude_EqOrd_x3dx3d_Eq_String($0.a1.a1, $0.a2.a1)};
+      case 7: /* StringLiteral */ return {h: 0 /* {TcDone:22} */, a1: Prelude_EqOrd_x3dx3d_Eq_String($0.a1.a1, $0.a2.a1)};
       default: return {h: 0 /* {TcDone:22} */, a1: 0};
      }
     }
-    case 8: /* UnitTerm */ {
+    case 9: /* UnitTerm */ {
      switch($0.a2.h) {
-      case 8: /* UnitTerm */ return {h: 0 /* {TcDone:22} */, a1: 1};
+      case 9: /* UnitTerm */ return {h: 0 /* {TcDone:22} */, a1: 1};
       default: return {h: 0 /* {TcDone:22} */, a1: 0};
      }
     }
@@ -1050,8 +1050,23 @@ const csegen_23 = __lazy(function () {
  return a => $0 => Prelude_Types_join_Monad_x28Eitherx20x24ex29($0);
 });
 
-/* {csegen:26} */
-const csegen_26 = __lazy(function () {
+/* {csegen:25} */
+const csegen_25 = __lazy(function () {
+ return {a1: x => Pacillus_Idris2LSP_Syntax_Lexer_show_Show_SimpleExprToken(x), a2: d => x => Pacillus_Idris2LSP_Syntax_Lexer_showPrec_Show_SimpleExprToken(d, x)};
+});
+
+/* {csegen:28} */
+const csegen_28 = __lazy(function () {
+ return {a1: x => Text_Bounded_show_Show_x28WithBoundsx20x24tyx29(csegen_25(), x), a2: d => x => Text_Bounded_showPrec_Show_x28WithBoundsx20x24tyx29(csegen_25(), d, x)};
+});
+
+/* {csegen:31} */
+const csegen_31 = __lazy(function () {
+ return {a1: x => Text_Parser_Core_show_Show_x28ParsingErrorx20x24tokx29(csegen_25(), x), a2: d => x => Text_Parser_Core_showPrec_Show_x28ParsingErrorx20x24tokx29(csegen_25(), d, x)};
+});
+
+/* {csegen:34} */
+const csegen_34 = __lazy(function () {
  return $0 => {
   switch(Pacillus_Idris2LSP_Syntax_SimpleExpr_ignored($0)) {
    case 1: return 0;
@@ -1060,33 +1075,23 @@ const csegen_26 = __lazy(function () {
  };
 });
 
-/* {csegen:28} */
-const csegen_28 = __lazy(function () {
- return {a1: x => Pacillus_Idris2LSP_Syntax_Lexer_show_Show_SimpleExprToken(x), a2: d => x => Pacillus_Idris2LSP_Syntax_Lexer_showPrec_Show_SimpleExprToken(d, x)};
-});
-
-/* {csegen:31} */
-const csegen_31 = __lazy(function () {
- return {a1: x => Text_Parser_Core_show_Show_x28ParsingErrorx20x24tokx29(csegen_28(), x), a2: d => x => Text_Parser_Core_showPrec_Show_x28ParsingErrorx20x24tokx29(csegen_28(), d, x)};
-});
-
-/* {csegen:46} */
-const csegen_46 = __lazy(function () {
+/* {csegen:49} */
+const csegen_49 = __lazy(function () {
  return {a1: acc => elem => func => init => input => Prelude_Types_foldr_Foldable_List(func, init, input), a2: elem => acc => func => init => input => Prelude_Types_foldl_Foldable_List(func, init, input), a3: elem => $b => Prelude_Types_null_Foldable_List($b), a4: elem => acc => m => $f => funcM => init => input => Prelude_Types_foldlM_Foldable_List($f, funcM, init, input), a5: elem => $16 => $16, a6: a => m => $18 => f => $19 => Prelude_Types_foldMap_Foldable_List($18, f, $19)};
 });
 
-/* {csegen:59} */
-const csegen_59 = __lazy(function () {
+/* {csegen:62} */
+const csegen_62 = __lazy(function () {
  return {a1: $1 => $2 => Prelude_EqOrd_x3dx3d_Eq_String($1, $2), a2: $7 => $8 => Prelude_EqOrd_x2fx3d_Eq_String($7, $8)};
 });
 
-/* {csegen:86} */
-const csegen_86 = __lazy(function () {
+/* {csegen:91} */
+const csegen_91 = __lazy(function () {
  return {a1: $1 => $2 => Prelude_EqOrd_x3dx3d_Eq_Char($1, $2), a2: $7 => $8 => Prelude_EqOrd_x2fx3d_Eq_Char($7, $8)};
 });
 
-/* {csegen:99} */
-const csegen_99 = __lazy(function () {
+/* {csegen:104} */
+const csegen_104 = __lazy(function () {
  return c => {
   switch(Prelude_EqOrd_x3dx3d_Eq_Char(c, 'e')) {
    case 1: return 1;
@@ -1095,93 +1100,93 @@ const csegen_99 = __lazy(function () {
  };
 });
 
-/* {csegen:152} */
-const csegen_152 = __lazy(function () {
+/* {csegen:202} */
+const csegen_202 = __lazy(function () {
  return {a1: $1 => $2 => ($1+$2), a2: ''};
 });
 
-/* {csegen:154} */
-const csegen_154 = __lazy(function () {
+/* {csegen:204} */
+const csegen_204 = __lazy(function () {
  return {a1: x => Prelude_Show_show_Show_Int(x), a2: d => x => Prelude_Show_showPrec_Show_Int(d, x)};
 });
 
-/* {csegen:169} */
-const csegen_169 = __lazy(function () {
+/* {csegen:219} */
+const csegen_219 = __lazy(function () {
  return {a1: {a1: $2 => $3 => Prelude_EqOrd_x3dx3d_Eq_Int($2, $3), a2: $8 => $9 => Prelude_EqOrd_x2fx3d_Eq_Int($8, $9)}, a2: $e => $f => Prelude_EqOrd_compare_Ord_Int($e, $f), a3: $14 => $15 => Prelude_EqOrd_x3c_Ord_Int($14, $15), a4: $1a => $1b => Prelude_EqOrd_x3e_Ord_Int($1a, $1b), a5: $20 => $21 => Prelude_EqOrd_x3cx3d_Ord_Int($20, $21), a6: $26 => $27 => Prelude_EqOrd_x3ex3d_Ord_Int($26, $27), a7: $2c => $2d => Prelude_EqOrd_max_Ord_Int($2c, $2d), a8: $32 => $33 => Prelude_EqOrd_min_Ord_Int($32, $33)};
 });
 
-/* {csegen:175} */
-const csegen_175 = __lazy(function () {
+/* {csegen:222} */
+const csegen_222 = __lazy(function () {
  return x => Prelude_EqOrd_x3dx3d_Eq_Char(x, '.');
 });
 
-/* {csegen:177} */
-const csegen_177 = __lazy(function () {
+/* {csegen:224} */
+const csegen_224 = __lazy(function () {
  return {a1: $1 => Pacillus_Idris2LSP_Syntax_Lexer_TokType_TokenKind_SimpleExprTokenKind($1), a2: kind => $5 => Pacillus_Idris2LSP_Syntax_Lexer_tokValue_TokenKind_SimpleExprTokenKind(kind, $5)};
 });
 
-/* {csegen:180} */
-const csegen_180 = __lazy(function () {
+/* {csegen:227} */
+const csegen_227 = __lazy(function () {
  return {a1: $1 => $2 => Pacillus_Idris2LSP_Syntax_Lexer_x3dx3d_Eq_SimpleExprTokenKind($1, $2), a2: $7 => $8 => Pacillus_Idris2LSP_Syntax_Lexer_x2fx3d_Eq_SimpleExprTokenKind($7, $8)};
 });
 
-/* {csegen:181} */
-const csegen_181 = __lazy(function () {
- return Text_Parser_match(csegen_177(), csegen_180(), 2);
+/* {csegen:228} */
+const csegen_228 = __lazy(function () {
+ return Text_Parser_match(csegen_224(), csegen_227(), 2);
 });
 
-/* {csegen:182} */
-const csegen_182 = __lazy(function () {
- return Text_Parser_match(csegen_177(), csegen_180(), 3);
+/* {csegen:229} */
+const csegen_229 = __lazy(function () {
+ return Text_Parser_match(csegen_224(), csegen_227(), 3);
 });
 
-/* {csegen:186} */
-const csegen_186 = __lazy(function () {
- return Text_Parser_match(csegen_177(), csegen_180(), 4);
+/* {csegen:233} */
+const csegen_233 = __lazy(function () {
+ return Text_Parser_match(csegen_224(), csegen_227(), 4);
 });
 
-/* {csegen:189} */
-const csegen_189 = __lazy(function () {
- return Text_Parser_match(csegen_177(), csegen_180(), 9);
+/* {csegen:236} */
+const csegen_236 = __lazy(function () {
+ return Text_Parser_match(csegen_224(), csegen_227(), 9);
 });
 
-/* {csegen:202} */
-const csegen_202 = __lazy(function () {
- return Text_Parser_match(csegen_177(), csegen_180(), 5);
+/* {csegen:253} */
+const csegen_253 = __lazy(function () {
+ return Text_Parser_match(csegen_224(), csegen_227(), 5);
 });
 
-/* {csegen:215} */
-const csegen_215 = __lazy(function () {
- return Text_Parser_match(csegen_177(), csegen_180(), 6);
+/* {csegen:266} */
+const csegen_266 = __lazy(function () {
+ return Text_Parser_match(csegen_224(), csegen_227(), 6);
 });
 
-/* {csegen:223} */
-const csegen_223 = __lazy(function () {
+/* {csegen:277} */
+const csegen_277 = __lazy(function () {
  return {a1: {a1: 'End of input', a2: {h: 0}}, a2: {h: 0}};
 });
 
-/* {csegen:226} */
-const csegen_226 = __lazy(function () {
+/* {csegen:280} */
+const csegen_280 = __lazy(function () {
  return {a1: $1 => $2 => _add32s($1, $2), a2: $6 => $7 => _mul32s($6, $7), a3: $b => Number(_truncBigInt32($b))};
 });
 
-/* {csegen:240} */
-const csegen_240 = __lazy(function () {
+/* {csegen:294} */
+const csegen_294 = __lazy(function () {
  return {a1: $1 => Language_JSON_Tokens_TokType_TokenKind_JSONTokenKind($1), a2: kind => $5 => Language_JSON_Tokens_tokValue_TokenKind_JSONTokenKind(kind, $5)};
 });
 
-/* {csegen:243} */
-const csegen_243 = __lazy(function () {
+/* {csegen:297} */
+const csegen_297 = __lazy(function () {
  return {a1: $1 => $2 => Language_JSON_Tokens_x3dx3d_Eq_JSONTokenKind($1, $2), a2: $7 => $8 => Language_JSON_Tokens_x2fx3d_Eq_JSONTokenKind($7, $8)};
 });
 
-/* {csegen:272} */
-const csegen_272 = __lazy(function () {
+/* {csegen:326} */
+const csegen_326 = __lazy(function () {
  return {a1: $1 => Language_JSON_String_Tokens_TokType_TokenKind_JSONStringTokenKind($1), a2: kind => $5 => Language_JSON_String_Tokens_tokValue_TokenKind_JSONStringTokenKind(kind, $5)};
 });
 
-/* {csegen:275} */
-const csegen_275 = __lazy(function () {
+/* {csegen:329} */
+const csegen_329 = __lazy(function () {
  return {a1: $1 => $2 => Language_JSON_String_Tokens_x3dx3d_Eq_JSONStringTokenKind($1, $2), a2: $7 => $8 => Language_JSON_String_Tokens_x2fx3d_Eq_JSONStringTokenKind($7, $8)};
 });
 
@@ -1190,16 +1195,16 @@ function prim__sub_Integer($0, $1) {
  return ($0-$1);
 }
 
-/* Pacillus.Idris2LSP.GetType.4529:5205:convstrarr */
-function Pacillus_Idris2LSP_GetType_n__4529_5205_convstrarr($0, $1, $2) {
+/* Pacillus.Idris2LSP.GetType.4530:5272:convstrarr */
+function Pacillus_Idris2LSP_GetType_n__4530_5272_convstrarr($0, $1, $2) {
  switch($2.h) {
   case 3: /* JString */ return {h: 1 /* Right */, a1: $2.a1};
   default: return {h: 0 /* Left */, a1: 'Error : Non string at \"sigs\" in input JSON'};
  }
 }
 
-/* Pacillus.Idris2LSP.GetType.4529:5204:conv3 */
-function Pacillus_Idris2LSP_GetType_n__4529_5204_conv3($0, $1, $2) {
+/* Pacillus.Idris2LSP.GetType.4530:5271:conv3 */
+function Pacillus_Idris2LSP_GetType_n__4530_5271_conv3($0, $1, $2) {
  switch($2.h) {
   case undefined: /* cons */ {
    switch($2.a1) {
@@ -1216,8 +1221,8 @@ function Pacillus_Idris2LSP_GetType_n__4529_5204_conv3($0, $1, $2) {
  }
 }
 
-/* Pacillus.Idris2LSP.GetType.4343:5012:conv3 */
-function Pacillus_Idris2LSP_GetType_n__4343_5012_conv3($0, $1) {
+/* Pacillus.Idris2LSP.GetType.4344:5079:conv3 */
+function Pacillus_Idris2LSP_GetType_n__4344_5079_conv3($0, $1) {
  switch($1.h) {
   case undefined: /* cons */ {
    switch($1.a1) {
@@ -1234,8 +1239,8 @@ function Pacillus_Idris2LSP_GetType_n__4343_5012_conv3($0, $1) {
  }
 }
 
-/* Pacillus.Idris2LSP.GetType.4529:5203:conv2 */
-function Pacillus_Idris2LSP_GetType_n__4529_5203_conv2($0, $1, $2) {
+/* Pacillus.Idris2LSP.GetType.4530:5270:conv2 */
+function Pacillus_Idris2LSP_GetType_n__4530_5270_conv2($0, $1, $2) {
  switch($2.h) {
   case undefined: /* cons */ {
    switch($2.a1) {
@@ -1252,8 +1257,8 @@ function Pacillus_Idris2LSP_GetType_n__4529_5203_conv2($0, $1, $2) {
  }
 }
 
-/* Pacillus.Idris2LSP.GetType.4343:5011:conv2 */
-function Pacillus_Idris2LSP_GetType_n__4343_5011_conv2($0, $1) {
+/* Pacillus.Idris2LSP.GetType.4344:5078:conv2 */
+function Pacillus_Idris2LSP_GetType_n__4344_5078_conv2($0, $1) {
  switch($1.h) {
   case undefined: /* cons */ {
    switch($1.a1) {
@@ -1270,8 +1275,8 @@ function Pacillus_Idris2LSP_GetType_n__4343_5011_conv2($0, $1) {
  }
 }
 
-/* Pacillus.Idris2LSP.GetType.4529:5202:conv1 */
-function Pacillus_Idris2LSP_GetType_n__4529_5202_conv1($0, $1, $2) {
+/* Pacillus.Idris2LSP.GetType.4530:5269:conv1 */
+function Pacillus_Idris2LSP_GetType_n__4530_5269_conv1($0, $1, $2) {
  switch($2.h) {
   case undefined: /* cons */ {
    switch($2.a1) {
@@ -1288,8 +1293,8 @@ function Pacillus_Idris2LSP_GetType_n__4529_5202_conv1($0, $1, $2) {
  }
 }
 
-/* Pacillus.Idris2LSP.GetType.4343:5010:conv1 */
-function Pacillus_Idris2LSP_GetType_n__4343_5010_conv1($0, $1) {
+/* Pacillus.Idris2LSP.GetType.4344:5077:conv1 */
+function Pacillus_Idris2LSP_GetType_n__4344_5077_conv1($0, $1) {
  switch($1.h) {
   case undefined: /* cons */ {
    switch($1.a1) {
@@ -1306,8 +1311,8 @@ function Pacillus_Idris2LSP_GetType_n__4343_5010_conv1($0, $1) {
  }
 }
 
-/* Pacillus.Idris2LSP.GetType.4343:5009:assocconv */
-function Pacillus_Idris2LSP_GetType_n__4343_5009_assocconv($0, $1) {
+/* Pacillus.Idris2LSP.GetType.4344:5076:assocconv */
+function Pacillus_Idris2LSP_GetType_n__4344_5076_assocconv($0, $1) {
  switch($1) {
   case 'infixr': return {h: 1 /* Right */, a1: 2};
   case 'infixl': return {h: 1 /* Right */, a1: 1};
@@ -1324,7 +1329,6 @@ function Pacillus_Idris2LSP_GetType_process($0) {
   case 1: /* Right */ return Pacillus_Idris2LSP_GetType_inferType($1.a1.a1, $1.a1.a2.a1, $1.a1.a2.a2);
  }
 }
-exports.Pacillus_Idris2LSP_GetType_process = Pacillus_Idris2LSP_GetType_process
 
 /* Pacillus.Idris2LSP.GetType.parseInput : String -> Either String (String, (InOperatorMap, List String)) */
 function Pacillus_Idris2LSP_GetType_parseInput($0) {
@@ -1369,7 +1373,7 @@ function Pacillus_Idris2LSP_GetType_main($0) {
 /* Pacillus.Idris2LSP.GetType.json2OpMap : JSON -> Either String OpRecord */
 function Pacillus_Idris2LSP_GetType_json2OpMap($0) {
  switch($0.h) {
-  case 5: /* JObject */ return Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Pacillus_Idris2LSP_GetType_findFirst('Error : Failed to find member \"ops.symbol\" in input JSON', $7 => Pacillus_Idris2LSP_GetType_n__4343_5010_conv1($0.a1, $7), $0.a1), symbol => Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Pacillus_Idris2LSP_GetType_findFirst('Error : Failed to find member \"ops.prec\" in input JSON', $12 => Pacillus_Idris2LSP_GetType_n__4343_5011_conv2($0.a1, $12), $0.a1), precraw => Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Pacillus_Idris2LSP_GetType_findFirst('Error : Failed to find member \"ops.assoc\" in input JSON', $1d => Pacillus_Idris2LSP_GetType_n__4343_5012_conv3($0.a1, $1d), $0.a1), assocraw => Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Prelude_Types_maybe(() => ({h: 0 /* Left */, a1: 'Error : Found none number at \"ops.prec\" in input JSON'}), () => $29 => ({h: 1 /* Right */, a1: $29}), Prelude_Types_map_Functor_Maybe($2e => Prelude_Types_prim__integerToNat($2e), Data_String_parseInteger(csegen_17(), csegen_19(), precraw))), prec => Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Pacillus_Idris2LSP_GetType_n__4343_5009_assocconv($0.a1, assocraw), assoc => ({h: 1 /* Right */, a1: {a1: symbol, a2: prec, a3: assoc}}))))));
+  case 5: /* JObject */ return Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Pacillus_Idris2LSP_GetType_findFirst('Error : Failed to find member \"ops.symbol\" in input JSON', $7 => Pacillus_Idris2LSP_GetType_n__4344_5077_conv1($0.a1, $7), $0.a1), symbol => Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Pacillus_Idris2LSP_GetType_findFirst('Error : Failed to find member \"ops.prec\" in input JSON', $12 => Pacillus_Idris2LSP_GetType_n__4344_5078_conv2($0.a1, $12), $0.a1), precraw => Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Pacillus_Idris2LSP_GetType_findFirst('Error : Failed to find member \"ops.assoc\" in input JSON', $1d => Pacillus_Idris2LSP_GetType_n__4344_5079_conv3($0.a1, $1d), $0.a1), assocraw => Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Prelude_Types_maybe(() => ({h: 0 /* Left */, a1: 'Error : Found none number at \"ops.prec\" in input JSON'}), () => $29 => ({h: 1 /* Right */, a1: $29}), Prelude_Types_map_Functor_Maybe($2e => Prelude_Types_prim__integerToNat($2e), Data_String_parseInteger(csegen_17(), csegen_19(), precraw))), prec => Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Pacillus_Idris2LSP_GetType_n__4344_5076_assocconv($0.a1, assocraw), assoc => ({h: 1 /* Right */, a1: {a1: symbol, a2: prec, a3: assoc}}))))));
   default: return {h: 0 /* Left */, a1: 'Invalid JSON format at \"ops\" in input JSON '};
  }
 }
@@ -1421,16 +1425,16 @@ function Pacillus_Idris2LSP_GetType_json2Info($0) {
        };
        const $50 = {a1: $51, a2: a => $59 => ({h: 1 /* Right */, a1: $59}), a3: $5b};
        const $4f = {a1: $50, a2: csegen_22(), a3: csegen_23()};
-       const $4d = Pacillus_Idris2LSP_GetType_convertInList2ListIn($4f, Prelude_Types_List_mapAppend({h: 0}, $6d => Pacillus_Idris2LSP_GetType_n__4529_5205_convstrarr($0.a1, $0, $6d), zraw));
+       const $4d = Pacillus_Idris2LSP_GetType_convertInList2ListIn($4f, Prelude_Types_List_mapAppend({h: 0}, $6d => Pacillus_Idris2LSP_GetType_n__4530_5272_convstrarr($0.a1, $0, $6d), zraw));
        return Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29($4d, z => ({h: 1 /* Right */, a1: {a1: x, a2: {a1: y, a2: z}}}));
       };
       return Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29($27, $4b);
      };
-     return Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Pacillus_Idris2LSP_GetType_findFirst('Error : Failed to find member \"sigs\" in input JSON', $1f => Pacillus_Idris2LSP_GetType_n__4529_5204_conv3($0.a1, $0, $1f), $0.a1), $25);
+     return Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Pacillus_Idris2LSP_GetType_findFirst('Error : Failed to find member \"sigs\" in input JSON', $1f => Pacillus_Idris2LSP_GetType_n__4530_5271_conv3($0.a1, $0, $1f), $0.a1), $25);
     };
-    return Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Pacillus_Idris2LSP_GetType_findFirst('Error : Failed to find member \"ops\" in input JSON', $13 => Pacillus_Idris2LSP_GetType_n__4529_5203_conv2($0.a1, $0, $13), $0.a1), $19);
+    return Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Pacillus_Idris2LSP_GetType_findFirst('Error : Failed to find member \"ops\" in input JSON', $13 => Pacillus_Idris2LSP_GetType_n__4530_5270_conv2($0.a1, $0, $13), $0.a1), $19);
    };
-   return Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Pacillus_Idris2LSP_GetType_findFirst('Error : Failed to find member \"expr\" in input JSON', $7 => Pacillus_Idris2LSP_GetType_n__4529_5202_conv1($0.a1, $0, $7), $0.a1), $d);
+   return Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Pacillus_Idris2LSP_GetType_findFirst('Error : Failed to find member \"expr\" in input JSON', $7 => Pacillus_Idris2LSP_GetType_n__4530_5269_conv1($0.a1, $0, $7), $0.a1), $d);
   }
   default: return {h: 0 /* Left */, a1: 'Invalid input JSON form'};
  }
@@ -1484,13 +1488,13 @@ function Pacillus_Idris2LSP_GetType_convertInList2ListIn($0, $1) {
 }
 
 /* Pacillus.Idris2LSP.TypeRecons.TypeRecons.with block in getArwType */
-function Pacillus_Idris2LSP_TypeRecons_TypeRecons_with__getArwType_4710($0, $1, $2) {
+function Pacillus_Idris2LSP_TypeRecons_TypeRecons_with__getArwType_4796($0, $1, $2) {
  const $9 = argsig => {
   const $f = retsig => {
    let $10;
-   switch(Pacillus_Idris2LSP_TypeRecons_TypeRecons_n__6263_4714_isType($1.a3, $1.a2, $2, $0, Pacillus_Idris2LSP_TypeRecons_TypeRecons_getSubgoal(argsig))) {
+   switch(Pacillus_Idris2LSP_TypeRecons_TypeRecons_n__6295_4800_isType($1.a3, $1.a2, $2, $0, Pacillus_Idris2LSP_TypeRecons_TypeRecons_getSubgoal(argsig))) {
     case 1: {
-     $10 = Pacillus_Idris2LSP_TypeRecons_TypeRecons_n__6263_4714_isType($1.a3, $1.a2, $2, $0, Pacillus_Idris2LSP_TypeRecons_TypeRecons_getSubgoal(retsig));
+     $10 = Pacillus_Idris2LSP_TypeRecons_TypeRecons_n__6295_4800_isType($1.a3, $1.a2, $2, $0, Pacillus_Idris2LSP_TypeRecons_TypeRecons_getSubgoal(retsig));
      break;
     }
     case 0: {
@@ -1499,7 +1503,7 @@ function Pacillus_Idris2LSP_TypeRecons_TypeRecons_with__getArwType_4710($0, $1, 
     }
    }
    switch($10) {
-    case 1: return {h: 1 /* Right */, a1: {h: 1 /* Subgoal */, a1: {a1: argsig, a2: {a1: retsig, a2: {h: 0}}}, a2: {a1: {h: 2 /* ArwTerm */, a1: $0}, a2: Pacillus_Idris2LSP_TypeRecons_TypeRecons_n__6263_4715_tycnst($1.a3, $1.a2, $2, $0)}}};
+    case 1: return {h: 1 /* Right */, a1: {h: 1 /* Subgoal */, a1: {a1: argsig, a2: {a1: retsig, a2: {h: 0}}}, a2: {a1: {h: 2 /* ArwTerm */, a1: $0}, a2: Pacillus_Idris2LSP_TypeRecons_TypeRecons_n__6295_4801_tycnst($1.a3, $1.a2, $2, $0)}}};
     case 0: return {h: 0 /* Left */, a1: 'Found none \"Type\" identifier in arrow'};
    }
   };
@@ -1509,13 +1513,13 @@ function Pacillus_Idris2LSP_TypeRecons_TypeRecons_with__getArwType_4710($0, $1, 
 }
 
 /* Pacillus.Idris2LSP.TypeRecons.TypeRecons.with block in getAppliedType */
-function Pacillus_Idris2LSP_TypeRecons_TypeRecons_with__getAppliedType_4384($0, $1, $2, $3) {
+function Pacillus_Idris2LSP_TypeRecons_TypeRecons_with__getAppliedType_4461($0, $1, $2, $3) {
  switch($1.h) {
   case 2: /* ArwTerm */ {
    switch($3.h) {
     case undefined: /* cons */ {
      const $6 = {a1: $2, a2: $3.a1};
-     return Pacillus_Idris2LSP_TypeRecons_TypeRecons_case__withx20blockx20inx20getAppliedType_4394($1.a1, $3.a2, $3.a1, $2, $0, $6, Pacillus_Idris2LSP_Syntax_SimpleExpr_forgetSig($1.a1));
+     return Pacillus_Idris2LSP_TypeRecons_TypeRecons_case__withx20blockx20inx20getAppliedType_4471($1.a1, $3.a2, $3.a1, $2, $0, $6, Pacillus_Idris2LSP_Syntax_SimpleExpr_forgetSig($1.a1));
     }
     default: {
      switch($0.h) {
@@ -1545,7 +1549,7 @@ function Pacillus_Idris2LSP_TypeRecons_TypeRecons_with__getAppliedType_4384($0, 
 }
 
 /* Pacillus.Idris2LSP.TypeRecons.TypeRecons.with block in parseSig */
-function Pacillus_Idris2LSP_TypeRecons_TypeRecons_with__parseSig_3187($0, $1, $2) {
+function Pacillus_Idris2LSP_TypeRecons_TypeRecons_with__parseSig_3256($0, $1, $2) {
  switch($1.h) {
   case undefined: /* just */ return Pacillus_Idris2LSP_TypeRecons_TypeRecons_parseSignature($2, $1.a1);
   case 0: /* nothing */ return {h: 0 /* Left */, a1: 'Failed to lex.'};
@@ -1553,33 +1557,46 @@ function Pacillus_Idris2LSP_TypeRecons_TypeRecons_with__parseSig_3187($0, $1, $2
 }
 
 /* Pacillus.Idris2LSP.TypeRecons.TypeRecons.case block in with block in getAppliedType */
-function Pacillus_Idris2LSP_TypeRecons_TypeRecons_case__withx20blockx20inx20getAppliedType_4394($0, $1, $2, $3, $4, $5, $6) {
+function Pacillus_Idris2LSP_TypeRecons_TypeRecons_case__withx20blockx20inx20getAppliedType_4471($0, $1, $2, $3, $4, $5, $6) {
  const $8 = Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicit($1);
- return Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Pacillus_Idris2LSP_TypeRecons_TypeRecons_unify({a1: {a1: $6.a2, a2: $8}, a2: {h: 0}}), cons => Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Pacillus_Idris2LSP_TypeRecons_TypeRecons_applyConstraints(cons, $6.a3), applied => ({h: 1 /* Right */, a1: {a1: {h: 1 /* AppTerm */, a1: $5}, a2: Pacillus_Idris2LSP_TypeRecons_TypeRecons_n__5904_4412_assign($0, $1, $2, $3, $4, $5, $6.a3, $6.a2, $8, applied, $2)}})));
+ return Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Pacillus_Idris2LSP_TypeRecons_TypeRecons_unify({a1: {a1: $6.a2, a2: $8}, a2: {h: 0}}), cons => Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Pacillus_Idris2LSP_TypeRecons_TypeRecons_applyConstraints(cons, $6.a3), applied => ({h: 1 /* Right */, a1: {a1: {h: 1 /* AppTerm */, a1: $5}, a2: Pacillus_Idris2LSP_TypeRecons_TypeRecons_n__5926_4489_assign($0, $1, $2, $3, $4, $5, $6.a3, $6.a2, $8, applied, $2)}})));
 }
 
-/* Pacillus.Idris2LSP.TypeRecons.TypeRecons.6263:4715:tycnst */
-function Pacillus_Idris2LSP_TypeRecons_TypeRecons_n__6263_4715_tycnst($0, $1, $2, $3) {
+/* Pacillus.Idris2LSP.TypeRecons.TypeRecons.case block in parseSignature */
+function Pacillus_Idris2LSP_TypeRecons_TypeRecons_case__parseSignature_3187($0, $1, $2) {
+ switch($2.h) {
+  case 1: /* Right */ {
+   switch($2.a1.a2.h) {
+    case 0: /* nil */ return {h: 1 /* Right */, a1: $2.a1.a1};
+    default: return {h: 0 /* Left */, a1: ('contains tokens that were not consumed\n'+Prelude_Show_show_Show_x28Listx20x24ax29(csegen_28(), $2.a1.a2))};
+   }
+  }
+  case 0: /* Left */ return {h: 0 /* Left */, a1: Data_List1_show_Show_x28List1x20x24ax29(csegen_31(), $2.a1)};
+ }
+}
+
+/* Pacillus.Idris2LSP.TypeRecons.TypeRecons.6295:4801:tycnst */
+function Pacillus_Idris2LSP_TypeRecons_TypeRecons_n__6295_4801_tycnst($0, $1, $2, $3) {
  return {h: 0 /* IdTerm */, a1: 'Type'};
 }
 
-/* Pacillus.Idris2LSP.TypeRecons.TypeRecons.6082:4789:tycnst */
-function Pacillus_Idris2LSP_TypeRecons_TypeRecons_n__6082_4789_tycnst($0, $1, $2) {
+/* Pacillus.Idris2LSP.TypeRecons.TypeRecons.6104:4875:tycnst */
+function Pacillus_Idris2LSP_TypeRecons_TypeRecons_n__6104_4875_tycnst($0, $1, $2) {
  return {h: 0 /* IdTerm */, a1: 'Type'};
 }
 
-/* Pacillus.Idris2LSP.TypeRecons.TypeRecons.6090:4836:mkpair */
-function Pacillus_Idris2LSP_TypeRecons_TypeRecons_n__6090_4836_mkpair($0, $1, $2, $3, $4) {
- return {h: 7 /* PrTerm */, a1: {a1: Pacillus_Idris2LSP_TypeRecons_TypeRecons_getSpSigExpr(Pacillus_Idris2LSP_TypeRecons_TypeRecons_getSubgoal($3)), a2: Pacillus_Idris2LSP_TypeRecons_TypeRecons_getSpSigExpr(Pacillus_Idris2LSP_TypeRecons_TypeRecons_getSubgoal($4))}};
+/* Pacillus.Idris2LSP.TypeRecons.TypeRecons.6112:4922:mkpair */
+function Pacillus_Idris2LSP_TypeRecons_TypeRecons_n__6112_4922_mkpair($0, $1, $2, $3, $4) {
+ return {h: 8 /* PrTerm */, a1: {a1: Pacillus_Idris2LSP_TypeRecons_TypeRecons_getSpSigExpr(Pacillus_Idris2LSP_TypeRecons_TypeRecons_getSubgoal($3)), a2: Pacillus_Idris2LSP_TypeRecons_TypeRecons_getSpSigExpr(Pacillus_Idris2LSP_TypeRecons_TypeRecons_getSubgoal($4))}};
 }
 
-/* Pacillus.Idris2LSP.TypeRecons.TypeRecons.6263:4714:isType */
-function Pacillus_Idris2LSP_TypeRecons_TypeRecons_n__6263_4714_isType($0, $1, $2, $3, $4) {
- return Pacillus_Idris2LSP_Syntax_SimpleExpr_exprEquality(Pacillus_Idris2LSP_TypeRecons_TypeRecons_getSpSigExpr($4), Pacillus_Idris2LSP_TypeRecons_TypeRecons_n__6263_4715_tycnst($0, $1, $2, $3));
+/* Pacillus.Idris2LSP.TypeRecons.TypeRecons.6295:4800:isType */
+function Pacillus_Idris2LSP_TypeRecons_TypeRecons_n__6295_4800_isType($0, $1, $2, $3, $4) {
+ return Pacillus_Idris2LSP_Syntax_SimpleExpr_exprEquality(Pacillus_Idris2LSP_TypeRecons_TypeRecons_getSpSigExpr($4), Pacillus_Idris2LSP_TypeRecons_TypeRecons_n__6295_4801_tycnst($0, $1, $2, $3));
 }
 
-/* Pacillus.Idris2LSP.TypeRecons.TypeRecons.5904:4412:assign */
-function Pacillus_Idris2LSP_TypeRecons_TypeRecons_n__5904_4412_assign($0, $1, $2, $3, $4, $5, $6, $7, $8, $9, $a) {
+/* Pacillus.Idris2LSP.TypeRecons.TypeRecons.5926:4489:assign */
+function Pacillus_Idris2LSP_TypeRecons_TypeRecons_n__5926_4489_assign($0, $1, $2, $3, $4, $5, $6, $7, $8, $9, $a) {
  switch($0.h) {
   case 0: /* ExExArr */ return $9;
   case 1: /* SiExArr */ return Pacillus_Idris2LSP_TypeRecons_TypeRecons_assignExpr($9, {h: 0 /* IdTerm */, a1: $0.a1.a1}, $a);
@@ -1599,7 +1616,17 @@ function Pacillus_Idris2LSP_TypeRecons_TypeRecons_show_Show_ReconsTree($0) {
 
 /* Pacillus.Idris2LSP.TypeRecons.TypeRecons.show */
 function Pacillus_Idris2LSP_TypeRecons_TypeRecons_show_Show_PartialExprSignature($0) {
- return Pacillus_Idris2LSP_Syntax_SimpleExpr_show_Show_Signature({a1: Pacillus_Idris2LSP_Syntax_SimpleExpr_showSimpleExpr(0n, $0.a1), a2: $0.a2});
+ return (Pacillus_Idris2LSP_Syntax_SimpleExpr_showSimpleExpr(0n, $0.a1)+(' : '+Pacillus_Idris2LSP_Syntax_SimpleExpr_showSimpleExpr(0n, $0.a2)));
+}
+
+/* Pacillus.Idris2LSP.TypeRecons.TypeRecons.uniVarExprR : Constraints -> SimpleExpr -> SimpleExpr -> Either String Constraints */
+function Pacillus_Idris2LSP_TypeRecons_TypeRecons_uniVarExprR($0, $1, $2) {
+ return Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Pacillus_Idris2LSP_TypeRecons_TypeRecons_unify(Pacillus_Idris2LSP_TypeRecons_TypeRecons_assignR($0, $2, $1)), unified => ({h: 1 /* Right */, a1: {a1: {a1: $1, a2: $2}, a2: unified}}));
+}
+
+/* Pacillus.Idris2LSP.TypeRecons.TypeRecons.uniVarExprL : Constraints -> SimpleExpr -> SimpleExpr -> Either String Constraints */
+function Pacillus_Idris2LSP_TypeRecons_TypeRecons_uniVarExprL($0, $1, $2) {
+ return Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Pacillus_Idris2LSP_TypeRecons_TypeRecons_unify(Pacillus_Idris2LSP_TypeRecons_TypeRecons_assignL($0, $1, $2)), unified => ({h: 1 /* Right */, a1: {a1: {a1: $1, a2: $2}, a2: unified}}));
 }
 
 /* Pacillus.Idris2LSP.TypeRecons.TypeRecons.toSpSig : Signature -> PartialExprSignature */
@@ -1614,41 +1641,51 @@ function Pacillus_Idris2LSP_TypeRecons_TypeRecons_showUniError($0, $1) {
 
 /* Pacillus.Idris2LSP.TypeRecons.TypeRecons.parseSignature : InOperatorMap -> List (WithBounds SimpleExprToken) -> Either String Signature */
 function Pacillus_Idris2LSP_TypeRecons_TypeRecons_parseSignature($0, $1) {
- const $2 = Text_Parser_Core_parse(1, Pacillus_Idris2LSP_Syntax_SimpleExpr_signature(Pacillus_Idris2LSP_Syntax_SimpleExpr_opTable($0)), Prelude_Types_List_filterAppend({h: 0}, csegen_26(), $1));
- switch($2.h) {
-  case 1: /* Right */ {
-   switch($2.a1.a2.h) {
-    case 0: /* nil */ return {h: 1 /* Right */, a1: $2.a1.a1};
-    default: return {h: 0 /* Left */, a1: 'contains tokens that were not consumed'};
-   }
-  }
-  case 0: /* Left */ return {h: 0 /* Left */, a1: Data_List1_show_Show_x28List1x20x24ax29(csegen_31(), $2.a1)};
- }
+ return Pacillus_Idris2LSP_TypeRecons_TypeRecons_case__parseSignature_3187($1, $0, Text_Parser_Core_parse(1, Pacillus_Idris2LSP_Syntax_SimpleExpr_signature(Pacillus_Idris2LSP_Syntax_SimpleExpr_opTable($0)), Prelude_Types_List_filterAppend({h: 0}, csegen_34(), $1)));
 }
 
 /* Pacillus.Idris2LSP.TypeRecons.TypeRecons.parseSig : InOperatorMap -> String -> Either String Signature */
 function Pacillus_Idris2LSP_TypeRecons_TypeRecons_parseSig($0, $1) {
- return Pacillus_Idris2LSP_TypeRecons_TypeRecons_with__parseSig_3187($1, Pacillus_Idris2LSP_Syntax_Lexer_lexSimpleExpr($1), $0);
+ return Pacillus_Idris2LSP_TypeRecons_TypeRecons_with__parseSig_3256($1, Pacillus_Idris2LSP_Syntax_Lexer_lexSimpleExpr($1), $0);
 }
 
-/* Pacillus.Idris2LSP.TypeRecons.TypeRecons.leafR : Constraints -> SimpleExpr -> SimpleExpr -> Either String Constraints */
-function Pacillus_Idris2LSP_TypeRecons_TypeRecons_leafR($0, $1, $2) {
- return Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Pacillus_Idris2LSP_TypeRecons_TypeRecons_unify(Pacillus_Idris2LSP_TypeRecons_TypeRecons_assignR($0, $2, $1)), unified => ({h: 1 /* Right */, a1: {a1: {a1: $1, a2: $2}, a2: unified}}));
+/* Pacillus.Idris2LSP.TypeRecons.TypeRecons.labelImplicitPr : List Identifier -> Pair -> Pair */
+function Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitPr($0, $1) {
+ return {a1: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitExp($0, $1.a1), a2: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitExp($0, $1.a2)};
 }
 
-/* Pacillus.Idris2LSP.TypeRecons.TypeRecons.leafL : Constraints -> SimpleExpr -> SimpleExpr -> Either String Constraints */
-function Pacillus_Idris2LSP_TypeRecons_TypeRecons_leafL($0, $1, $2) {
- return Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Pacillus_Idris2LSP_TypeRecons_TypeRecons_unify(Pacillus_Idris2LSP_TypeRecons_TypeRecons_assignL($0, $1, $2)), unified => ({h: 1 /* Right */, a1: {a1: {a1: $1, a2: $2}, a2: unified}}));
+/* Pacillus.Idris2LSP.TypeRecons.TypeRecons.labelImplicitMain : List Identifier -> SimpleExpr -> SimpleExpr */
+function Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitMain($0, $1) {
+ switch($1.h) {
+  case 2: /* ArwTerm */ {
+   switch($1.a1.h) {
+    case 0: /* ExExArr */ {
+     switch($1.a1.a1) {
+      case 0: return {h: 2 /* ArwTerm */, a1: {h: 0 /* ExExArr */, a1: 0, a2: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitExp($0, $1.a1.a2), a3: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitMain($0, $1.a1.a3)}};
+      default: return Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitExp($0, $1);
+     }
+    }
+    case 1: /* SiExArr */ {
+     switch($1.a1.a1.h) {
+      case undefined: /* cons */ return {h: 2 /* ArwTerm */, a1: {h: 1 /* SiExArr */, a1: {a1: $1.a1.a1.a1, a2: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitExp($0, $1.a1.a1.a2)}, a2: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitMain({a1: $1.a1.a1.a1, a2: $0}, $1.a1.a2)}};
+      default: return Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitExp($0, $1);
+     }
+    }
+    default: return Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitExp($0, $1);
+   }
+  }
+  default: return Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitExp($0, $1);
+ }
 }
 
-/* Pacillus.Idris2LSP.TypeRecons.TypeRecons.labelmplicitExp : List Identifier -> SimpleExpr -> SimpleExpr */
-function Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelmplicitExp($0, $1) {
+/* Pacillus.Idris2LSP.TypeRecons.TypeRecons.labelImplicitExp : List Identifier -> SimpleExpr -> SimpleExpr */
+function Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitExp($0, $1) {
  switch($1.h) {
   case 0: /* IdTerm */ {
    let $3;
    switch(Pacillus_Idris2LSP_TypeRecons_TypeRecons_isHeadLower($1.a1)) {
     case 1: {
-     switch(Prelude_Types_elem(csegen_46(), {a1: $d => $e => Pacillus_Idris2LSP_Syntax_SimpleExpr_x3dx3d_Eq_Identifier($d, $e), a2: $13 => $14 => Pacillus_Idris2LSP_Syntax_SimpleExpr_x2fx3d_Eq_Identifier($13, $14)}, $1.a1, $0)) {
+     switch(Prelude_Types_elem(csegen_49(), {a1: $d => $e => Pacillus_Idris2LSP_Syntax_SimpleExpr_x3dx3d_Eq_Identifier($d, $e), a2: $13 => $14 => Pacillus_Idris2LSP_Syntax_SimpleExpr_x2fx3d_Eq_Identifier($13, $14)}, $1.a1, $0)) {
       case 1: {
        $3 = 0;
        break;
@@ -1673,61 +1710,33 @@ function Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelmplicitExp($0, $1) {
   case 1: /* AppTerm */ return {h: 1 /* AppTerm */, a1: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitApp($0, $1.a1)};
   case 2: /* ArwTerm */ return {h: 2 /* ArwTerm */, a1: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitArw($0, $1.a1)};
   case 3: /* EqTerm */ return {h: 3 /* EqTerm */, a1: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitEq($0, $1.a1)};
-  case 7: /* PrTerm */ return {h: 7 /* PrTerm */, a1: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitPr($0, $1.a1)};
+  case 8: /* PrTerm */ return {h: 8 /* PrTerm */, a1: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitPr($0, $1.a1)};
   case 4: /* IntegerLiteral */ return {h: 4 /* IntegerLiteral */, a1: $1.a1};
   case 5: /* DoubleLiteral */ return {h: 5 /* DoubleLiteral */, a1: $1.a1};
-  case 6: /* StringLiteral */ return {h: 6 /* StringLiteral */, a1: $1.a1};
-  case 8: /* UnitTerm */ return {h: 8 /* UnitTerm */};
- }
-}
-
-/* Pacillus.Idris2LSP.TypeRecons.TypeRecons.labelImplicitPr : List Identifier -> Pair -> Pair */
-function Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitPr($0, $1) {
- return {a1: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelmplicitExp($0, $1.a1), a2: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelmplicitExp($0, $1.a2)};
-}
-
-/* Pacillus.Idris2LSP.TypeRecons.TypeRecons.labelImplicitMain : List Identifier -> SimpleExpr -> SimpleExpr */
-function Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitMain($0, $1) {
- switch($1.h) {
-  case 2: /* ArwTerm */ {
-   switch($1.a1.h) {
-    case 0: /* ExExArr */ {
-     switch($1.a1.a1) {
-      case 0: return {h: 2 /* ArwTerm */, a1: {h: 0 /* ExExArr */, a1: 0, a2: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelmplicitExp($0, $1.a1.a2), a3: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitMain($0, $1.a1.a3)}};
-      default: return Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelmplicitExp($0, $1);
-     }
-    }
-    case 1: /* SiExArr */ {
-     switch($1.a1.a1.h) {
-      case undefined: /* cons */ return {h: 2 /* ArwTerm */, a1: {h: 1 /* SiExArr */, a1: {a1: $1.a1.a1.a1, a2: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelmplicitExp($0, $1.a1.a1.a2)}, a2: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitMain({a1: $1.a1.a1.a1, a2: $0}, $1.a1.a2)}};
-      default: return Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelmplicitExp($0, $1);
-     }
-    }
-    default: return Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelmplicitExp($0, $1);
-   }
-  }
-  default: return Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelmplicitExp($0, $1);
+  case 6: /* CharLiteral */ return {h: 6 /* CharLiteral */, a1: $1.a1};
+  case 7: /* StringLiteral */ return {h: 7 /* StringLiteral */, a1: $1.a1};
+  case 9: /* UnitTerm */ return {h: 9 /* UnitTerm */};
  }
 }
 
 /* Pacillus.Idris2LSP.TypeRecons.TypeRecons.labelImplicitEq : List Identifier -> Equality -> Equality */
 function Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitEq($0, $1) {
- return {a1: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelmplicitExp($0, $1.a1), a2: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelmplicitExp($0, $1.a2)};
+ return {a1: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitExp($0, $1.a1), a2: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitExp($0, $1.a2)};
 }
 
 /* Pacillus.Idris2LSP.TypeRecons.TypeRecons.labelImplicitArw : List Identifier -> Arrow False -> Arrow False */
 function Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitArw($0, $1) {
  switch($1.h) {
-  case 0: /* ExExArr */ return {h: 0 /* ExExArr */, a1: 0, a2: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelmplicitExp($0, $1.a2), a3: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelmplicitExp($0, $1.a3)};
-  case 1: /* SiExArr */ return {h: 1 /* SiExArr */, a1: {a1: $1.a1.a1, a2: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelmplicitExp($0, $1.a1.a2)}, a2: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelmplicitExp($0, $1.a2)};
+  case 0: /* ExExArr */ return {h: 0 /* ExExArr */, a1: 0, a2: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitExp($0, $1.a2), a3: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitExp($0, $1.a3)};
+  case 1: /* SiExArr */ return {h: 1 /* SiExArr */, a1: {a1: $1.a1.a1, a2: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitExp($0, $1.a1.a2)}, a2: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitExp($0, $1.a2)};
  }
 }
 
 /* Pacillus.Idris2LSP.TypeRecons.TypeRecons.labelImplicitApp : List Identifier -> Application -> Application */
 function Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitApp($0, $1) {
  switch($1.a1.h) {
-  case 0: /* IdTerm */ return {a1: {h: 0 /* IdTerm */, a1: $1.a1.a1}, a2: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelmplicitExp($0, $1.a2)};
-  default: return {a1: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelmplicitExp($0, $1.a1), a2: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelmplicitExp($0, $1.a2)};
+  case 0: /* IdTerm */ return {a1: {h: 0 /* IdTerm */, a1: $1.a1.a1}, a2: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitExp($0, $1.a2)};
+  default: return {a1: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitExp($0, $1.a1), a2: Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicitExp($0, $1.a2)};
  }
 }
 
@@ -1769,7 +1778,7 @@ function Pacillus_Idris2LSP_TypeRecons_TypeRecons_getSpSigExpr($0) {
 
 /* Pacillus.Idris2LSP.TypeRecons.TypeRecons.getPrType : List Signature -> Pair -> Either String ReconsTree */
 function Pacillus_Idris2LSP_TypeRecons_TypeRecons_getPrType($0, $1) {
- return Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Pacillus_Idris2LSP_TypeRecons_TypeRecons_getPartialType($0, $1.a1), xsig => Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Pacillus_Idris2LSP_TypeRecons_TypeRecons_getPartialType($0, $1.a2), ysig => ({h: 1 /* Right */, a1: {h: 1 /* Subgoal */, a1: {a1: xsig, a2: {a1: ysig, a2: {h: 0}}}, a2: {a1: {h: 7 /* PrTerm */, a1: {a1: $1.a1, a2: $1.a2}}, a2: Pacillus_Idris2LSP_TypeRecons_TypeRecons_n__6090_4836_mkpair($1.a2, $1.a1, $0, xsig, ysig)}}})));
+ return Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Pacillus_Idris2LSP_TypeRecons_TypeRecons_getPartialType($0, $1.a1), xsig => Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Pacillus_Idris2LSP_TypeRecons_TypeRecons_getPartialType($0, $1.a2), ysig => ({h: 1 /* Right */, a1: {h: 1 /* Subgoal */, a1: {a1: xsig, a2: {a1: ysig, a2: {h: 0}}}, a2: {a1: {h: 8 /* PrTerm */, a1: {a1: $1.a1, a2: $1.a2}}, a2: Pacillus_Idris2LSP_TypeRecons_TypeRecons_n__6112_4922_mkpair($1.a2, $1.a1, $0, xsig, ysig)}}})));
 }
 
 /* Pacillus.Idris2LSP.TypeRecons.TypeRecons.getPartialType : List Signature -> SimpleExpr -> Either String ReconsTree */
@@ -1781,28 +1790,29 @@ function Pacillus_Idris2LSP_TypeRecons_TypeRecons_getPartialType($0, $1) {
   case 3: /* EqTerm */ return Pacillus_Idris2LSP_TypeRecons_TypeRecons_getEqType($0, $1.a1);
   case 4: /* IntegerLiteral */ return {h: 1 /* Right */, a1: {h: 0 /* Start */, a1: {a1: {h: 0 /* IdTerm */, a1: Prelude_Show_show_Show_Integer($1.a1)}, a2: {h: 0 /* IdTerm */, a1: 'Integer'}}}};
   case 5: /* DoubleLiteral */ return {h: 1 /* Right */, a1: {h: 0 /* Start */, a1: {a1: {h: 0 /* IdTerm */, a1: Prelude_Show_show_Show_Double($1.a1)}, a2: {h: 0 /* IdTerm */, a1: 'Double'}}}};
-  case 6: /* StringLiteral */ return {h: 1 /* Right */, a1: {h: 0 /* Start */, a1: {a1: {h: 0 /* IdTerm */, a1: Prelude_Show_show_Show_String($1.a1)}, a2: {h: 0 /* IdTerm */, a1: 'String'}}}};
-  case 7: /* PrTerm */ return Pacillus_Idris2LSP_TypeRecons_TypeRecons_getPrType($0, $1.a1);
-  case 8: /* UnitTerm */ {
-   const $2a = {a1: {h: 0 /* IdTerm */, a1: 'MkUnit'}, a2: {h: 8 /* UnitTerm */}};
-   return {h: 1 /* Right */, a1: {h: 0 /* Start */, a1: $2a}};
+  case 6: /* CharLiteral */ return {h: 1 /* Right */, a1: {h: 0 /* Start */, a1: {a1: {h: 0 /* IdTerm */, a1: Prelude_Show_show_Show_Char($1.a1)}, a2: {h: 0 /* IdTerm */, a1: 'Char'}}}};
+  case 7: /* StringLiteral */ return {h: 1 /* Right */, a1: {h: 0 /* Start */, a1: {a1: {h: 0 /* IdTerm */, a1: Prelude_Show_show_Show_String($1.a1)}, a2: {h: 0 /* IdTerm */, a1: 'String'}}}};
+  case 8: /* PrTerm */ return Pacillus_Idris2LSP_TypeRecons_TypeRecons_getPrType($0, $1.a1);
+  case 9: /* UnitTerm */ {
+   const $32 = {a1: {h: 0 /* IdTerm */, a1: 'MkUnit'}, a2: {h: 9 /* UnitTerm */}};
+   return {h: 1 /* Right */, a1: {h: 0 /* Start */, a1: $32}};
   }
  }
 }
 
 /* Pacillus.Idris2LSP.TypeRecons.TypeRecons.getEqType : List Signature -> Equality -> Either String ReconsTree */
 function Pacillus_Idris2LSP_TypeRecons_TypeRecons_getEqType($0, $1) {
- return Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Pacillus_Idris2LSP_TypeRecons_TypeRecons_getPartialType($0, $1.a1), lsig => Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Pacillus_Idris2LSP_TypeRecons_TypeRecons_getPartialType($0, $1.a2), rsig => ({h: 1 /* Right */, a1: {h: 1 /* Subgoal */, a1: {a1: lsig, a2: {a1: rsig, a2: {h: 0}}}, a2: {a1: {h: 3 /* EqTerm */, a1: {a1: $1.a1, a2: $1.a2}}, a2: Pacillus_Idris2LSP_TypeRecons_TypeRecons_n__6082_4789_tycnst($1.a2, $1.a1, $0)}}})));
+ return Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Pacillus_Idris2LSP_TypeRecons_TypeRecons_getPartialType($0, $1.a1), lsig => Prelude_Types_x3ex3ex3d_Monad_x28Eitherx20x24ex29(Pacillus_Idris2LSP_TypeRecons_TypeRecons_getPartialType($0, $1.a2), rsig => ({h: 1 /* Right */, a1: {h: 1 /* Subgoal */, a1: {a1: lsig, a2: {a1: rsig, a2: {h: 0}}}, a2: {a1: {h: 3 /* EqTerm */, a1: {a1: $1.a1, a2: $1.a2}}, a2: Pacillus_Idris2LSP_TypeRecons_TypeRecons_n__6104_4875_tycnst($1.a2, $1.a1, $0)}}})));
 }
 
 /* Pacillus.Idris2LSP.TypeRecons.TypeRecons.getArwType : List Signature -> Arrow False -> Either String ReconsTree */
 function Pacillus_Idris2LSP_TypeRecons_TypeRecons_getArwType($0, $1) {
- return Pacillus_Idris2LSP_TypeRecons_TypeRecons_with__getArwType_4710($1, Pacillus_Idris2LSP_Syntax_SimpleExpr_forgetSig($1), $0);
+ return Pacillus_Idris2LSP_TypeRecons_TypeRecons_with__getArwType_4796($1, Pacillus_Idris2LSP_Syntax_SimpleExpr_forgetSig($1), $0);
 }
 
 /* Pacillus.Idris2LSP.TypeRecons.TypeRecons.getAppliedType : PartialExprSignature -> PartialExprSignature -> Either String PartialExprSignature */
 function Pacillus_Idris2LSP_TypeRecons_TypeRecons_getAppliedType($0, $1) {
- return Pacillus_Idris2LSP_TypeRecons_TypeRecons_with__getAppliedType_4384($0.a2, Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicit($0.a2), $0.a1, $1);
+ return Pacillus_Idris2LSP_TypeRecons_TypeRecons_with__getAppliedType_4461($0.a2, Pacillus_Idris2LSP_TypeRecons_TypeRecons_labelImplicit($0.a2), $0.a1, $1);
 }
 
 /* Pacillus.Idris2LSP.TypeRecons.TypeRecons.getAppType : List Signature -> Application -> Either String ReconsTree */
@@ -1848,9 +1858,10 @@ function Pacillus_Idris2LSP_TypeRecons_TypeRecons_assignExpr($0, $1, $2) {
     case 3: /* EqTerm */ return {h: 3 /* EqTerm */, a1: Pacillus_Idris2LSP_TypeRecons_TypeRecons_assignEq($0.a1, $1, $2)};
     case 4: /* IntegerLiteral */ return {h: 4 /* IntegerLiteral */, a1: $0.a1};
     case 5: /* DoubleLiteral */ return {h: 5 /* DoubleLiteral */, a1: $0.a1};
-    case 6: /* StringLiteral */ return {h: 6 /* StringLiteral */, a1: $0.a1};
-    case 7: /* PrTerm */ return {h: 7 /* PrTerm */, a1: Pacillus_Idris2LSP_TypeRecons_TypeRecons_assignPr($0.a1, $1, $2)};
-    case 8: /* UnitTerm */ return {h: 8 /* UnitTerm */};
+    case 6: /* CharLiteral */ return {h: 6 /* CharLiteral */, a1: $0.a1};
+    case 7: /* StringLiteral */ return {h: 7 /* StringLiteral */, a1: $0.a1};
+    case 8: /* PrTerm */ return {h: 8 /* PrTerm */, a1: Pacillus_Idris2LSP_TypeRecons_TypeRecons_assignPr($0.a1, $1, $2)};
+    case 9: /* UnitTerm */ return {h: 9 /* UnitTerm */};
    }
   }
  }
@@ -1887,9 +1898,22 @@ function Pacillus_Idris2LSP_Syntax_Lexer_tokValue_TokenKind_SimpleExprTokenKind(
   case 7: return undefined;
   case 8: return undefined;
   case 9: return undefined;
-  case 10: return Data_Maybe_fromMaybe(() => 0n, Data_String_parseInteger(csegen_17(), csegen_19(), $1));
-  case 11: return Data_Maybe_fromMaybe(() => Number(0n), Data_String_parseDouble($1));
-  case 12: return _substr(1, _sub32s($1.length, 2), $1);
+  case 10: return undefined;
+  case 11: return Data_Maybe_fromMaybe(() => 0n, Data_String_parseInteger(csegen_17(), csegen_19(), $1));
+  case 13: return Data_Maybe_fromMaybe(() => Number(0n), Data_String_parseDouble($1));
+  case 12: {
+   const $12 = Prelude_Types_fastUnpack($1);
+   switch($12.h) {
+    case 0: /* nil */ return '\0';
+    case undefined: /* cons */ {
+     switch($12.a2.h) {
+      case 0: /* nil */ return '\0';
+      case undefined: /* cons */ return $12.a2.a1;
+     }
+    }
+   }
+  }
+  case 14: return _substr(1, _sub32s($1.length, 2), $1);
  }
 }
 
@@ -1906,9 +1930,11 @@ function Pacillus_Idris2LSP_Syntax_Lexer_show_Show_SimpleExprTokenKind($0) {
   case 7: return 'SEEqual';
   case 8: return 'SEColon';
   case 9: return 'SEComma';
-  case 10: return 'SEIntLiteral';
-  case 11: return 'SEDoubleLiteral';
-  case 12: return 'SEStringLiteral';
+  case 10: return 'SEDollar';
+  case 11: return 'SEIntLiteral';
+  case 13: return 'SEDoubleLiteral';
+  case 12: return 'SECharLiteral';
+  case 14: return 'SEStringLiteral';
  }
 }
 
@@ -1927,9 +1953,10 @@ function Pacillus_Idris2LSP_Syntax_Lexer_TokType_TokenKind_SimpleExprTokenKind($
  switch($0) {
   case 4: return {h: 'String'};
   case 0: return {h: 'String'};
-  case 10: return {h: 'Integer'};
-  case 11: return {h: 'Double'};
-  case 12: return {h: 'String'};
+  case 11: return {h: 'Integer'};
+  case 13: return {h: 'Double'};
+  case 12: return {h: 'Char'};
+  case 14: return {h: 'String'};
   default: return {h: 'Builtin.Unit'};
  }
 }
@@ -2009,9 +2036,21 @@ function Pacillus_Idris2LSP_Syntax_Lexer_x3dx3d_Eq_SimpleExprTokenKind($0, $1) {
     default: return 0;
    }
   }
+  case 13: {
+   switch($1) {
+    case 13: return 1;
+    default: return 0;
+   }
+  }
   case 12: {
    switch($1) {
     case 12: return 1;
+    default: return 0;
+   }
+  }
+  case 14: {
+   switch($1) {
+    case 14: return 1;
     default: return 0;
    }
   }
@@ -2035,7 +2074,7 @@ const Pacillus_Idris2LSP_Syntax_Lexer_symbolLexer = __lazy(function () {
 /* Pacillus.Idris2LSP.Syntax.Lexer.simpleExprTokenMap : TokenMap SimpleExprToken */
 const Pacillus_Idris2LSP_Syntax_Lexer_simpleExprTokenMap = __lazy(function () {
  const $19 = s => {
-  const $1a = Data_List_lookup(csegen_59(), s, Pacillus_Idris2LSP_Syntax_Lexer_reservedSyms());
+  const $1a = Data_List_lookup(csegen_62(), s, Pacillus_Idris2LSP_Syntax_Lexer_reservedSyms());
   switch($1a.h) {
    case undefined: /* just */ return {a1: $1a.a1, a2: s};
    case 0: /* nothing */ return {a1: 0, a2: s};
@@ -2043,14 +2082,14 @@ const Pacillus_Idris2LSP_Syntax_Lexer_simpleExprTokenMap = __lazy(function () {
  };
  const $16 = {a1: Pacillus_Idris2LSP_Syntax_Lexer_symbolLexer(), a2: $19};
  const $15 = {a1: $16, a2: {h: 0}};
- const $13 = Prelude_Types_List_tailRecAppend($15, Text_Lexer_toTokenMap({a1: {a1: Text_Lexer_exact('('), a2: 2}, a2: {a1: {a1: Text_Lexer_exact(')'), a2: 3}, a2: {a1: {a1: Text_Lexer_exact('`'), a2: 5}, a2: {a1: {a1: Text_Lexer_exact(','), a2: 9}, a2: {a1: {a1: Text_Lexer_digits(), a2: 10}, a2: {a1: {a1: Pacillus_Idris2LSP_Syntax_Lexer_doubleLit(), a2: 11}, a2: {a1: {a1: Text_Lexer_stringLit(), a2: 12}, a2: {h: 0}}}}}}}}));
+ const $13 = Prelude_Types_List_tailRecAppend($15, Text_Lexer_toTokenMap({a1: {a1: Text_Lexer_exact('('), a2: 2}, a2: {a1: {a1: Text_Lexer_exact(')'), a2: 3}, a2: {a1: {a1: Text_Lexer_exact('`'), a2: 5}, a2: {a1: {a1: Text_Lexer_exact(','), a2: 9}, a2: {a1: {a1: Text_Lexer_digits(), a2: 11}, a2: {a1: {a1: Pacillus_Idris2LSP_Syntax_Lexer_doubleLit(), a2: 13}, a2: {a1: {a1: Text_Lexer_charLit(), a2: 12}, a2: {a1: {a1: Text_Lexer_stringLit(), a2: 14}, a2: {h: 0}}}}}}}}}));
  const $9 = Prelude_Types_List_tailRecAppend(Text_Lexer_toTokenMap({a1: {a1: Pacillus_Idris2LSP_Syntax_Lexer_idLexer(), a2: 4}, a2: {h: 0}}), $13);
  return Prelude_Types_List_tailRecAppend(Text_Lexer_toTokenMap({a1: {a1: Text_Lexer_spaces(), a2: 1}, a2: {h: 0}}), $9);
 });
 
 /* Pacillus.Idris2LSP.Syntax.Lexer.reservedSyms : List (String, SimpleExprTokenKind) */
 const Pacillus_Idris2LSP_Syntax_Lexer_reservedSyms = __lazy(function () {
- return {a1: {a1: '->', a2: 6}, a2: {a1: {a1: '=', a2: 7}, a2: {a1: {a1: ':', a2: 8}, a2: {h: 0}}}};
+ return {a1: {a1: '->', a2: 6}, a2: {a1: {a1: '=', a2: 7}, a2: {a1: {a1: ':', a2: 8}, a2: {a1: {a1: '$', a2: 10}, a2: {h: 0}}}}};
 });
 
 /* Pacillus.Idris2LSP.Syntax.Lexer.nameLexer : Lexer */
@@ -2084,7 +2123,7 @@ function Pacillus_Idris2LSP_Syntax_Lexer_lexSimpleExpr($0) {
 
 /* Pacillus.Idris2LSP.Syntax.Lexer.isOpChar : Char -> Bool */
 function Pacillus_Idris2LSP_Syntax_Lexer_isOpChar($0) {
- return Prelude_Types_elem(csegen_46(), csegen_86(), $0, Prelude_Types_fastUnpack(':!#$%&*+./<=>?@\u{5c}^|-~'));
+ return Prelude_Types_elem(csegen_49(), csegen_91(), $0, Prelude_Types_fastUnpack(':!#$%&*+./<=>?@\u{5c}^|-~'));
 }
 
 /* Pacillus.Idris2LSP.Syntax.Lexer.idLexer : Lexer */
@@ -2372,7 +2411,7 @@ function Data_String_case__parseDoublex2cwfe_10330($0, $1) {
   case undefined: /* cons */ {
    switch($1.a2.h) {
     case 0: /* nil */ {
-     const $4 = Data_String_split(csegen_99(), $1.a1);
+     const $4 = Data_String_split(csegen_104(), $1.a1);
      switch($4.h) {
       case undefined: /* cons */ {
        switch($4.a2.h) {
@@ -2391,7 +2430,7 @@ function Data_String_case__parseDoublex2cwfe_10330($0, $1) {
     }
     case undefined: /* cons */ {
      switch($1.a2.a2.h) {
-      case 0: /* nil */ return Data_String_case__casex20blockx20inx20parseDoublex2cwfe_10493($0, $1.a1, $1.a2.a1, Data_String_split(csegen_99(), $1.a2.a1));
+      case 0: /* nil */ return Data_String_case__casex20blockx20inx20parseDoublex2cwfe_10493($0, $1.a1, $1.a2.a1, Data_String_split(csegen_104(), $1.a2.a1));
       default: return {h: 0};
      }
     }
@@ -2720,6 +2759,14 @@ function Prelude_Types_isSpace($0) {
   case '\u{b}': return 1;
   case '\u{a0}': return 1;
   default: return 0;
+ }
+}
+
+/* Prelude.Types.isOctDigit : Char -> Bool */
+function Prelude_Types_isOctDigit($0) {
+ switch(Prelude_EqOrd_x3ex3d_Ord_Char($0, '0')) {
+  case 1: return Prelude_EqOrd_x3cx3d_Ord_Char($0, '7');
+  case 0: return 0;
  }
 }
 
@@ -3182,6 +3229,14 @@ function Prelude_Show_show_Show_Double($0) {
 }
 
 /* Prelude.Show.show */
+function Prelude_Show_show_Show_Char($0) {
+ switch($0) {
+  case '\'': return '\'\u{5c}\'\'';
+  default: return ('\''+Prelude_Show_showLitChar($0)('\''));
+ }
+}
+
+/* Prelude.Show.show */
 function Prelude_Show_show_Show_Bool($0) {
  switch($0) {
   case 1: return 'True';
@@ -3556,6 +3611,19 @@ function Data_List_break$($0, $1) {
  return Data_List_span($3, $1);
 }
 
+/* Text.Lexer.4595:1473:lexStr */
+function Text_Lexer_n__4595_1473_lexStr($0) {
+ switch($0.h) {
+  case 0: /* nil */ return Text_Lexer_Core_fail();
+  case undefined: /* cons */ return Text_Lexer_Core_x3cx7cx3e(Text_Lexer_exact($0.a1), Text_Lexer_n__4595_1473_lexStr($0.a2));
+ }
+}
+
+/* Text.Lexer.4595:1472:control */
+const Text_Lexer_n__4595_1472_control = __lazy(function () {
+ return Text_Lexer_Core_x3cx7cx3e(Text_Lexer_n__4595_1473_lexStr({a1: 'NUL', a2: {a1: 'SOH', a2: {a1: 'STX', a2: {a1: 'ETX', a2: {a1: 'EOT', a2: {a1: 'ENQ', a2: {a1: 'ACK', a2: {a1: 'BEL', a2: {a1: 'BS', a2: {a1: 'HT', a2: {a1: 'LF', a2: {a1: 'VT', a2: {a1: 'FF', a2: {a1: 'CR', a2: {a1: 'SO', a2: {a1: 'SI', a2: {a1: 'DLE', a2: {a1: 'DC1', a2: {a1: 'DC2', a2: {a1: 'DC3', a2: {a1: 'DC4', a2: {a1: 'NAK', a2: {a1: 'SYN', a2: {a1: 'ETB', a2: {a1: 'CAN', a2: {a1: 'EM', a2: {a1: 'SUB', a2: {a1: 'ESC', a2: {a1: 'FS', a2: {a1: 'GS', a2: {a1: 'RS', a2: {a1: 'US', a2: {a1: 'SP', a2: {a1: 'DEL', a2: {h: 0}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}), Text_Lexer_Core_x3cx7cx3e({h: 4 /* SeqEat */, a1: Text_Lexer_is('x'), a2: () => Text_Lexer_hexDigits()}, Text_Lexer_Core_x3cx7cx3e({h: 4 /* SeqEat */, a1: Text_Lexer_is('o'), a2: () => Text_Lexer_octDigits()}, Text_Lexer_digits())));
+});
+
 /* Text.Lexer.toTokenMap : List (Lexer, k) -> TokenMap (Token k) */
 function Text_Lexer_toTokenMap($0) {
  return Prelude_Types_List_mapAppend({h: 0}, $4 => ({a1: $4.a1, a2: $8 => ({a1: $4.a2, a2: $8})}), $0);
@@ -3609,8 +3677,18 @@ function Text_Lexer_opt($0) {
 
 /* Text.Lexer.oneOf : String -> Lexer */
 function Text_Lexer_oneOf($0) {
- return Text_Lexer_Core_pred(x => Prelude_Types_elem(csegen_46(), csegen_86(), x, Prelude_Types_fastUnpack($0)));
+ return Text_Lexer_Core_pred(x => Prelude_Types_elem(csegen_49(), csegen_91(), x, Prelude_Types_fastUnpack($0)));
 }
+
+/* Text.Lexer.octDigits : Lexer */
+const Text_Lexer_octDigits = __lazy(function () {
+ return Text_Lexer_some(Text_Lexer_octDigit());
+});
+
+/* Text.Lexer.octDigit : Lexer */
+const Text_Lexer_octDigit = __lazy(function () {
+ return Text_Lexer_Core_pred($2 => Prelude_Types_isOctDigit($2));
+});
 
 /* Text.Lexer.non : Lexer -> Lexer */
 function Text_Lexer_non($0) {
@@ -3637,10 +3715,20 @@ function Text_Lexer_like($0) {
  return Text_Lexer_Core_pred(y => Prelude_EqOrd_x3dx3d_Eq_Char(Prelude_Types_toUpper($0), Prelude_Types_toUpper(y)));
 }
 
+/* Text.Lexer.isNot : Char -> Lexer */
+function Text_Lexer_isNot($0) {
+ return Text_Lexer_Core_pred($3 => Prelude_EqOrd_x2fx3d_Eq_Char($3, $0));
+}
+
 /* Text.Lexer.is : Char -> Lexer */
 function Text_Lexer_is($0) {
  return Text_Lexer_Core_pred($3 => Prelude_EqOrd_x3dx3d_Eq_Char($3, $0));
 }
+
+/* Text.Lexer.hexDigits : Lexer */
+const Text_Lexer_hexDigits = __lazy(function () {
+ return Text_Lexer_some(Text_Lexer_hexDigit());
+});
 
 /* Text.Lexer.hexDigit : Lexer */
 const Text_Lexer_hexDigit = __lazy(function () {
@@ -3709,6 +3797,11 @@ function Text_Lexer_count($0, $1) {
 /* Text.Lexer.control : Lexer */
 const Text_Lexer_control = __lazy(function () {
  return Text_Lexer_Core_pred($2 => Prelude_Types_isControl($2));
+});
+
+/* Text.Lexer.charLit : Lexer */
+const Text_Lexer_charLit = __lazy(function () {
+ return {h: 4 /* SeqEat */, a1: {h: 4 /* SeqEat */, a1: Text_Lexer_is('\''), a2: () => Text_Lexer_Core_x3cx7cx3e(Text_Lexer_escape(Text_Lexer_is('\u{5c}'), Text_Lexer_Core_x3cx7cx3e(Text_Lexer_n__4595_1472_control(), Text_Lexer_any())), Text_Lexer_isNot('\''))}, a2: () => Text_Lexer_is('\'')};
 });
 
 /* Text.Lexer.any : Lexer */
@@ -3845,12 +3938,12 @@ function Text_Bounded_show_Show_x28WithBoundsx20x24tyx29($0, $1) {
 
 /* Text.Bounded.showPrec */
 function Text_Bounded_showPrec_Show_Bounds($0, $1) {
- return Prelude_Show_showCon($0, 'MkBounds', Prelude_Types_foldMap_Foldable_List(csegen_152(), $b => $b, {a1: Prelude_Show_showArg(csegen_154(), $1.a1), a2: {a1: Prelude_Show_showArg(csegen_154(), $1.a2), a2: {a1: Prelude_Show_showArg(csegen_154(), $1.a3), a2: {a1: Prelude_Show_showArg(csegen_154(), $1.a4), a2: {h: 0}}}}}));
+ return Prelude_Show_showCon($0, 'MkBounds', Prelude_Types_foldMap_Foldable_List(csegen_202(), $b => $b, {a1: Prelude_Show_showArg(csegen_204(), $1.a1), a2: {a1: Prelude_Show_showArg(csegen_204(), $1.a2), a2: {a1: Prelude_Show_showArg(csegen_204(), $1.a3), a2: {a1: Prelude_Show_showArg(csegen_204(), $1.a4), a2: {h: 0}}}}}));
 }
 
 /* Text.Bounded.showPrec */
 function Text_Bounded_showPrec_Show_x28WithBoundsx20x24tyx29($0, $1, $2) {
- return Prelude_Show_showCon($1, 'MkBounded', Prelude_Types_foldMap_Foldable_List(csegen_152(), $c => $c, {a1: Prelude_Show_showArg({a1: x => Prelude_Show_show_Show_Bool(x), a2: d => x => Prelude_Show_showPrec_Show_Bool(d, x)}, $2.a2), a2: {a1: Prelude_Show_showArg($0, $2.a1), a2: {a1: Prelude_Show_showArg({a1: x => Text_Bounded_show_Show_Bounds(x), a2: d => x => Text_Bounded_showPrec_Show_Bounds(d, x)}, $2.a3), a2: {h: 0}}}}));
+ return Prelude_Show_showCon($1, 'MkBounded', Prelude_Types_foldMap_Foldable_List(csegen_202(), $c => $c, {a1: Prelude_Show_showArg({a1: x => Prelude_Show_show_Show_Bool(x), a2: d => x => Prelude_Show_showPrec_Show_Bool(d, x)}, $2.a2), a2: {a1: Prelude_Show_showArg($0, $2.a1), a2: {a1: Prelude_Show_showArg({a1: x => Text_Bounded_show_Show_Bounds(x), a2: d => x => Text_Bounded_showPrec_Show_Bounds(d, x)}, $2.a3), a2: {h: 0}}}}));
 }
 
 /* Text.Bounded.map */
@@ -3895,15 +3988,15 @@ function Text_Bounded_mergeBounds($0, $1) {
        switch($1.a2) {
         case 1: return Text_Bounded_map_Functor_WithBounds($c => $1.a1, $0);
         default: {
-         const $e = Prelude_EqOrd_min_Ord_x28x7cx28x28Builtinx2ePairx20x24ax29x20x24bx29x2cx28x28Builtinx2eMkPairx20x24ax29x20x24bx29x7cx29(csegen_169(), csegen_169(), Text_Bounded_start($0), Text_Bounded_start($1));
-         const $1a = Prelude_EqOrd_max_Ord_x28x7cx28x28Builtinx2ePairx20x24ax29x20x24bx29x2cx28x28Builtinx2eMkPairx20x24ax29x20x24bx29x7cx29(csegen_169(), csegen_169(), Text_Bounded_end($0), Text_Bounded_end($1));
+         const $e = Prelude_EqOrd_min_Ord_x28x7cx28x28Builtinx2ePairx20x24ax29x20x24bx29x2cx28x28Builtinx2eMkPairx20x24ax29x20x24bx29x7cx29(csegen_219(), csegen_219(), Text_Bounded_start($0), Text_Bounded_start($1));
+         const $1a = Prelude_EqOrd_max_Ord_x28x7cx28x28Builtinx2ePairx20x24ax29x20x24bx29x2cx28x28Builtinx2eMkPairx20x24ax29x20x24bx29x7cx29(csegen_219(), csegen_219(), Text_Bounded_end($0), Text_Bounded_end($1));
          return {a1: $1.a1, a2: 0, a3: {a1: $e.a1, a2: $e.a2, a3: $1a.a1, a4: $1a.a2}};
         }
        }
       }
       default: {
-       const $2e = Prelude_EqOrd_min_Ord_x28x7cx28x28Builtinx2ePairx20x24ax29x20x24bx29x2cx28x28Builtinx2eMkPairx20x24ax29x20x24bx29x7cx29(csegen_169(), csegen_169(), Text_Bounded_start($0), Text_Bounded_start($1));
-       const $3a = Prelude_EqOrd_max_Ord_x28x7cx28x28Builtinx2ePairx20x24ax29x20x24bx29x2cx28x28Builtinx2eMkPairx20x24ax29x20x24bx29x7cx29(csegen_169(), csegen_169(), Text_Bounded_end($0), Text_Bounded_end($1));
+       const $2e = Prelude_EqOrd_min_Ord_x28x7cx28x28Builtinx2ePairx20x24ax29x20x24bx29x2cx28x28Builtinx2eMkPairx20x24ax29x20x24bx29x7cx29(csegen_219(), csegen_219(), Text_Bounded_start($0), Text_Bounded_start($1));
+       const $3a = Prelude_EqOrd_max_Ord_x28x7cx28x28Builtinx2ePairx20x24ax29x20x24bx29x2cx28x28Builtinx2eMkPairx20x24ax29x20x24bx29x7cx29(csegen_219(), csegen_219(), Text_Bounded_end($0), Text_Bounded_end($1));
        return {a1: $1.a1, a2: 0, a3: {a1: $2e.a1, a2: $2e.a2, a3: $3a.a1, a4: $3a.a2}};
       }
      }
@@ -3916,15 +4009,15 @@ function Text_Bounded_mergeBounds($0, $1) {
      switch($1.a2) {
       case 1: return Text_Bounded_map_Functor_WithBounds($52 => $1.a1, $0);
       default: {
-       const $54 = Prelude_EqOrd_min_Ord_x28x7cx28x28Builtinx2ePairx20x24ax29x20x24bx29x2cx28x28Builtinx2eMkPairx20x24ax29x20x24bx29x7cx29(csegen_169(), csegen_169(), Text_Bounded_start($0), Text_Bounded_start($1));
-       const $60 = Prelude_EqOrd_max_Ord_x28x7cx28x28Builtinx2ePairx20x24ax29x20x24bx29x2cx28x28Builtinx2eMkPairx20x24ax29x20x24bx29x7cx29(csegen_169(), csegen_169(), Text_Bounded_end($0), Text_Bounded_end($1));
+       const $54 = Prelude_EqOrd_min_Ord_x28x7cx28x28Builtinx2ePairx20x24ax29x20x24bx29x2cx28x28Builtinx2eMkPairx20x24ax29x20x24bx29x7cx29(csegen_219(), csegen_219(), Text_Bounded_start($0), Text_Bounded_start($1));
+       const $60 = Prelude_EqOrd_max_Ord_x28x7cx28x28Builtinx2ePairx20x24ax29x20x24bx29x2cx28x28Builtinx2eMkPairx20x24ax29x20x24bx29x7cx29(csegen_219(), csegen_219(), Text_Bounded_end($0), Text_Bounded_end($1));
        return {a1: $1.a1, a2: 0, a3: {a1: $54.a1, a2: $54.a2, a3: $60.a1, a4: $60.a2}};
       }
      }
     }
     default: {
-     const $74 = Prelude_EqOrd_min_Ord_x28x7cx28x28Builtinx2ePairx20x24ax29x20x24bx29x2cx28x28Builtinx2eMkPairx20x24ax29x20x24bx29x7cx29(csegen_169(), csegen_169(), Text_Bounded_start($0), Text_Bounded_start($1));
-     const $80 = Prelude_EqOrd_max_Ord_x28x7cx28x28Builtinx2ePairx20x24ax29x20x24bx29x2cx28x28Builtinx2eMkPairx20x24ax29x20x24bx29x7cx29(csegen_169(), csegen_169(), Text_Bounded_end($0), Text_Bounded_end($1));
+     const $74 = Prelude_EqOrd_min_Ord_x28x7cx28x28Builtinx2ePairx20x24ax29x20x24bx29x2cx28x28Builtinx2eMkPairx20x24ax29x20x24bx29x7cx29(csegen_219(), csegen_219(), Text_Bounded_start($0), Text_Bounded_start($1));
+     const $80 = Prelude_EqOrd_max_Ord_x28x7cx28x28Builtinx2ePairx20x24ax29x20x24bx29x2cx28x28Builtinx2eMkPairx20x24ax29x20x24bx29x7cx29(csegen_219(), csegen_219(), Text_Bounded_end($0), Text_Bounded_end($1));
      return {a1: $1.a1, a2: 0, a3: {a1: $74.a1, a2: $74.a2, a3: $80.a1, a4: $80.a2}};
     }
    }
@@ -3948,12 +4041,12 @@ function Text_Bounded_end($0) {
 }
 
 /* Pacillus.Idris2LSP.Syntax.SimpleExpr.case block in parseSimpleExpr */
-function Pacillus_Idris2LSP_Syntax_SimpleExpr_case__parseSimpleExpr_5119($0, $1, $2) {
+function Pacillus_Idris2LSP_Syntax_SimpleExpr_case__parseSimpleExpr_5223($0, $1, $2) {
  switch($2.h) {
   case 1: /* Right */ {
    switch($2.a1.a2.h) {
     case 0: /* nil */ return {h: 1 /* Right */, a1: $2.a1.a1};
-    default: return {h: 0 /* Left */, a1: Prelude_Show_show_Show_x28Listx20x24ax29({a1: x => Text_Bounded_show_Show_x28WithBoundsx20x24tyx29(csegen_28(), x), a2: d => x => Text_Bounded_showPrec_Show_x28WithBoundsx20x24tyx29(csegen_28(), d, x)}, $2.a1.a2)};
+    default: return {h: 0 /* Left */, a1: Prelude_Show_show_Show_x28Listx20x24ax29(csegen_28(), $2.a1.a2)};
    }
   }
   case 0: /* Left */ return {h: 0 /* Left */, a1: Data_List1_show_Show_x28List1x20x24ax29(csegen_31(), $2.a1)};
@@ -3961,7 +4054,7 @@ function Pacillus_Idris2LSP_Syntax_SimpleExpr_case__parseSimpleExpr_5119($0, $1,
 }
 
 /* Pacillus.Idris2LSP.Syntax.SimpleExpr.case block in == */
-function Pacillus_Idris2LSP_Syntax_SimpleExpr_case__x3dx3d_3304($0, $1, $2) {
+function Pacillus_Idris2LSP_Syntax_SimpleExpr_case__x3dx3d_3371($0, $1, $2) {
  switch($2.a1.a2.h) {
   case 0: /* nil */ {
    switch($2.a2.a2.h) {
@@ -3972,49 +4065,49 @@ function Pacillus_Idris2LSP_Syntax_SimpleExpr_case__x3dx3d_3304($0, $1, $2) {
   case undefined: /* cons */ {
    switch($2.a2.a2.h) {
     case 0: /* nil */ return Prelude_EqOrd_x3dx3d_Eq_String(Data_List1_last($2.a1), $2.a2.a1);
-    case undefined: /* cons */ return Data_List1_x3dx3d_Eq_x28List1x20x24ax29(csegen_59(), $2.a1, $2.a2);
+    case undefined: /* cons */ return Data_List1_x3dx3d_Eq_x28List1x20x24ax29(csegen_62(), $2.a1, $2.a2);
    }
   }
  }
 }
 
-/* Pacillus.Idris2LSP.Syntax.SimpleExpr.5398:4064:sorting */
-function Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5398_4064_sorting($0, $1, $2) {
+/* Pacillus.Idris2LSP.Syntax.SimpleExpr.5425:4148:sorting */
+function Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5425_4148_sorting($0, $1, $2) {
  return Prelude_EqOrd_compare_Ord_Integer($2.a1.a1, $1.a1.a1);
 }
 
-/* Pacillus.Idris2LSP.Syntax.SimpleExpr.5398:4063:sorted */
-function Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5398_4063_sorted($0) {
- return Data_List_sortBy($3 => $4 => Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5398_4064_sorting($0, $3, $4), Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5398_4058_grouped($0));
+/* Pacillus.Idris2LSP.Syntax.SimpleExpr.5425:4147:sorted */
+function Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5425_4147_sorted($0) {
+ return Data_List_sortBy($3 => $4 => Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5425_4148_sorting($0, $3, $4), Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5425_4142_grouped($0));
 }
 
-/* Pacillus.Idris2LSP.Syntax.SimpleExpr.5398:4062:norm_oprec */
-function Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5398_4062_norm_oprec($0, $1) {
+/* Pacillus.Idris2LSP.Syntax.SimpleExpr.5425:4146:norm_oprec */
+function Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5425_4146_norm_oprec($0, $1) {
  return {a1: $1.a2, a2: {h: 2 /* Infix */, a1: Pacillus_Idris2LSP_Syntax_SimpleExpr_infixOperator($1.a1), a2: $1.a3}};
 }
 
-/* Pacillus.Idris2LSP.Syntax.SimpleExpr.5398:4061:norm_opmap */
-function Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5398_4061_norm_opmap($0) {
- return Prelude_Types_List_mapAppend({h: 0}, $4 => Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5398_4062_norm_oprec($0, $4), $0);
+/* Pacillus.Idris2LSP.Syntax.SimpleExpr.5425:4145:norm_opmap */
+function Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5425_4145_norm_opmap($0) {
+ return Prelude_Types_List_mapAppend({h: 0}, $4 => Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5425_4146_norm_oprec($0, $4), $0);
 }
 
-/* Pacillus.Idris2LSP.Syntax.SimpleExpr.5398:4060:merged_norm */
-function Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5398_4060_merged_norm($0) {
- return {a1: {a1: 1n, a2: {h: 2 /* Infix */, a1: Pacillus_Idris2LSP_Syntax_SimpleExpr_infixFunction(), a2: 0}}, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5398_4061_norm_opmap($0)};
+/* Pacillus.Idris2LSP.Syntax.SimpleExpr.5425:4144:merged_norm */
+function Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5425_4144_merged_norm($0) {
+ return {a1: {a1: 1n, a2: {h: 2 /* Infix */, a1: Pacillus_Idris2LSP_Syntax_SimpleExpr_infixFunction(), a2: 0}}, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5425_4145_norm_opmap($0)};
 }
 
-/* Pacillus.Idris2LSP.Syntax.SimpleExpr.5398:4059:grouping */
-function Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5398_4059_grouping($0, $1, $2) {
+/* Pacillus.Idris2LSP.Syntax.SimpleExpr.5425:4143:grouping */
+function Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5425_4143_grouping($0, $1, $2) {
  return (($1.a1===$2.a1)?1:0);
 }
 
-/* Pacillus.Idris2LSP.Syntax.SimpleExpr.5398:4058:grouped */
-function Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5398_4058_grouped($0) {
- return Data_List_groupBy($3 => $4 => Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5398_4059_grouping($0, $3, $4), Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5398_4060_merged_norm($0));
+/* Pacillus.Idris2LSP.Syntax.SimpleExpr.5425:4142:grouped */
+function Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5425_4142_grouped($0) {
+ return Data_List_groupBy($3 => $4 => Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5425_4143_grouping($0, $3, $4), Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5425_4144_merged_norm($0));
 }
 
-/* Pacillus.Idris2LSP.Syntax.SimpleExpr.5398:4057:forgetAll */
-function Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5398_4057_forgetAll($0, $1) {
+/* Pacillus.Idris2LSP.Syntax.SimpleExpr.5425:4141:forgetAll */
+function Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5425_4141_forgetAll($0, $1) {
  return Prelude_Types_List_mapAppend({h: 0}, $5 => Builtin_snd($5), Data_List1_forget($1));
 }
 
@@ -4024,13 +4117,13 @@ function Pacillus_Idris2LSP_Syntax_SimpleExpr_show_Show_SimpleExpr($0) {
 }
 
 /* Pacillus.Idris2LSP.Syntax.SimpleExpr.show */
-function Pacillus_Idris2LSP_Syntax_SimpleExpr_show_Show_Signature($0) {
- return ($0.a1+(' : '+Pacillus_Idris2LSP_Syntax_SimpleExpr_showSimpleExpr(0n, $0.a2)));
+function Pacillus_Idris2LSP_Syntax_SimpleExpr_show_Show_Identifier($0) {
+ return Data_List1_last(Data_String_split(csegen_222(), $0));
 }
 
 /* Pacillus.Idris2LSP.Syntax.SimpleExpr.== */
 function Pacillus_Idris2LSP_Syntax_SimpleExpr_x3dx3d_Eq_Identifier($0, $1) {
- return Pacillus_Idris2LSP_Syntax_SimpleExpr_case__x3dx3d_3304($0, $1, {a1: Data_String_split(csegen_175(), $0), a2: Data_String_split(csegen_175(), $1)});
+ return Pacillus_Idris2LSP_Syntax_SimpleExpr_case__x3dx3d_3371($0, $1, {a1: Data_String_split(csegen_222(), $0), a2: Data_String_split(csegen_222(), $1)});
 }
 
 /* Pacillus.Idris2LSP.Syntax.SimpleExpr./= */
@@ -4043,7 +4136,7 @@ function Pacillus_Idris2LSP_Syntax_SimpleExpr_x2fx3d_Eq_Identifier($0, $1) {
 
 /* Pacillus.Idris2LSP.Syntax.SimpleExpr.term : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True SimpleExpr */
 function Pacillus_Idris2LSP_Syntax_SimpleExpr_term($0) {
- return {h: 12 /* Alt */, a1: 1, a2: 1, a3: {h: 10 /* ThenEat */, a1: 1, a2: csegen_181(), a3: () => ({h: 10 /* ThenEat */, a1: 0, a2: csegen_182(), a3: () => ({h: 0 /* Empty */, a1: {h: 8 /* UnitTerm */}})})}, a4: () => ({h: 12 /* Alt */, a1: 1, a2: 1, a3: Text_Parser_Core_map_Functor_x28x28x28Grammarx20x24statex29x20x24tokx29x20x24cx29(1, $14 => ({h: 7 /* PrTerm */, a1: $14}), Pacillus_Idris2LSP_Syntax_SimpleExpr_pair($0)), a4: () => ({h: 12 /* Alt */, a1: 1, a2: 1, a3: {h: 8 /* SeqEat */, a1: 0, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_identifier(), a3: () => id => ({h: 0 /* Empty */, a1: {h: 0 /* IdTerm */, a1: id}})}, a4: () => ({h: 12 /* Alt */, a1: 1, a2: 1, a3: Pacillus_Idris2LSP_Syntax_SimpleExpr_literal(), a4: () => Pacillus_Idris2LSP_Syntax_SimpleExpr_paren($0)})})})};
+ return {h: 12 /* Alt */, a1: 1, a2: 1, a3: {h: 10 /* ThenEat */, a1: 1, a2: csegen_228(), a3: () => ({h: 10 /* ThenEat */, a1: 0, a2: csegen_229(), a3: () => ({h: 0 /* Empty */, a1: {h: 9 /* UnitTerm */}})})}, a4: () => ({h: 12 /* Alt */, a1: 1, a2: 1, a3: Text_Parser_Core_map_Functor_x28x28x28Grammarx20x24statex29x20x24tokx29x20x24cx29(1, $14 => ({h: 8 /* PrTerm */, a1: $14}), Pacillus_Idris2LSP_Syntax_SimpleExpr_pair($0)), a4: () => ({h: 12 /* Alt */, a1: 1, a2: 1, a3: {h: 8 /* SeqEat */, a1: 0, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_identifier(), a3: () => id => ({h: 0 /* Empty */, a1: {h: 0 /* IdTerm */, a1: id}})}, a4: () => ({h: 12 /* Alt */, a1: 1, a2: 1, a3: Pacillus_Idris2LSP_Syntax_SimpleExpr_literal(), a4: () => Pacillus_Idris2LSP_Syntax_SimpleExpr_paren($0)})})})};
 }
 
 /* Pacillus.Idris2LSP.Syntax.SimpleExpr.simpleExprInf2App : String -> SimpleExpr -> SimpleExpr -> SimpleExpr */
@@ -4060,28 +4153,29 @@ function Pacillus_Idris2LSP_Syntax_SimpleExpr_simpleExpr($0) {
 
 /* Pacillus.Idris2LSP.Syntax.SimpleExpr.signature : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True Signature */
 function Pacillus_Idris2LSP_Syntax_SimpleExpr_signature($0) {
- return {h: 8 /* SeqEat */, a1: 1, a2: csegen_186(), a3: () => id => ({h: 10 /* ThenEat */, a1: 1, a2: Text_Parser_match(csegen_177(), csegen_180(), 8), a3: () => ({h: 8 /* SeqEat */, a1: 0, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_simpleExpr($0), a3: () => e => ({h: 0 /* Empty */, a1: {a1: id, a2: e}})})})};
+ return {h: 8 /* SeqEat */, a1: 1, a2: csegen_233(), a3: () => id => ({h: 10 /* ThenEat */, a1: 1, a2: Text_Parser_match(csegen_224(), csegen_227(), 8), a3: () => ({h: 8 /* SeqEat */, a1: 0, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_simpleExpr($0), a3: () => e => ({h: 0 /* Empty */, a1: {a1: id, a2: e}})})})};
 }
 
 /* Pacillus.Idris2LSP.Syntax.SimpleExpr.showSimpleExpr : Nat -> SimpleExpr -> String */
 function Pacillus_Idris2LSP_Syntax_SimpleExpr_showSimpleExpr($0, $1) {
  switch($1.h) {
-  case 0: /* IdTerm */ return $1.a1;
+  case 0: /* IdTerm */ return Pacillus_Idris2LSP_Syntax_SimpleExpr_show_Show_Identifier($1.a1);
   case 1: /* AppTerm */ return Pacillus_Idris2LSP_Syntax_SimpleExpr_showApp($0, $1.a1);
   case 2: /* ArwTerm */ return Pacillus_Idris2LSP_Syntax_SimpleExpr_showArw($0, $1.a1);
   case 3: /* EqTerm */ return Pacillus_Idris2LSP_Syntax_SimpleExpr_showEq($0, $1.a1);
-  case 7: /* PrTerm */ return Pacillus_Idris2LSP_Syntax_SimpleExpr_showPr($0, $1.a1);
+  case 8: /* PrTerm */ return Pacillus_Idris2LSP_Syntax_SimpleExpr_showPr($0, $1.a1);
   case 4: /* IntegerLiteral */ return Prelude_Show_show_Show_Integer($1.a1);
   case 5: /* DoubleLiteral */ return Prelude_Show_show_Show_Double($1.a1);
-  case 6: /* StringLiteral */ return Prelude_Show_show_Show_String($1.a1);
-  case 8: /* UnitTerm */ return '()';
+  case 6: /* CharLiteral */ return Prelude_Show_show_Show_Char($1.a1);
+  case 7: /* StringLiteral */ return Prelude_Show_show_Show_String($1.a1);
+  case 9: /* UnitTerm */ return '()';
  }
 }
 
 /* Pacillus.Idris2LSP.Syntax.SimpleExpr.showPrNoBracket : Pair -> String */
 function Pacillus_Idris2LSP_Syntax_SimpleExpr_showPrNoBracket($0) {
  switch($0.a2.h) {
-  case 7: /* PrTerm */ return (Pacillus_Idris2LSP_Syntax_SimpleExpr_showSimpleExpr(0n, $0.a1)+(', '+Pacillus_Idris2LSP_Syntax_SimpleExpr_showPrNoBracket($0.a2.a1)));
+  case 8: /* PrTerm */ return (Pacillus_Idris2LSP_Syntax_SimpleExpr_showSimpleExpr(0n, $0.a1)+(', '+Pacillus_Idris2LSP_Syntax_SimpleExpr_showPrNoBracket($0.a2.a1)));
   default: return (Pacillus_Idris2LSP_Syntax_SimpleExpr_showSimpleExpr(0n, $0.a1)+(', '+Pacillus_Idris2LSP_Syntax_SimpleExpr_showSimpleExpr(0n, $0.a2)));
  }
 }
@@ -4100,7 +4194,7 @@ function Pacillus_Idris2LSP_Syntax_SimpleExpr_showEq($0, $1) {
 function Pacillus_Idris2LSP_Syntax_SimpleExpr_showArw($0, $1) {
  switch($1.h) {
   case 0: /* ExExArr */ return Prelude_Show_showParens(Prelude_Types_x3ex3d_Ord_Nat($0, 2n), (Pacillus_Idris2LSP_Syntax_SimpleExpr_showSimpleExpr(2n, $1.a2)+(' -> '+Pacillus_Idris2LSP_Syntax_SimpleExpr_showSimpleExpr(1n, $1.a3))));
-  case 1: /* SiExArr */ return Prelude_Show_showParens(Prelude_Types_x3ex3d_Ord_Nat($0, 2n), ('('+($1.a1.a1+(' : '+(Pacillus_Idris2LSP_Syntax_SimpleExpr_showSimpleExpr(0n, $1.a1.a2)+(') -> '+Pacillus_Idris2LSP_Syntax_SimpleExpr_showSimpleExpr(2n, $1.a2)))))));
+  case 1: /* SiExArr */ return Prelude_Show_showParens(Prelude_Types_x3ex3d_Ord_Nat($0, 2n), ('('+(Pacillus_Idris2LSP_Syntax_SimpleExpr_show_Show_Identifier($1.a1.a1)+(' : '+(Pacillus_Idris2LSP_Syntax_SimpleExpr_showSimpleExpr(0n, $1.a1.a2)+(') -> '+Pacillus_Idris2LSP_Syntax_SimpleExpr_showSimpleExpr(2n, $1.a2)))))));
  }
 }
 
@@ -4111,7 +4205,7 @@ function Pacillus_Idris2LSP_Syntax_SimpleExpr_showApp($0, $1) {
 
 /* Pacillus.Idris2LSP.Syntax.SimpleExpr.parseSimpleExpr : InOperatorMap -> List (WithBounds SimpleExprToken) -> Either String SimpleExpr */
 function Pacillus_Idris2LSP_Syntax_SimpleExpr_parseSimpleExpr($0, $1) {
- return Pacillus_Idris2LSP_Syntax_SimpleExpr_case__parseSimpleExpr_5119($1, $0, Text_Parser_Core_parse(1, Pacillus_Idris2LSP_Syntax_SimpleExpr_simpleExpr(Pacillus_Idris2LSP_Syntax_SimpleExpr_opTable($0)), Prelude_Types_List_filterAppend({h: 0}, csegen_26(), $1)));
+ return Pacillus_Idris2LSP_Syntax_SimpleExpr_case__parseSimpleExpr_5223($1, $0, Text_Parser_Core_parse(1, Pacillus_Idris2LSP_Syntax_SimpleExpr_simpleExpr(Pacillus_Idris2LSP_Syntax_SimpleExpr_opTable($0)), Prelude_Types_List_filterAppend({h: 0}, csegen_34(), $1)));
 }
 
 /* Pacillus.Idris2LSP.Syntax.SimpleExpr.parse : InOperatorMap -> String -> Either String SimpleExpr */
@@ -4125,22 +4219,22 @@ function Pacillus_Idris2LSP_Syntax_SimpleExpr_parse($0, $1) {
 
 /* Pacillus.Idris2LSP.Syntax.SimpleExpr.paren : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True SimpleExpr */
 function Pacillus_Idris2LSP_Syntax_SimpleExpr_paren($0) {
- return {h: 10 /* ThenEat */, a1: 1, a2: csegen_181(), a3: () => ({h: 8 /* SeqEat */, a1: 1, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_simpleExpr($0), a3: () => e => ({h: 10 /* ThenEat */, a1: 0, a2: csegen_182(), a3: () => ({h: 0 /* Empty */, a1: e})})})};
+ return {h: 10 /* ThenEat */, a1: 1, a2: csegen_228(), a3: () => ({h: 8 /* SeqEat */, a1: 1, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_simpleExpr($0), a3: () => e => ({h: 10 /* ThenEat */, a1: 0, a2: csegen_229(), a3: () => ({h: 0 /* Empty */, a1: e})})})};
 }
 
 /* Pacillus.Idris2LSP.Syntax.SimpleExpr.pairSub : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True Pair */
 function Pacillus_Idris2LSP_Syntax_SimpleExpr_pairSub($0) {
- return {h: 12 /* Alt */, a1: 1, a2: 1, a3: {h: 8 /* SeqEat */, a1: 1, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_simpleExpr($0), a3: () => e => ({h: 10 /* ThenEat */, a1: 1, a2: csegen_189(), a3: () => ({h: 8 /* SeqEat */, a1: 0, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_pairSub($0), a3: () => p => ({h: 0 /* Empty */, a1: {a1: e, a2: {h: 7 /* PrTerm */, a1: p}}})})})}, a4: () => ({h: 8 /* SeqEat */, a1: 1, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_simpleExpr($0), a3: () => e1 => ({h: 10 /* ThenEat */, a1: 1, a2: csegen_189(), a3: () => ({h: 8 /* SeqEat */, a1: 0, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_simpleExpr($0), a3: () => e2 => ({h: 0 /* Empty */, a1: {a1: e1, a2: e2}})})})})};
+ return {h: 12 /* Alt */, a1: 1, a2: 1, a3: {h: 8 /* SeqEat */, a1: 1, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_simpleExpr($0), a3: () => e => ({h: 10 /* ThenEat */, a1: 1, a2: csegen_236(), a3: () => ({h: 8 /* SeqEat */, a1: 0, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_pairSub($0), a3: () => p => ({h: 0 /* Empty */, a1: {a1: e, a2: {h: 8 /* PrTerm */, a1: p}}})})})}, a4: () => ({h: 8 /* SeqEat */, a1: 1, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_simpleExpr($0), a3: () => e1 => ({h: 10 /* ThenEat */, a1: 1, a2: csegen_236(), a3: () => ({h: 8 /* SeqEat */, a1: 0, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_simpleExpr($0), a3: () => e2 => ({h: 0 /* Empty */, a1: {a1: e1, a2: e2}})})})})};
 }
 
 /* Pacillus.Idris2LSP.Syntax.SimpleExpr.pair : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True Pair */
 function Pacillus_Idris2LSP_Syntax_SimpleExpr_pair($0) {
- return {h: 10 /* ThenEat */, a1: 1, a2: csegen_181(), a3: () => ({h: 8 /* SeqEat */, a1: 1, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_pairSub($0), a3: () => p => ({h: 10 /* ThenEat */, a1: 0, a2: csegen_182(), a3: () => ({h: 0 /* Empty */, a1: p})})})};
+ return {h: 10 /* ThenEat */, a1: 1, a2: csegen_228(), a3: () => ({h: 8 /* SeqEat */, a1: 1, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_pairSub($0), a3: () => p => ({h: 10 /* ThenEat */, a1: 0, a2: csegen_229(), a3: () => ({h: 0 /* Empty */, a1: p})})})};
 }
 
 /* Pacillus.Idris2LSP.Syntax.SimpleExpr.operation : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True SimpleExpr */
 function Pacillus_Idris2LSP_Syntax_SimpleExpr_operation($0) {
- return {h: 12 /* Alt */, a1: 1, a2: 1, a3: Text_Parser_Expression_buildExpressionParser(Prelude_Types_List_tailRecAppend($0, {a1: {a1: {h: 2 /* Infix */, a1: Pacillus_Idris2LSP_Syntax_SimpleExpr_equality(), a2: 0}, a2: {h: 0}}, a2: {h: 0}}), {h: 12 /* Alt */, a1: 1, a2: 1, a3: Text_Parser_Core_map_Functor_x28x28x28Grammarx20x24statex29x20x24tokx29x20x24cx29(1, $17 => ({h: 1 /* AppTerm */, a1: $17}), Pacillus_Idris2LSP_Syntax_SimpleExpr_app($0)), a4: () => Pacillus_Idris2LSP_Syntax_SimpleExpr_term($0)}), a4: () => Pacillus_Idris2LSP_Syntax_SimpleExpr_term($0)};
+ return {h: 12 /* Alt */, a1: 1, a2: 1, a3: Text_Parser_Expression_buildExpressionParser(Prelude_Types_List_tailRecAppend($0, {a1: {a1: {h: 2 /* Infix */, a1: Pacillus_Idris2LSP_Syntax_SimpleExpr_equality(), a2: 0}, a2: {a1: {h: 2 /* Infix */, a1: Pacillus_Idris2LSP_Syntax_SimpleExpr_appOp(), a2: 2}, a2: {h: 0}}}, a2: {h: 0}}), {h: 12 /* Alt */, a1: 1, a2: 1, a3: Text_Parser_Core_map_Functor_x28x28x28Grammarx20x24statex29x20x24tokx29x20x24cx29(1, $1c => ({h: 1 /* AppTerm */, a1: $1c}), Pacillus_Idris2LSP_Syntax_SimpleExpr_app($0)), a4: () => Pacillus_Idris2LSP_Syntax_SimpleExpr_term($0)}), a4: () => Pacillus_Idris2LSP_Syntax_SimpleExpr_term($0)};
 }
 
 /* Pacillus.Idris2LSP.Syntax.SimpleExpr.opTable : InOperatorMap -> OperatorTable state SimpleExprToken SimpleExpr */
@@ -4150,17 +4244,17 @@ function Pacillus_Idris2LSP_Syntax_SimpleExpr_opTable($0) {
 
 /* Pacillus.Idris2LSP.Syntax.SimpleExpr.literal : Grammar state SimpleExprToken True SimpleExpr */
 const Pacillus_Idris2LSP_Syntax_SimpleExpr_literal = __lazy(function () {
- return {h: 12 /* Alt */, a1: 1, a2: 1, a3: {h: 8 /* SeqEat */, a1: 0, a2: Text_Parser_match(csegen_177(), csegen_180(), 10), a3: () => n => ({h: 0 /* Empty */, a1: {h: 4 /* IntegerLiteral */, a1: n}})}, a4: () => ({h: 12 /* Alt */, a1: 1, a2: 1, a3: {h: 8 /* SeqEat */, a1: 0, a2: Text_Parser_match(csegen_177(), csegen_180(), 11), a3: () => n => ({h: 0 /* Empty */, a1: {h: 5 /* DoubleLiteral */, a1: n}})}, a4: () => ({h: 8 /* SeqEat */, a1: 0, a2: Text_Parser_match(csegen_177(), csegen_180(), 12), a3: () => s => ({h: 0 /* Empty */, a1: {h: 6 /* StringLiteral */, a1: s}})})})};
+ return {h: 12 /* Alt */, a1: 1, a2: 1, a3: {h: 8 /* SeqEat */, a1: 0, a2: Text_Parser_match(csegen_224(), csegen_227(), 11), a3: () => n => ({h: 0 /* Empty */, a1: {h: 4 /* IntegerLiteral */, a1: n}})}, a4: () => ({h: 12 /* Alt */, a1: 1, a2: 1, a3: {h: 8 /* SeqEat */, a1: 0, a2: Text_Parser_match(csegen_224(), csegen_227(), 13), a3: () => n => ({h: 0 /* Empty */, a1: {h: 5 /* DoubleLiteral */, a1: n}})}, a4: () => ({h: 12 /* Alt */, a1: 1, a2: 1, a3: {h: 8 /* SeqEat */, a1: 0, a2: Text_Parser_match(csegen_224(), csegen_227(), 12), a3: () => c => ({h: 0 /* Empty */, a1: {h: 6 /* CharLiteral */, a1: c}})}, a4: () => ({h: 8 /* SeqEat */, a1: 0, a2: Text_Parser_match(csegen_224(), csegen_227(), 14), a3: () => s => ({h: 0 /* Empty */, a1: {h: 7 /* StringLiteral */, a1: s}})})})})};
 });
 
 /* Pacillus.Idris2LSP.Syntax.SimpleExpr.infixOperator : String -> Grammar state SimpleExprToken True (SimpleExpr -> SimpleExpr -> SimpleExpr) */
 function Pacillus_Idris2LSP_Syntax_SimpleExpr_infixOperator($0) {
- return {h: 8 /* SeqEat */, a1: 0, a2: Text_Parser_match(csegen_177(), csegen_180(), 0), a3: () => sym => ({h: 11 /* ThenEmpty */, a1: 0, a2: 0, a3: Text_Parser_when(Prelude_EqOrd_x2fx3d_Eq_String(sym, $0), () => ({h: 4 /* Fail */, a1: {h: 0}, a2: 0, a3: 'not a matching operator'})), a4: {h: 0 /* Empty */, a1: $18 => $19 => Pacillus_Idris2LSP_Syntax_SimpleExpr_simpleExprInf2App(('('+(sym+')')), $18, $19)}})};
+ return {h: 8 /* SeqEat */, a1: 0, a2: Text_Parser_match(csegen_224(), csegen_227(), 0), a3: () => sym => ({h: 11 /* ThenEmpty */, a1: 0, a2: 0, a3: Text_Parser_when(Prelude_EqOrd_x2fx3d_Eq_String(sym, $0), () => ({h: 4 /* Fail */, a1: {h: 0}, a2: 0, a3: 'not a matching operator'})), a4: {h: 0 /* Empty */, a1: $18 => $19 => Pacillus_Idris2LSP_Syntax_SimpleExpr_simpleExprInf2App(('('+(sym+')')), $18, $19)}})};
 }
 
 /* Pacillus.Idris2LSP.Syntax.SimpleExpr.infixFunction : Grammar state SimpleExprToken True (SimpleExpr -> SimpleExpr -> SimpleExpr) */
 const Pacillus_Idris2LSP_Syntax_SimpleExpr_infixFunction = __lazy(function () {
- return {h: 10 /* ThenEat */, a1: 1, a2: csegen_202(), a3: () => ({h: 8 /* SeqEat */, a1: 1, a2: csegen_186(), a3: () => id => ({h: 10 /* ThenEat */, a1: 0, a2: csegen_202(), a3: () => ({h: 0 /* Empty */, a1: $d => $e => Pacillus_Idris2LSP_Syntax_SimpleExpr_simpleExprInf2App(id, $d, $e)})})})};
+ return {h: 10 /* ThenEat */, a1: 1, a2: csegen_253(), a3: () => ({h: 8 /* SeqEat */, a1: 1, a2: csegen_233(), a3: () => id => ({h: 10 /* ThenEat */, a1: 0, a2: csegen_253(), a3: () => ({h: 0 /* Empty */, a1: $d => $e => Pacillus_Idris2LSP_Syntax_SimpleExpr_simpleExprInf2App(id, $d, $e)})})})};
 });
 
 /* Pacillus.Idris2LSP.Syntax.SimpleExpr.ignored : WithBounds SimpleExprToken -> Bool */
@@ -4183,7 +4277,7 @@ function Pacillus_Idris2LSP_Syntax_SimpleExpr_ignored($0) {
 
 /* Pacillus.Idris2LSP.Syntax.SimpleExpr.identifier : Grammar state SimpleExprToken True Identifier */
 const Pacillus_Idris2LSP_Syntax_SimpleExpr_identifier = __lazy(function () {
- return {h: 12 /* Alt */, a1: 1, a2: 1, a3: Text_Parser_Core_map_Functor_x28x28x28Grammarx20x24statex29x20x24tokx29x20x24cx29(1, $6 => $6, csegen_186()), a4: () => ({h: 10 /* ThenEat */, a1: 1, a2: csegen_181(), a3: () => ({h: 8 /* SeqEat */, a1: 1, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_identifier(), a3: () => id => ({h: 10 /* ThenEat */, a1: 0, a2: csegen_182(), a3: () => ({h: 0 /* Empty */, a1: id})})})})};
+ return {h: 12 /* Alt */, a1: 1, a2: 1, a3: Text_Parser_Core_map_Functor_x28x28x28Grammarx20x24statex29x20x24tokx29x20x24cx29(1, $6 => $6, csegen_233()), a4: () => ({h: 10 /* ThenEat */, a1: 1, a2: csegen_228(), a3: () => ({h: 8 /* SeqEat */, a1: 1, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_identifier(), a3: () => id => ({h: 10 /* ThenEat */, a1: 0, a2: csegen_229(), a3: () => ({h: 0 /* Empty */, a1: id})})})})};
 });
 
 /* Pacillus.Idris2LSP.Syntax.SimpleExpr.forgetSig : Arrow b -> Arrow True */
@@ -4196,22 +4290,17 @@ function Pacillus_Idris2LSP_Syntax_SimpleExpr_forgetSig($0) {
 
 /* Pacillus.Idris2LSP.Syntax.SimpleExpr.equality : Grammar state SimpleExprToken True (SimpleExpr -> SimpleExpr -> SimpleExpr) */
 const Pacillus_Idris2LSP_Syntax_SimpleExpr_equality = __lazy(function () {
- return {h: 10 /* ThenEat */, a1: 0, a2: Text_Parser_match(csegen_177(), csegen_180(), 7), a3: () => ({h: 0 /* Empty */, a1: x => y => ({h: 3 /* EqTerm */, a1: {a1: x, a2: y}})})};
+ return {h: 10 /* ThenEat */, a1: 0, a2: Text_Parser_match(csegen_224(), csegen_227(), 7), a3: () => ({h: 0 /* Empty */, a1: x => y => ({h: 3 /* EqTerm */, a1: {a1: x, a2: y}})})};
 });
 
 /* Pacillus.Idris2LSP.Syntax.SimpleExpr.dynOperatorTable : InOperatorMap -> OperatorTable state SimpleExprToken SimpleExpr */
 function Pacillus_Idris2LSP_Syntax_SimpleExpr_dynOperatorTable($0) {
- return Prelude_Types_List_mapAppend({h: 0}, $4 => Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5398_4057_forgetAll($0, $4), Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5398_4063_sorted($0));
+ return Prelude_Types_List_mapAppend({h: 0}, $4 => Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5425_4141_forgetAll($0, $4), Pacillus_Idris2LSP_Syntax_SimpleExpr_n__5425_4147_sorted($0));
 }
 
 /* Pacillus.Idris2LSP.Syntax.SimpleExpr.arrow : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True (Arrow False) */
 function Pacillus_Idris2LSP_Syntax_SimpleExpr_arrow($0) {
- return {h: 12 /* Alt */, a1: 1, a2: 1, a3: {h: 8 /* SeqEat */, a1: 1, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_operation($0), a3: () => e1 => ({h: 10 /* ThenEat */, a1: 1, a2: csegen_215(), a3: () => ({h: 8 /* SeqEat */, a1: 0, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_simpleExpr($0), a3: () => e2 => ({h: 0 /* Empty */, a1: {h: 0 /* ExExArr */, a1: 0, a2: e1, a3: e2}})})})}, a4: () => ({h: 10 /* ThenEat */, a1: 1, a2: csegen_181(), a3: () => ({h: 8 /* SeqEat */, a1: 1, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_signature($0), a3: () => sig => ({h: 10 /* ThenEat */, a1: 1, a2: csegen_182(), a3: () => ({h: 10 /* ThenEat */, a1: 1, a2: csegen_215(), a3: () => ({h: 8 /* SeqEat */, a1: 0, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_simpleExpr($0), a3: () => e => ({h: 0 /* Empty */, a1: {h: 1 /* SiExArr */, a1: sig, a2: e}})})})})})})};
-}
-
-/* Pacillus.Idris2LSP.Syntax.SimpleExpr.appWithParen : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True Application */
-function Pacillus_Idris2LSP_Syntax_SimpleExpr_appWithParen($0) {
- return {h: 10 /* ThenEat */, a1: 1, a2: csegen_181(), a3: () => ({h: 8 /* SeqEat */, a1: 1, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_app($0), a3: () => a => ({h: 10 /* ThenEat */, a1: 0, a2: csegen_182(), a3: () => ({h: 0 /* Empty */, a1: a})})})};
+ return {h: 12 /* Alt */, a1: 1, a2: 1, a3: {h: 8 /* SeqEat */, a1: 1, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_operation($0), a3: () => e1 => ({h: 10 /* ThenEat */, a1: 1, a2: csegen_266(), a3: () => ({h: 8 /* SeqEat */, a1: 0, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_simpleExpr($0), a3: () => e2 => ({h: 0 /* Empty */, a1: {h: 0 /* ExExArr */, a1: 0, a2: e1, a3: e2}})})})}, a4: () => ({h: 10 /* ThenEat */, a1: 1, a2: csegen_228(), a3: () => ({h: 8 /* SeqEat */, a1: 1, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_signature($0), a3: () => sig => ({h: 10 /* ThenEat */, a1: 1, a2: csegen_229(), a3: () => ({h: 10 /* ThenEat */, a1: 1, a2: csegen_266(), a3: () => ({h: 8 /* SeqEat */, a1: 0, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_simpleExpr($0), a3: () => e => ({h: 0 /* Empty */, a1: {h: 1 /* SiExArr */, a1: sig, a2: e}})})})})})})};
 }
 
 /* Pacillus.Idris2LSP.Syntax.SimpleExpr.appSub2 : OperatorTable state SimpleExprToken SimpleExpr -> Application -> Grammar state SimpleExprToken True Application */
@@ -4224,9 +4313,14 @@ function Pacillus_Idris2LSP_Syntax_SimpleExpr_appSub1($0, $1) {
  return {h: 12 /* Alt */, a1: 1, a2: 0, a3: Pacillus_Idris2LSP_Syntax_SimpleExpr_appSub2($0, $1), a4: () => ({h: 0 /* Empty */, a1: $1})};
 }
 
+/* Pacillus.Idris2LSP.Syntax.SimpleExpr.appOp : Grammar state SimpleExprToken True (SimpleExpr -> SimpleExpr -> SimpleExpr) */
+const Pacillus_Idris2LSP_Syntax_SimpleExpr_appOp = __lazy(function () {
+ return {h: 10 /* ThenEat */, a1: 0, a2: Text_Parser_match(csegen_224(), csegen_227(), 10), a3: () => ({h: 0 /* Empty */, a1: x => y => ({h: 1 /* AppTerm */, a1: {a1: x, a2: y}})})};
+});
+
 /* Pacillus.Idris2LSP.Syntax.SimpleExpr.app : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True Application */
 function Pacillus_Idris2LSP_Syntax_SimpleExpr_app($0) {
- return {h: 12 /* Alt */, a1: 1, a2: 1, a3: {h: 8 /* SeqEat */, a1: 1, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_identifier(), a3: () => id => ({h: 8 /* SeqEat */, a1: 0, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_term($0), a3: () => t => Pacillus_Idris2LSP_Syntax_SimpleExpr_appSub1($0, {a1: {h: 0 /* IdTerm */, a1: id}, a2: t})})}, a4: () => ({h: 8 /* SeqEat */, a1: 1, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_appWithParen($0), a3: () => a => ({h: 8 /* SeqEat */, a1: 0, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_term($0), a3: () => t => Pacillus_Idris2LSP_Syntax_SimpleExpr_appSub1($0, a)})})};
+ return {h: 12 /* Alt */, a1: 1, a2: 1, a3: {h: 8 /* SeqEat */, a1: 1, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_identifier(), a3: () => id => ({h: 8 /* SeqEat */, a1: 0, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_term($0), a3: () => t => Pacillus_Idris2LSP_Syntax_SimpleExpr_appSub1($0, {a1: {h: 0 /* IdTerm */, a1: id}, a2: t})})}, a4: () => ({h: 8 /* SeqEat */, a1: 1, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_paren($0), a3: () => a => ({h: 8 /* SeqEat */, a1: 0, a2: Pacillus_Idris2LSP_Syntax_SimpleExpr_term($0), a3: () => t => Pacillus_Idris2LSP_Syntax_SimpleExpr_appSub1($0, {a1: a, a2: t})})})};
 }
 
 /* Text.Parser.Expression.case block in buildExpressionParser,level,parseThese */
@@ -4266,17 +4360,17 @@ function Text_Parser_Expression_n__3811_3992_rassocP1($0, $1, $2, $3, $4, $5, $6
 
 /* Text.Parser.Expression.3811:3991:rassocP */
 function Text_Parser_Expression_n__3811_3991_rassocP($0, $1, $2, $3, $4, $5, $6, $7, $8, $9) {
- return {h: 8 /* SeqEat */, a1: 1, a2: Text_Parser_choice(csegen_46(), 1, $5), a3: () => f => ({h: 8 /* SeqEat */, a1: 0, a2: {h: 8 /* SeqEat */, a1: 0, a2: Text_Parser_Expression_n__3811_3993_termP($0, $1, $2, $3, $4, $5, $6, $7, $8), a3: () => $21 => Text_Parser_Expression_n__3811_3992_rassocP1($0, $1, $2, $3, $4, $5, $6, $7, $8, $21)}, a3: () => y => ({h: 0 /* Empty */, a1: f($9)(y)})})};
+ return {h: 8 /* SeqEat */, a1: 1, a2: Text_Parser_choice(csegen_49(), 1, $5), a3: () => f => ({h: 8 /* SeqEat */, a1: 0, a2: {h: 8 /* SeqEat */, a1: 0, a2: Text_Parser_Expression_n__3811_3993_termP($0, $1, $2, $3, $4, $5, $6, $7, $8), a3: () => $21 => Text_Parser_Expression_n__3811_3992_rassocP1($0, $1, $2, $3, $4, $5, $6, $7, $8, $21)}, a3: () => y => ({h: 0 /* Empty */, a1: f($9)(y)})})};
 }
 
 /* Text.Parser.Expression.3811:3990:prefixP */
 function Text_Parser_Expression_n__3811_3990_prefixP($0, $1, $2, $3, $4, $5, $6, $7, $8) {
- return {h: 12 /* Alt */, a1: 1, a2: 0, a3: Text_Parser_choice(csegen_46(), 1, $7), a4: () => ({h: 0 /* Empty */, a1: $13 => $13})};
+ return {h: 12 /* Alt */, a1: 1, a2: 0, a3: Text_Parser_choice(csegen_49(), 1, $7), a4: () => ({h: 0 /* Empty */, a1: $13 => $13})};
 }
 
 /* Text.Parser.Expression.3811:3989:postfixP */
 function Text_Parser_Expression_n__3811_3989_postfixP($0, $1, $2, $3, $4, $5, $6, $7, $8) {
- return {h: 12 /* Alt */, a1: 1, a2: 0, a3: Text_Parser_choice(csegen_46(), 1, $8), a4: () => ({h: 0 /* Empty */, a1: $13 => $13})};
+ return {h: 12 /* Alt */, a1: 1, a2: 0, a3: Text_Parser_choice(csegen_49(), 1, $8), a4: () => ({h: 0 /* Empty */, a1: $13 => $13})};
 }
 
 /* Text.Parser.Expression.3459:3626:parseThese */
@@ -4286,7 +4380,7 @@ function Text_Parser_Expression_n__3459_3626_parseThese($0, $1, $2, $3) {
 
 /* Text.Parser.Expression.3811:3988:nassocP */
 function Text_Parser_Expression_n__3811_3988_nassocP($0, $1, $2, $3, $4, $5, $6, $7, $8, $9) {
- return {h: 8 /* SeqEat */, a1: 1, a2: Text_Parser_choice(csegen_46(), 1, $6), a3: () => f => ({h: 8 /* SeqEat */, a1: 0, a2: Text_Parser_Expression_n__3811_3993_termP($0, $1, $2, $3, $4, $5, $6, $7, $8), a3: () => y => ({h: 0 /* Empty */, a1: f($9)(y)})})};
+ return {h: 8 /* SeqEat */, a1: 1, a2: Text_Parser_choice(csegen_49(), 1, $6), a3: () => f => ({h: 8 /* SeqEat */, a1: 0, a2: Text_Parser_Expression_n__3811_3993_termP($0, $1, $2, $3, $4, $5, $6, $7, $8), a3: () => y => ({h: 0 /* Empty */, a1: f($9)(y)})})};
 }
 
 /* Text.Parser.Expression.3440:3613:level */
@@ -4301,7 +4395,7 @@ function Text_Parser_Expression_n__3811_3987_lassocP1($0, $1, $2, $3, $4, $5, $6
 
 /* Text.Parser.Expression.3811:3986:lassocP */
 function Text_Parser_Expression_n__3811_3986_lassocP($0, $1, $2, $3, $4, $5, $6, $7, $8, $9) {
- return {h: 8 /* SeqEat */, a1: 1, a2: Text_Parser_choice(csegen_46(), 1, $4), a3: () => f => ({h: 8 /* SeqEat */, a1: 0, a2: Text_Parser_Expression_n__3811_3993_termP($0, $1, $2, $3, $4, $5, $6, $7, $8), a3: () => y => Text_Parser_Expression_n__3811_3987_lassocP1($0, $1, $2, $3, $4, $5, $6, $7, $8, f($9)(y))})};
+ return {h: 8 /* SeqEat */, a1: 1, a2: Text_Parser_choice(csegen_49(), 1, $4), a3: () => f => ({h: 8 /* SeqEat */, a1: 0, a2: Text_Parser_Expression_n__3811_3993_termP($0, $1, $2, $3, $4, $5, $6, $7, $8), a3: () => y => Text_Parser_Expression_n__3811_3987_lassocP1($0, $1, $2, $3, $4, $5, $6, $7, $8, f($9)(y))})};
 }
 
 /* Text.Parser.Expression.buildExpressionParser : OperatorTable state k a -> Grammar state k True a -> Grammar state k True a */
@@ -4464,7 +4558,7 @@ function Text_Parser_Core_case__doParse_3951($0, $1, $2, $3, $4, $5) {
 function Text_Parser_Core_show_Show_x28ParsingErrorx20x24tokx29($0, $1) {
  switch($1.a2.h) {
   case 0: /* nothing */ return ('PARSING ERROR: '+$1.a1);
-  case undefined: /* just */ return ('PARSING ERROR: '+($1.a1+Prelude_Types_foldMap_Foldable_List(csegen_152(), $f => $f, {a1: ' @ L', a2: {a1: Prelude_Show_show_Show_Int($1.a2.a1.a1), a2: {a1: ':', a2: {a1: Prelude_Show_show_Show_Int($1.a2.a1.a2), a2: {a1: '-L', a2: {a1: Prelude_Show_show_Show_Int($1.a2.a1.a3), a2: {a1: ':', a2: {a1: Prelude_Show_show_Show_Int($1.a2.a1.a4), a2: {h: 0}}}}}}}}})));
+  case undefined: /* just */ return ('PARSING ERROR: '+($1.a1+Prelude_Types_foldMap_Foldable_List(csegen_202(), $f => $f, {a1: ' @ L', a2: {a1: Prelude_Show_show_Show_Int($1.a2.a1.a1), a2: {a1: ':', a2: {a1: Prelude_Show_show_Show_Int($1.a2.a1.a2), a2: {a1: '-L', a2: {a1: Prelude_Show_show_Show_Int($1.a2.a1.a3), a2: {a1: ':', a2: {a1: Prelude_Show_show_Show_Int($1.a2.a1.a4), a2: {h: 0}}}}}}}}})));
  }
 }
 
@@ -4825,7 +4919,7 @@ function Text_Parser_Core_doParse($0, $1, $2, $3, $4) {
   case 7: /* MustWork */ return Text_Parser_Core_case__doParse_4048($0, $1, $3.a1, $4, $2, Text_Parser_Core_doParse($0, $1, $2, $3.a1, $4));
   case 1: /* Terminal */ {
    switch($4.h) {
-    case 0: /* nil */ return {h: 0 /* Failure */, a1: $2, a2: 0, a3: csegen_223()};
+    case 0: /* nil */ return {h: 0 /* Failure */, a1: $2, a2: 0, a3: csegen_277()};
     case undefined: /* cons */ {
      const $42 = $3.a2($4.a1.a1);
      switch($42.h) {
@@ -4843,7 +4937,7 @@ function Text_Parser_Core_doParse($0, $1, $2, $3, $4) {
   }
   case 2: /* NextIs */ {
    switch($4.h) {
-    case 0: /* nil */ return {h: 0 /* Failure */, a1: $2, a2: 0, a3: csegen_223()};
+    case 0: /* nil */ return {h: 0 /* Failure */, a1: $2, a2: 0, a3: csegen_277()};
     case undefined: /* cons */ {
      switch($3.a2($4.a1.a1)) {
       case 1: return {h: 1 /* Res */, a1: $1, a2: $2, a3: Text_Bounded_removeIrrelevance($4.a1), a4: {a1: $4.a1, a2: $4.a2}};
@@ -4872,7 +4966,7 @@ function Text_Parser_Core_doParse($0, $1, $2, $3, $4) {
   case 13: /* Bounds */ return Text_Parser_Core_case__doParse_5194($0, $1, $3.a1, $4, $2, Text_Parser_Core_doParse($0, $1, $2, $3.a1, $4));
   case 14: /* Position */ {
    switch($4.h) {
-    case 0: /* nil */ return {h: 0 /* Failure */, a1: $2, a2: 0, a3: csegen_223()};
+    case 0: /* nil */ return {h: 0 /* Failure */, a1: $2, a2: 0, a3: csegen_277()};
     case undefined: /* cons */ return {h: 1 /* Res */, a1: $1, a2: $2, a3: Text_Bounded_irrelevantBounds($4.a1.a3), a4: {a1: $4.a1, a2: $4.a2}};
    }
   }
@@ -4884,7 +4978,7 @@ function Text_Parser_Core_doParse($0, $1, $2, $3, $4) {
 function System_getArgs($0) {
  const $12 = n => {
   switch(Prelude_EqOrd_x3e_Ord_Int(n, Number(_truncBigInt32(0n)))) {
-   case 1: return Prelude_Basics_flip($1a => $1b => Prelude_Types_traverse_Traversable_List($0.a1.a1, $1a, $1b), Prelude_Types_rangeFromTo_Range_x24a({a1: {a1: csegen_226(), a2: $29 => $2a => Prelude_Num_div_Integral_Int($29, $2a), a3: $2f => $30 => Prelude_Num_mod_Integral_Int($2f, $30)}, a2: {a1: csegen_169(), a2: {a1: csegen_226(), a2: $3b => _sub32s(0, $3b), a3: $3f => $40 => _sub32s($3f, $40)}}}, 0, _sub32s(n, 1)), $48 => $0.a2(undefined)($4e => System_prim__getArg($48, $4e)));
+   case 1: return Prelude_Basics_flip($1a => $1b => Prelude_Types_traverse_Traversable_List($0.a1.a1, $1a, $1b), Prelude_Types_rangeFromTo_Range_x24a({a1: {a1: csegen_280(), a2: $29 => $2a => Prelude_Num_div_Integral_Int($29, $2a), a3: $2f => $30 => Prelude_Num_mod_Integral_Int($2f, $30)}, a2: {a1: csegen_219(), a2: {a1: csegen_280(), a2: $3b => _sub32s(0, $3b), a3: $3f => $40 => _sub32s($3f, $40)}}}, 0, _sub32s(n, 1)), $48 => $0.a2(undefined)($4e => System_prim__getArg($48, $4e)));
    case 0: return $0.a1.a1.a2(undefined)({h: 0});
   }
  };
@@ -4918,7 +5012,7 @@ const Language_JSON_Parser_string = __lazy(function () {
 
 /* Language.JSON.Parser.rawString : Grammar state JSONToken True String */
 const Language_JSON_Parser_rawString = __lazy(function () {
- return {h: 8 /* SeqEat */, a1: 0, a2: Text_Parser_match(csegen_240(), csegen_243(), {h: 2 /* JTString */}), a3: () => mstr => {
+ return {h: 8 /* SeqEat */, a1: 0, a2: Text_Parser_match(csegen_294(), csegen_297(), {h: 2 /* JTString */}), a3: () => mstr => {
   switch(mstr.h) {
    case undefined: /* just */ return {h: 0 /* Empty */, a1: mstr.a1};
    case 0: /* nothing */ return {h: 4 /* Fail */, a1: {h: 0}, a2: 0, a3: 'invalid string'};
@@ -4928,7 +5022,7 @@ const Language_JSON_Parser_rawString = __lazy(function () {
 
 /* Language.JSON.Parser.punct : Punctuation -> Grammar state JSONToken True () */
 function Language_JSON_Parser_punct($0) {
- return Text_Parser_match(csegen_240(), csegen_243(), {h: 4 /* JTPunct */, a1: $0});
+ return Text_Parser_match(csegen_294(), csegen_297(), {h: 4 /* JTPunct */, a1: $0});
 }
 
 /* Language.JSON.Parser.parseJSON : List (WithBounds JSONToken) -> Maybe JSON */
@@ -4964,12 +5058,12 @@ const Language_JSON_Parser_object = __lazy(function () {
 
 /* Language.JSON.Parser.number : Grammar state JSONToken True JSON */
 const Language_JSON_Parser_number = __lazy(function () {
- return Text_Parser_Core_map_Functor_x28x28x28Grammarx20x24statex29x20x24tokx29x20x24cx29(1, $3 => ({h: 2 /* JNumber */, a1: $3}), Text_Parser_match(csegen_240(), csegen_243(), {h: 1 /* JTNumber */}));
+ return Text_Parser_Core_map_Functor_x28x28x28Grammarx20x24statex29x20x24tokx29x20x24cx29(1, $3 => ({h: 2 /* JNumber */, a1: $3}), Text_Parser_match(csegen_294(), csegen_297(), {h: 1 /* JTNumber */}));
 });
 
 /* Language.JSON.Parser.null : Grammar state JSONToken True JSON */
 const Language_JSON_Parser_null$ = __lazy(function () {
- return Text_Parser_Core_map_Functor_x28x28x28Grammarx20x24statex29x20x24tokx29x20x24cx29(1, $3 => ({h: 0 /* JNull */}), Text_Parser_match(csegen_240(), csegen_243(), {h: 3 /* JTNull */}));
+ return Text_Parser_Core_map_Functor_x28x28x28Grammarx20x24statex29x20x24tokx29x20x24cx29(1, $3 => ({h: 0 /* JNull */}), Text_Parser_match(csegen_294(), csegen_297(), {h: 3 /* JTNull */}));
 });
 
 /* Language.JSON.Parser.json : Grammar state JSONToken True JSON */
@@ -4979,7 +5073,7 @@ const Language_JSON_Parser_json = __lazy(function () {
 
 /* Language.JSON.Parser.boolean : Grammar state JSONToken True JSON */
 const Language_JSON_Parser_boolean = __lazy(function () {
- return Text_Parser_Core_map_Functor_x28x28x28Grammarx20x24statex29x20x24tokx29x20x24cx29(1, $3 => ({h: 1 /* JBoolean */, a1: $3}), Text_Parser_match(csegen_240(), csegen_243(), {h: 0 /* JTBoolean */}));
+ return Text_Parser_Core_map_Functor_x28x28x28Grammarx20x24statex29x20x24tokx29x20x24cx29(1, $3 => ({h: 1 /* JBoolean */, a1: $3}), Text_Parser_match(csegen_294(), csegen_297(), {h: 0 /* JTBoolean */}));
 });
 
 /* Language.JSON.Parser.array : Grammar state JSONToken True JSON */
@@ -5238,12 +5332,12 @@ function Language_JSON_String_Tokens_charValue($0) {
 
 /* Language.JSON.String.Parser.stringChar : Grammar state JSONStringToken True Char */
 const Language_JSON_String_Parser_stringChar = __lazy(function () {
- return {h: 12 /* Alt */, a1: 1, a2: 1, a3: Text_Parser_match(csegen_272(), csegen_275(), 1), a4: () => ({h: 12 /* Alt */, a1: 1, a2: 1, a3: Text_Parser_match(csegen_272(), csegen_275(), 2), a4: () => Text_Parser_match(csegen_272(), csegen_275(), 3)})};
+ return {h: 12 /* Alt */, a1: 1, a2: 1, a3: Text_Parser_match(csegen_326(), csegen_329(), 1), a4: () => ({h: 12 /* Alt */, a1: 1, a2: 1, a3: Text_Parser_match(csegen_326(), csegen_329(), 2), a4: () => Text_Parser_match(csegen_326(), csegen_329(), 3)})};
 });
 
 /* Language.JSON.String.Parser.quotedString : Grammar state JSONStringToken True String */
 const Language_JSON_String_Parser_quotedString = __lazy(function () {
- const $0 = Text_Parser_match(csegen_272(), csegen_275(), 0);
+ const $0 = Text_Parser_match(csegen_326(), csegen_329(), 0);
  return {h: 8 /* SeqEat */, a1: 0, a2: Text_Parser_between(0, $0, $0, Text_Parser_many(Language_JSON_String_Parser_stringChar())), a3: () => chars => ({h: 11 /* ThenEmpty */, a1: 0, a2: 0, a3: {h: 3 /* EOF */}, a4: {h: 0 /* Empty */, a1: Prelude_Types_fastPack(chars)}})};
 });
 
@@ -5358,5 +5452,7 @@ const Language_JSON_Lexer_jsonTokenMap = __lazy(function () {
  return Text_Lexer_toTokenMap({a1: {a1: Text_Lexer_spaces(), a2: {h: 5 /* JTIgnore */}}, a2: {a1: {a1: Text_Lexer_is(','), a2: {h: 4 /* JTPunct */, a1: {h: 0 /* Comma */}}}, a2: {a1: {a1: Text_Lexer_is(':'), a2: {h: 4 /* JTPunct */, a1: {h: 1 /* Colon */}}}, a2: {a1: {a1: Text_Lexer_is('['), a2: {h: 4 /* JTPunct */, a1: {h: 2 /* Square */, a1: 0}}}, a2: {a1: {a1: Text_Lexer_is(']'), a2: {h: 4 /* JTPunct */, a1: {h: 2 /* Square */, a1: 1}}}, a2: {a1: {a1: Text_Lexer_is('{'), a2: {h: 4 /* JTPunct */, a1: {h: 3 /* Curly */, a1: 0}}}, a2: {a1: {a1: Text_Lexer_is('}'), a2: {h: 4 /* JTPunct */, a1: {h: 3 /* Curly */, a1: 1}}}, a2: {a1: {a1: Text_Lexer_exact('null'), a2: {h: 3 /* JTNull */}}, a2: {a1: {a1: Text_Lexer_Core_x3cx7cx3e(Text_Lexer_exact('true'), Text_Lexer_exact('false')), a2: {h: 0 /* JTBoolean */}}, a2: {a1: {a1: Language_JSON_Lexer_numberLit(), a2: {h: 1 /* JTNumber */}}, a2: {a1: {a1: Language_JSON_String_permissiveStringLit(), a2: {h: 2 /* JTString */}}, a2: {h: 0}}}}}}}}}}}});
 });
 
+
+exports.Pacillus_Idris2LSP_GetType_process = Pacillus_Idris2LSP_GetType_process
 
 try{__mainExpression_0()}catch(e){if(e instanceof IdrisError){console.log('ERROR: ' + e.message)}else{throw e} }

@@ -315,24 +315,42 @@ function Data_List_replicateTR($0, $1, $2) {
 /* {$tcOpt:5} */
 function x24tcOpt_5($0) {
  switch($0.a3.h) {
-  case undefined: /* cons */ return {h: 1 /* {TcContinue5:1} */, a1: {a1: $0.a1, a2: $0.a2($0.a3.a1)}, a2: $0.a2, a3: $0.a3.a2};
-  case 0: /* nil */ return {h: 0 /* {TcDone:5} */, a1: Prelude_Types_SnocList_x3cx3ex3e($0.a1, {h: 0})};
+  case 0: /* nil */ return {h: 0 /* {TcDone:5} */, a1: {h: 0}};
+  case undefined: /* cons */ {
+   switch(Prelude_Types_elemBy(csegen_65(), $0.a2, $0.a3.a1, $0.a1)) {
+    case 1: return {h: 1 /* {TcContinue5:1} */, a1: $0.a1, a2: $0.a2, a3: $0.a3.a2};
+    case 0: return {h: 0 /* {TcDone:5} */, a1: {a1: $0.a3.a1, a2: Data_List_n__4925_5480_nubByx27({a1: $0.a3.a1, a2: $0.a1}, $0.a2, $0.a3.a2)}};
+   }
+  }
  }
 }
 
-/* Prelude.Types.List.mapAppend : SnocList b -> (a -> b) -> List a -> List b */
-function Prelude_Types_List_mapAppend($0, $1, $2) {
+/* Data.List.4925:5480:nubBy' */
+function Data_List_n__4925_5480_nubByx27($0, $1, $2) {
  return __tailRec(x24tcOpt_5, {h: 1 /* {TcContinue5:1} */, a1: $0, a2: $1, a3: $2});
 }
 
 /* {$tcOpt:6} */
 function x24tcOpt_6($0) {
  switch($0.a3.h) {
-  case 0: /* nil */ return {h: 0 /* {TcDone:6} */, a1: {h: 0}};
+  case undefined: /* cons */ return {h: 1 /* {TcContinue6:1} */, a1: {a1: $0.a1, a2: $0.a2($0.a3.a1)}, a2: $0.a2, a3: $0.a3.a2};
+  case 0: /* nil */ return {h: 0 /* {TcDone:6} */, a1: Prelude_Types_SnocList_x3cx3ex3e($0.a1, {h: 0})};
+ }
+}
+
+/* Prelude.Types.List.mapAppend : SnocList b -> (a -> b) -> List a -> List b */
+function Prelude_Types_List_mapAppend($0, $1, $2) {
+ return __tailRec(x24tcOpt_6, {h: 1 /* {TcContinue6:1} */, a1: $0, a2: $1, a3: $2});
+}
+
+/* {$tcOpt:7} */
+function x24tcOpt_7($0) {
+ switch($0.a3.h) {
+  case 0: /* nil */ return {h: 0 /* {TcDone:7} */, a1: {h: 0}};
   case undefined: /* cons */ {
    switch($0.a1($0.a2)($0.a3.a1.a1)) {
-    case 1: return {h: 0 /* {TcDone:6} */, a1: {a1: $0.a3.a1.a2}};
-    case 0: return {h: 1 /* {TcContinue6:1} */, a1: $0.a1, a2: $0.a2, a3: $0.a3.a2};
+    case 1: return {h: 0 /* {TcDone:7} */, a1: {a1: $0.a3.a1.a2}};
+    case 0: return {h: 1 /* {TcContinue7:1} */, a1: $0.a1, a2: $0.a2, a3: $0.a3.a2};
    }
   }
  }
@@ -340,39 +358,39 @@ function x24tcOpt_6($0) {
 
 /* Data.List.lookupBy : (a -> b -> Bool) -> a -> List (b, v) -> Maybe v */
 function Data_List_lookupBy($0, $1, $2) {
- return __tailRec(x24tcOpt_6, {h: 1 /* {TcContinue6:1} */, a1: $0, a2: $1, a3: $2});
+ return __tailRec(x24tcOpt_7, {h: 1 /* {TcContinue7:1} */, a1: $0, a2: $1, a3: $2});
 }
 
-/* {$tcOpt:7} */
-function x24tcOpt_7($0) {
+/* {$tcOpt:8} */
+function x24tcOpt_8($0) {
  switch($0.a2.h) {
-  case 0: /* nil */ return {h: 0 /* {TcDone:7} */, a1: $0.a1};
-  case undefined: /* cons */ return {h: 1 /* {TcContinue7:1} */, a1: ($0.a1+1n), a2: $0.a2.a2};
+  case 0: /* nil */ return {h: 0 /* {TcDone:8} */, a1: $0.a1};
+  case undefined: /* cons */ return {h: 1 /* {TcContinue8:1} */, a1: ($0.a1+1n), a2: $0.a2.a2};
  }
 }
 
 /* Prelude.Types.List.lengthPlus : Nat -> List a -> Nat */
 function Prelude_Types_List_lengthPlus($0, $1) {
- return __tailRec(x24tcOpt_7, {h: 1 /* {TcContinue7:1} */, a1: $0, a2: $1});
+ return __tailRec(x24tcOpt_8, {h: 1 /* {TcContinue8:1} */, a1: $0, a2: $1});
 }
 
-/* {$tcOpt:8} */
-function x24tcOpt_8($0) {
+/* {$tcOpt:9} */
+function x24tcOpt_9($0) {
  switch($0.a3.h) {
-  case 0: /* nil */ return {h: 0 /* {TcDone:8} */, a1: $0.a2};
-  case undefined: /* cons */ return {h: 1 /* {TcContinue8:1} */, a1: $0.a1, a2: $0.a1($0.a2)($0.a3.a1), a3: $0.a3.a2};
+  case 0: /* nil */ return {h: 0 /* {TcDone:9} */, a1: $0.a2};
+  case undefined: /* cons */ return {h: 1 /* {TcContinue9:1} */, a1: $0.a1, a2: $0.a1($0.a2)($0.a3.a1), a3: $0.a3.a2};
  }
 }
 
 /* Prelude.Types.foldl */
 function Prelude_Types_foldl_Foldable_List($0, $1, $2) {
- return __tailRec(x24tcOpt_8, {h: 1 /* {TcContinue8:1} */, a1: $0, a2: $1, a3: $2});
+ return __tailRec(x24tcOpt_9, {h: 1 /* {TcContinue9:1} */, a1: $0, a2: $1, a3: $2});
 }
 
-/* {$tcOpt:9} */
-function x24tcOpt_9($0) {
+/* {$tcOpt:10} */
+function x24tcOpt_10($0) {
  switch($0.a1.h) {
-  case 0: /* nil */ return {h: 0 /* {TcDone:9} */, a1: {a1: {h: 0}, a2: {h: 0}}};
+  case 0: /* nil */ return {h: 0 /* {TcDone:10} */, a1: {a1: {h: 0}, a2: {h: 0}}};
   case undefined: /* cons */ {
    switch($0.a1.a1.a1.h) {
     case undefined: /* cons */ {
@@ -382,19 +400,19 @@ function x24tcOpt_9($0) {
         case undefined: /* record */ {
          const $a = {a1: 0, a2: $0.a1.a1.a1.a2};
          switch(Pacillus_Idris2LSP_Lex_isNoType($a)) {
-          case 1: return {h: 1 /* {TcContinue9:1} */, a1: $0.a1.a2};
+          case 1: return {h: 1 /* {TcContinue10:1} */, a1: $0.a1.a2};
           case 0: {
            const $11 = Pacillus_Idris2LSP_Lex_getTokPosx27($0.a1.a2);
-           return {h: 0 /* {TcDone:9} */, a1: {a1: {a1: $0.a1.a1.a3.a2, a2: Builtin_fst($11)}, a2: {a1: $0.a1.a1.a1.a2, a2: Builtin_snd($11)}}};
+           return {h: 0 /* {TcDone:10} */, a1: {a1: {a1: $0.a1.a1.a3.a2, a2: Builtin_fst($11)}, a2: {a1: $0.a1.a1.a1.a2, a2: Builtin_snd($11)}}};
           }
          }
         }
         default: {
          switch(Pacillus_Idris2LSP_Lex_isNoType($0.a1.a1.a1)) {
-          case 1: return {h: 1 /* {TcContinue9:1} */, a1: $0.a1.a2};
+          case 1: return {h: 1 /* {TcContinue10:1} */, a1: $0.a1.a2};
           case 0: {
            const $24 = Pacillus_Idris2LSP_Lex_getTokPosx27($0.a1.a2);
-           return {h: 0 /* {TcDone:9} */, a1: {a1: {a1: $0.a1.a1.a3.a2, a2: Builtin_fst($24)}, a2: Builtin_snd($24)}};
+           return {h: 0 /* {TcDone:10} */, a1: {a1: {a1: $0.a1.a1.a3.a2, a2: Builtin_fst($24)}, a2: Builtin_snd($24)}};
           }
          }
         }
@@ -402,10 +420,10 @@ function x24tcOpt_9($0) {
       }
       default: {
        switch(Pacillus_Idris2LSP_Lex_isNoType($0.a1.a1.a1)) {
-        case 1: return {h: 1 /* {TcContinue9:1} */, a1: $0.a1.a2};
+        case 1: return {h: 1 /* {TcContinue10:1} */, a1: $0.a1.a2};
         case 0: {
          const $35 = Pacillus_Idris2LSP_Lex_getTokPosx27($0.a1.a2);
-         return {h: 0 /* {TcDone:9} */, a1: {a1: {a1: $0.a1.a1.a3.a2, a2: Builtin_fst($35)}, a2: Builtin_snd($35)}};
+         return {h: 0 /* {TcDone:10} */, a1: {a1: {a1: $0.a1.a1.a3.a2, a2: Builtin_fst($35)}, a2: Builtin_snd($35)}};
         }
        }
       }
@@ -413,10 +431,10 @@ function x24tcOpt_9($0) {
     }
     default: {
      switch(Pacillus_Idris2LSP_Lex_isNoType($0.a1.a1.a1)) {
-      case 1: return {h: 1 /* {TcContinue9:1} */, a1: $0.a1.a2};
+      case 1: return {h: 1 /* {TcContinue10:1} */, a1: $0.a1.a2};
       case 0: {
        const $46 = Pacillus_Idris2LSP_Lex_getTokPosx27($0.a1.a2);
-       return {h: 0 /* {TcDone:9} */, a1: {a1: {a1: $0.a1.a1.a3.a2, a2: Builtin_fst($46)}, a2: Builtin_snd($46)}};
+       return {h: 0 /* {TcDone:10} */, a1: {a1: {a1: $0.a1.a1.a3.a2, a2: Builtin_fst($46)}, a2: Builtin_snd($46)}};
       }
      }
     }
@@ -427,38 +445,38 @@ function x24tcOpt_9($0) {
 
 /* Pacillus.Idris2LSP.Lex.getTokPos' : List (WithBounds SimpleExprToken) -> (List Int, List String) */
 function Pacillus_Idris2LSP_Lex_getTokPosx27($0) {
- return __tailRec(x24tcOpt_9, {h: 1 /* {TcContinue9:1} */, a1: $0});
+ return __tailRec(x24tcOpt_10, {h: 1 /* {TcContinue10:1} */, a1: $0});
 }
 
-/* {$tcOpt:10} */
-function x24tcOpt_10($0) {
+/* {$tcOpt:11} */
+function x24tcOpt_11($0) {
  switch($0.a3.h) {
   case undefined: /* cons */ {
    switch($0.a2($0.a3.a1)) {
-    case 1: return {h: 1 /* {TcContinue10:1} */, a1: {a1: $0.a1, a2: $0.a3.a1}, a2: $0.a2, a3: $0.a3.a2};
-    case 0: return {h: 1 /* {TcContinue10:1} */, a1: $0.a1, a2: $0.a2, a3: $0.a3.a2};
+    case 1: return {h: 1 /* {TcContinue11:1} */, a1: {a1: $0.a1, a2: $0.a3.a1}, a2: $0.a2, a3: $0.a3.a2};
+    case 0: return {h: 1 /* {TcContinue11:1} */, a1: $0.a1, a2: $0.a2, a3: $0.a3.a2};
    }
   }
-  case 0: /* nil */ return {h: 0 /* {TcDone:10} */, a1: Prelude_Types_SnocList_x3cx3ex3e($0.a1, {h: 0})};
+  case 0: /* nil */ return {h: 0 /* {TcDone:11} */, a1: Prelude_Types_SnocList_x3cx3ex3e($0.a1, {h: 0})};
  }
 }
 
 /* Prelude.Types.List.filterAppend : SnocList a -> (a -> Bool) -> List a -> List a */
 function Prelude_Types_List_filterAppend($0, $1, $2) {
- return __tailRec(x24tcOpt_10, {h: 1 /* {TcContinue10:1} */, a1: $0, a2: $1, a3: $2});
+ return __tailRec(x24tcOpt_11, {h: 1 /* {TcContinue11:1} */, a1: $0, a2: $1, a3: $2});
 }
 
-/* {$tcOpt:11} */
-function x24tcOpt_11($0) {
+/* {$tcOpt:12} */
+function x24tcOpt_12($0) {
  switch($0.a1.h) {
-  case 0: /* nil */ return {h: 0 /* {TcDone:11} */, a1: $0.a2};
-  case undefined: /* cons */ return {h: 1 /* {TcContinue11:1} */, a1: $0.a1.a1, a2: {a1: $0.a1.a2, a2: $0.a2}};
+  case 0: /* nil */ return {h: 0 /* {TcDone:12} */, a1: $0.a2};
+  case undefined: /* cons */ return {h: 1 /* {TcContinue12:1} */, a1: $0.a1.a1, a2: {a1: $0.a1.a2, a2: $0.a2}};
  }
 }
 
 /* Prelude.Types.SnocList.(<>>) : SnocList a -> List a -> List a */
 function Prelude_Types_SnocList_x3cx3ex3e($0, $1) {
- return __tailRec(x24tcOpt_11, {h: 1 /* {TcContinue11:1} */, a1: $0, a2: $1});
+ return __tailRec(x24tcOpt_12, {h: 1 /* {TcContinue12:1} */, a1: $0, a2: $1});
 }
 
 /* {__mainExpression:0} */
@@ -466,13 +484,23 @@ const __mainExpression_0 = __lazy(function () {
  return PrimIO_unsafePerformIO($2 => Pacillus_Idris2LSP_Lex_main($2));
 });
 
-/* {csegen:80} */
-const csegen_80 = __lazy(function () {
+/* {csegen:18} */
+const csegen_18 = __lazy(function () {
+ return {a1: $1 => $2 => Prelude_EqOrd_x3dx3d_Eq_String($1, $2), a2: $7 => $8 => Prelude_EqOrd_x2fx3d_Eq_String($7, $8)};
+});
+
+/* {csegen:65} */
+const csegen_65 = __lazy(function () {
+ return {a1: acc => elem => func => init => input => Prelude_Types_foldr_Foldable_List(func, init, input), a2: elem => acc => func => init => input => Prelude_Types_foldl_Foldable_List(func, init, input), a3: elem => $b => Prelude_Types_null_Foldable_List($b), a4: elem => acc => m => $f => funcM => init => input => Prelude_Types_foldlM_Foldable_List($f, funcM, init, input), a5: elem => $16 => $16, a6: a => m => $18 => f => $19 => Prelude_Types_foldMap_Foldable_List($18, f, $19)};
+});
+
+/* {csegen:82} */
+const csegen_82 = __lazy(function () {
  return {a1: $1 => $2 => ($1+$2), a2: ''};
 });
 
-/* {csegen:97} */
-const csegen_97 = __lazy(function () {
+/* {csegen:145} */
+const csegen_145 = __lazy(function () {
  return {a1: $1 => $2 => _add32s($1, $2), a2: $6 => $7 => _mul32s($6, $7), a3: $b => Number(_truncBigInt32($b))};
 });
 
@@ -517,13 +545,13 @@ function Pacillus_Idris2LSP_Lex_main($0) {
 
 /* Pacillus.Idris2LSP.Lex.lexAndOutput : String -> String */
 function Pacillus_Idris2LSP_Lex_lexAndOutput($0) {
- return Language_JSON_Data_show_Show_JSON(Pacillus_Idris2LSP_Lex_output(Prelude_Types_map_Functor_Maybe($7 => Pacillus_Idris2LSP_Lex_getTokPosx27($7), Pacillus_Idris2LSP_Syntax_Lexer_lexSimpleExpr($0))));
+ return Language_JSON_Data_show_Show_JSON(Pacillus_Idris2LSP_Lex_output(Prelude_Types_map_Functor_Maybe($7 => Pacillus_Idris2LSP_Lex_getTokPos($7), Pacillus_Idris2LSP_Syntax_Lexer_lexSimpleExpr($0))));
 }
-exports.Pacillus_Idris2LSP_Lex_lexAndOutput = Pacillus_Idris2LSP_Lex_lexAndOutput
 
 /* Pacillus.Idris2LSP.Lex.isNoType : SimpleExprToken -> Bool */
 function Pacillus_Idris2LSP_Lex_isNoType($0) {
  switch($0.a1) {
+  case 10: return 1;
   case 0: return 0;
   case 1: return 1;
   case 2: return 1;
@@ -534,10 +562,17 @@ function Pacillus_Idris2LSP_Lex_isNoType($0) {
   case 7: return 1;
   case 8: return 1;
   case 9: return 1;
-  case 10: return 1;
   case 11: return 1;
+  case 13: return 1;
   case 12: return 1;
+  case 14: return 1;
  }
+}
+
+/* Pacillus.Idris2LSP.Lex.getTokPos : List (WithBounds SimpleExprToken) -> (List Int, List String) */
+function Pacillus_Idris2LSP_Lex_getTokPos($0) {
+ const $1 = Pacillus_Idris2LSP_Lex_getTokPosx27($0);
+ return {a1: Builtin_fst($1), a2: Data_List_nub(csegen_18(), Builtin_snd($1))};
 }
 
 /* Pacillus.Idris2LSP.Syntax.Lexer.symbolLexer : Lexer */
@@ -548,7 +583,7 @@ const Pacillus_Idris2LSP_Syntax_Lexer_symbolLexer = __lazy(function () {
 /* Pacillus.Idris2LSP.Syntax.Lexer.simpleExprTokenMap : TokenMap SimpleExprToken */
 const Pacillus_Idris2LSP_Syntax_Lexer_simpleExprTokenMap = __lazy(function () {
  const $19 = s => {
-  const $1a = Data_List_lookup({a1: $1e => $1f => Prelude_EqOrd_x3dx3d_Eq_String($1e, $1f), a2: $24 => $25 => Prelude_EqOrd_x2fx3d_Eq_String($24, $25)}, s, Pacillus_Idris2LSP_Syntax_Lexer_reservedSyms());
+  const $1a = Data_List_lookup(csegen_18(), s, Pacillus_Idris2LSP_Syntax_Lexer_reservedSyms());
   switch($1a.h) {
    case undefined: /* just */ return {a1: $1a.a1, a2: s};
    case 0: /* nothing */ return {a1: 0, a2: s};
@@ -556,14 +591,14 @@ const Pacillus_Idris2LSP_Syntax_Lexer_simpleExprTokenMap = __lazy(function () {
  };
  const $16 = {a1: Pacillus_Idris2LSP_Syntax_Lexer_symbolLexer(), a2: $19};
  const $15 = {a1: $16, a2: {h: 0}};
- const $13 = Prelude_Types_List_tailRecAppend($15, Text_Lexer_toTokenMap({a1: {a1: Text_Lexer_exact('('), a2: 2}, a2: {a1: {a1: Text_Lexer_exact(')'), a2: 3}, a2: {a1: {a1: Text_Lexer_exact('`'), a2: 5}, a2: {a1: {a1: Text_Lexer_exact(','), a2: 9}, a2: {a1: {a1: Text_Lexer_digits(), a2: 10}, a2: {a1: {a1: Pacillus_Idris2LSP_Syntax_Lexer_doubleLit(), a2: 11}, a2: {a1: {a1: Text_Lexer_stringLit(), a2: 12}, a2: {h: 0}}}}}}}}));
+ const $13 = Prelude_Types_List_tailRecAppend($15, Text_Lexer_toTokenMap({a1: {a1: Text_Lexer_exact('('), a2: 2}, a2: {a1: {a1: Text_Lexer_exact(')'), a2: 3}, a2: {a1: {a1: Text_Lexer_exact('`'), a2: 5}, a2: {a1: {a1: Text_Lexer_exact(','), a2: 9}, a2: {a1: {a1: Text_Lexer_digits(), a2: 11}, a2: {a1: {a1: Pacillus_Idris2LSP_Syntax_Lexer_doubleLit(), a2: 13}, a2: {a1: {a1: Text_Lexer_charLit(), a2: 12}, a2: {a1: {a1: Text_Lexer_stringLit(), a2: 14}, a2: {h: 0}}}}}}}}}));
  const $9 = Prelude_Types_List_tailRecAppend(Text_Lexer_toTokenMap({a1: {a1: Pacillus_Idris2LSP_Syntax_Lexer_idLexer(), a2: 4}, a2: {h: 0}}), $13);
  return Prelude_Types_List_tailRecAppend(Text_Lexer_toTokenMap({a1: {a1: Text_Lexer_spaces(), a2: 1}, a2: {h: 0}}), $9);
 });
 
 /* Pacillus.Idris2LSP.Syntax.Lexer.reservedSyms : List (String, SimpleExprTokenKind) */
 const Pacillus_Idris2LSP_Syntax_Lexer_reservedSyms = __lazy(function () {
- return {a1: {a1: '->', a2: 6}, a2: {a1: {a1: '=', a2: 7}, a2: {a1: {a1: ':', a2: 8}, a2: {h: 0}}}};
+ return {a1: {a1: '->', a2: 6}, a2: {a1: {a1: '=', a2: 7}, a2: {a1: {a1: ':', a2: 8}, a2: {a1: {a1: '$', a2: 10}, a2: {h: 0}}}}};
 });
 
 /* Pacillus.Idris2LSP.Syntax.Lexer.nameLexer : Lexer */
@@ -597,7 +632,7 @@ function Pacillus_Idris2LSP_Syntax_Lexer_lexSimpleExpr($0) {
 
 /* Pacillus.Idris2LSP.Syntax.Lexer.isOpChar : Char -> Bool */
 function Pacillus_Idris2LSP_Syntax_Lexer_isOpChar($0) {
- return Prelude_Types_elem({a1: acc => elem => func => init => input => Prelude_Types_foldr_Foldable_List(func, init, input), a2: elem => acc => func => init => input => Prelude_Types_foldl_Foldable_List(func, init, input), a3: elem => $e => Prelude_Types_null_Foldable_List($e), a4: elem => acc => m => $12 => funcM => init => input => Prelude_Types_foldlM_Foldable_List($12, funcM, init, input), a5: elem => $19 => $19, a6: a => m => $1b => f => $1c => Prelude_Types_foldMap_Foldable_List($1b, f, $1c)}, {a1: $23 => $24 => Prelude_EqOrd_x3dx3d_Eq_Char($23, $24), a2: $29 => $2a => Prelude_EqOrd_x2fx3d_Eq_Char($29, $2a)}, $0, Prelude_Types_fastUnpack(':!#$%&*+./<=>?@\u{5c}^|-~'));
+ return Prelude_Types_elem(csegen_65(), {a1: $6 => $7 => Prelude_EqOrd_x3dx3d_Eq_Char($6, $7), a2: $c => $d => Prelude_EqOrd_x2fx3d_Eq_Char($c, $d)}, $0, Prelude_Types_fastUnpack(':!#$%&*+./<=>?@\u{5c}^|-~'));
 }
 
 /* Pacillus.Idris2LSP.Syntax.Lexer.idLexer : Lexer */
@@ -627,7 +662,7 @@ function Data_String_replicate($0, $1) {
 
 /* Data.String.joinBy : String -> List String -> String */
 function Data_String_joinBy($0, $1) {
- return Prelude_Types_foldMap_Foldable_List(csegen_80(), $6 => $6, Data_List_intersperse($0, $1));
+ return Prelude_Types_foldMap_Foldable_List(csegen_82(), $6 => $6, Data_List_intersperse($0, $1));
 }
 
 /* Prelude.Basics.flip : (a -> b -> c) -> b -> a -> c */
@@ -803,11 +838,48 @@ function Prelude_Types_isSpace($0) {
  }
 }
 
+/* Prelude.Types.isOctDigit : Char -> Bool */
+function Prelude_Types_isOctDigit($0) {
+ switch(Prelude_EqOrd_x3ex3d_Ord_Char($0, '0')) {
+  case 1: return Prelude_EqOrd_x3cx3d_Ord_Char($0, '7');
+  case 0: return 0;
+ }
+}
+
 /* Prelude.Types.isLower : Char -> Bool */
 function Prelude_Types_isLower($0) {
  switch(Prelude_EqOrd_x3ex3d_Ord_Char($0, 'a')) {
   case 1: return Prelude_EqOrd_x3cx3d_Ord_Char($0, 'z');
   case 0: return 0;
+ }
+}
+
+/* Prelude.Types.isHexDigit : Char -> Bool */
+function Prelude_Types_isHexDigit($0) {
+ switch(Prelude_Types_isDigit($0)) {
+  case 1: return 1;
+  case 0: {
+   let $4;
+   switch(Prelude_EqOrd_x3cx3d_Ord_Char('a', $0)) {
+    case 1: {
+     $4 = Prelude_EqOrd_x3cx3d_Ord_Char($0, 'f');
+     break;
+    }
+    case 0: {
+     $4 = 0;
+     break;
+    }
+   }
+   switch($4) {
+    case 1: return 1;
+    case 0: {
+     switch(Prelude_EqOrd_x3cx3d_Ord_Char('A', $0)) {
+      case 1: return Prelude_EqOrd_x3cx3d_Ord_Char($0, 'F');
+      case 0: return 0;
+     }
+    }
+   }
+  }
  }
 }
 
@@ -1237,6 +1309,16 @@ function Data_List_span($0, $1) {
  }
 }
 
+/* Data.List.nubBy : (a -> a -> Bool) -> List a -> List a */
+function Data_List_nubBy($0, $1) {
+ return Data_List_n__4925_5480_nubByx27({h: 0}, $0, $1);
+}
+
+/* Data.List.nub : Eq a => List a -> List a */
+function Data_List_nub($0, $1) {
+ return Data_List_nubBy($4 => $5 => $0.a1($4)($5), $1);
+}
+
 /* Data.List.mergeReplicate : a -> List a -> List a */
 function Data_List_mergeReplicate($0, $1) {
  switch($1.h) {
@@ -1265,6 +1347,19 @@ function Data_List_intersperse($0, $1) {
   case undefined: /* cons */ return {a1: $1.a1, a2: Data_List_mergeReplicate($0, $1.a2)};
  }
 }
+
+/* Text.Lexer.4595:1473:lexStr */
+function Text_Lexer_n__4595_1473_lexStr($0) {
+ switch($0.h) {
+  case 0: /* nil */ return Text_Lexer_Core_fail();
+  case undefined: /* cons */ return Text_Lexer_Core_x3cx7cx3e(Text_Lexer_exact($0.a1), Text_Lexer_n__4595_1473_lexStr($0.a2));
+ }
+}
+
+/* Text.Lexer.4595:1472:control */
+const Text_Lexer_n__4595_1472_control = __lazy(function () {
+ return Text_Lexer_Core_x3cx7cx3e(Text_Lexer_n__4595_1473_lexStr({a1: 'NUL', a2: {a1: 'SOH', a2: {a1: 'STX', a2: {a1: 'ETX', a2: {a1: 'EOT', a2: {a1: 'ENQ', a2: {a1: 'ACK', a2: {a1: 'BEL', a2: {a1: 'BS', a2: {a1: 'HT', a2: {a1: 'LF', a2: {a1: 'VT', a2: {a1: 'FF', a2: {a1: 'CR', a2: {a1: 'SO', a2: {a1: 'SI', a2: {a1: 'DLE', a2: {a1: 'DC1', a2: {a1: 'DC2', a2: {a1: 'DC3', a2: {a1: 'DC4', a2: {a1: 'NAK', a2: {a1: 'SYN', a2: {a1: 'ETB', a2: {a1: 'CAN', a2: {a1: 'EM', a2: {a1: 'SUB', a2: {a1: 'ESC', a2: {a1: 'FS', a2: {a1: 'GS', a2: {a1: 'RS', a2: {a1: 'US', a2: {a1: 'SP', a2: {a1: 'DEL', a2: {h: 0}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}), Text_Lexer_Core_x3cx7cx3e({h: 4 /* SeqEat */, a1: Text_Lexer_is('x'), a2: () => Text_Lexer_hexDigits()}, Text_Lexer_Core_x3cx7cx3e({h: 4 /* SeqEat */, a1: Text_Lexer_is('o'), a2: () => Text_Lexer_octDigits()}, Text_Lexer_digits())));
+});
 
 /* Text.Lexer.toTokenMap : List (Lexer, k) -> TokenMap (Token k) */
 function Text_Lexer_toTokenMap($0) {
@@ -1306,6 +1401,16 @@ function Text_Lexer_opt($0) {
  return Text_Lexer_Core_x3cx7cx3e($0, Text_Lexer_Core_empty());
 }
 
+/* Text.Lexer.octDigits : Lexer */
+const Text_Lexer_octDigits = __lazy(function () {
+ return Text_Lexer_some(Text_Lexer_octDigit());
+});
+
+/* Text.Lexer.octDigit : Lexer */
+const Text_Lexer_octDigit = __lazy(function () {
+ return Text_Lexer_Core_pred($2 => Prelude_Types_isOctDigit($2));
+});
+
 /* Text.Lexer.manyUntil : Recognise c -> Lexer -> Recognise False */
 function Text_Lexer_manyUntil($0, $1) {
  return Text_Lexer_many({h: 5 /* SeqEmpty */, a1: Text_Lexer_Core_reject($0), a2: $1});
@@ -1321,10 +1426,25 @@ function Text_Lexer_many($0) {
  return Text_Lexer_opt(Text_Lexer_some($0));
 }
 
+/* Text.Lexer.isNot : Char -> Lexer */
+function Text_Lexer_isNot($0) {
+ return Text_Lexer_Core_pred($3 => Prelude_EqOrd_x2fx3d_Eq_Char($3, $0));
+}
+
 /* Text.Lexer.is : Char -> Lexer */
 function Text_Lexer_is($0) {
  return Text_Lexer_Core_pred($3 => Prelude_EqOrd_x3dx3d_Eq_Char($3, $0));
 }
+
+/* Text.Lexer.hexDigits : Lexer */
+const Text_Lexer_hexDigits = __lazy(function () {
+ return Text_Lexer_some(Text_Lexer_hexDigit());
+});
+
+/* Text.Lexer.hexDigit : Lexer */
+const Text_Lexer_hexDigit = __lazy(function () {
+ return Text_Lexer_Core_pred($2 => Prelude_Types_isHexDigit($2));
+});
 
 /* Text.Lexer.exact : String -> Lexer */
 function Text_Lexer_exact($0) {
@@ -1348,6 +1468,11 @@ const Text_Lexer_digits = __lazy(function () {
 /* Text.Lexer.digit : Lexer */
 const Text_Lexer_digit = __lazy(function () {
  return Text_Lexer_Core_pred($2 => Prelude_Types_isDigit($2));
+});
+
+/* Text.Lexer.charLit : Lexer */
+const Text_Lexer_charLit = __lazy(function () {
+ return {h: 4 /* SeqEat */, a1: {h: 4 /* SeqEat */, a1: Text_Lexer_is('\''), a2: () => Text_Lexer_Core_x3cx7cx3e(Text_Lexer_escape(Text_Lexer_is('\u{5c}'), Text_Lexer_Core_x3cx7cx3e(Text_Lexer_n__4595_1472_control(), Text_Lexer_any())), Text_Lexer_isNot('\''))}, a2: () => Text_Lexer_is('\'')};
 });
 
 /* Text.Lexer.any : Lexer */
@@ -1456,7 +1581,7 @@ function Text_Lexer_Core_x3cx7cx3e($0, $1) {
 function System_getArgs($0) {
  const $12 = n => {
   switch(Prelude_EqOrd_x3e_Ord_Int(n, Number(_truncBigInt32(0n)))) {
-   case 1: return Prelude_Basics_flip($1a => $1b => Prelude_Types_traverse_Traversable_List($0.a1.a1, $1a, $1b), Prelude_Types_rangeFromTo_Range_x24a({a1: {a1: csegen_97(), a2: $29 => $2a => Prelude_Num_div_Integral_Int($29, $2a), a3: $2f => $30 => Prelude_Num_mod_Integral_Int($2f, $30)}, a2: {a1: {a1: {a1: $38 => $39 => Prelude_EqOrd_x3dx3d_Eq_Int($38, $39), a2: $3e => $3f => Prelude_EqOrd_x2fx3d_Eq_Int($3e, $3f)}, a2: $44 => $45 => Prelude_EqOrd_compare_Ord_Int($44, $45), a3: $4a => $4b => Prelude_EqOrd_x3c_Ord_Int($4a, $4b), a4: $50 => $51 => Prelude_EqOrd_x3e_Ord_Int($50, $51), a5: $56 => $57 => Prelude_EqOrd_x3cx3d_Ord_Int($56, $57), a6: $5c => $5d => Prelude_EqOrd_x3ex3d_Ord_Int($5c, $5d), a7: $62 => $63 => Prelude_EqOrd_max_Ord_Int($62, $63), a8: $68 => $69 => Prelude_EqOrd_min_Ord_Int($68, $69)}, a2: {a1: csegen_97(), a2: $71 => _sub32s(0, $71), a3: $75 => $76 => _sub32s($75, $76)}}}, 0, _sub32s(n, 1)), $7e => $0.a2(undefined)($84 => System_prim__getArg($7e, $84)));
+   case 1: return Prelude_Basics_flip($1a => $1b => Prelude_Types_traverse_Traversable_List($0.a1.a1, $1a, $1b), Prelude_Types_rangeFromTo_Range_x24a({a1: {a1: csegen_145(), a2: $29 => $2a => Prelude_Num_div_Integral_Int($29, $2a), a3: $2f => $30 => Prelude_Num_mod_Integral_Int($2f, $30)}, a2: {a1: {a1: {a1: $38 => $39 => Prelude_EqOrd_x3dx3d_Eq_Int($38, $39), a2: $3e => $3f => Prelude_EqOrd_x2fx3d_Eq_Int($3e, $3f)}, a2: $44 => $45 => Prelude_EqOrd_compare_Ord_Int($44, $45), a3: $4a => $4b => Prelude_EqOrd_x3c_Ord_Int($4a, $4b), a4: $50 => $51 => Prelude_EqOrd_x3e_Ord_Int($50, $51), a5: $56 => $57 => Prelude_EqOrd_x3cx3d_Ord_Int($56, $57), a6: $5c => $5d => Prelude_EqOrd_x3ex3d_Ord_Int($5c, $5d), a7: $62 => $63 => Prelude_EqOrd_max_Ord_Int($62, $63), a8: $68 => $69 => Prelude_EqOrd_min_Ord_Int($68, $69)}, a2: {a1: csegen_145(), a2: $71 => _sub32s(0, $71), a3: $75 => $76 => _sub32s($75, $76)}}}, 0, _sub32s(n, 1)), $7e => $0.a2(undefined)($84 => System_prim__getArg($7e, $84)));
    case 0: return $0.a1.a1.a2(undefined)({h: 0});
   }
  };
@@ -1534,7 +1659,7 @@ function Language_JSON_Data_stringify($0) {
 
 /* Language.JSON.Data.showString : String -> String */
 function Language_JSON_Data_showString($0) {
- return ('\"'+(Prelude_Types_foldMap_Foldable_List(csegen_80(), $8 => Language_JSON_Data_showChar($8), Prelude_Types_fastUnpack($0))+'\"'));
+ return ('\"'+(Prelude_Types_foldMap_Foldable_List(csegen_82(), $8 => Language_JSON_Data_showChar($8), Prelude_Types_fastUnpack($0))+'\"'));
 }
 
 /* Language.JSON.Data.showChar : Char -> String */
@@ -1598,5 +1723,6 @@ function Data_String_Extra_justifyRight($0, $1, $2) {
  return (Data_String_replicate(Prelude_Types_prim__integerToNat(($0-Prelude_Types_String_length($2))), $1)+$2);
 }
 
+exports.Pacillus_Idris2LSP_Lex_lexAndOutput = Pacillus_Idris2LSP_Lex_lexAndOutput
 
 try{__mainExpression_0()}catch(e){if(e instanceof IdrisError){console.log('ERROR: ' + e.message)}else{throw e} }

@@ -9,42 +9,47 @@ import Pacillus.Idris2LSP.Syntax.Lexer
 
 %default total
 
+data LabeledIdentifier = Variable String | Constant String
+
 SimpleExprU : Type
-SimpleExprU = SimpleExprProt (Bool, String)
+SimpleExprU = SimpleExprProt LabeledIdentifier
 
 IdentifierU : Type
-IdentifierU = IdentifierProt (Bool, String)
+IdentifierU = IdentifierProt LabeledIdentifier
 
 ApplicationU : Type
-ApplicationU = ApplicationProt (Bool, String)
+ApplicationU = ApplicationProt LabeledIdentifier
 
 EqualityU : Type
-EqualityU = EqualityProt (Bool, String)
+EqualityU = EqualityProt LabeledIdentifier
 
 ArrowU : Bool -> Type
-ArrowU = ArrowProt (Bool, String)
+ArrowU = ArrowProt LabeledIdentifier
 
 PairU :Type
-PairU = PairProt (Bool, String)
+PairU = PairProt LabeledIdentifier
 
 SignatureU : Type
-SignatureU = SignatureProt (Bool, String)
+SignatureU = SignatureProt LabeledIdentifier
 
 Constraints : Type
 Constraints = List (SimpleExprU, SimpleExprU)
 
 Eq IdentifierU where
-  (MkId (x, z)) == (MkId (y, w)) = x == y && nameeq z w
+  MkId (Variable str1) == MkId (Variable str2) = nameeq str1 str2
+  MkId (Constant str1) == MkId (Constant str2) = nameeq str1 str2
+  _ == _ = False
 
 Show IdentifierU where
-  show (MkId (b, str)) = ifThenElse b "?" "" ++ str
+  show (MkId (Variable str)) = "?" ++ str
+  show (MkId (Constant str)) = str
 
 toTypeVar : Identifier -> IdentifierU
-toTypeVar (MkId x) = MkId (True, x)
+toTypeVar (MkId x) = MkId (Variable x)
 
 
 allAsConstant : SimpleExpr -> SimpleExprU
-allAsConstant (IdTerm (MkId x)) = IdTerm (MkId (False, x))
+allAsConstant (IdTerm (MkId x)) = IdTerm (MkId (Constant x))
 allAsConstant (AppTerm (MkApp x y)) = AppTerm (MkApp (allAsConstant x) (allAsConstant y))
 allAsConstant (ArwTerm (ExExArr x y)) = ArwTerm (ExExArr (allAsConstant x) (allAsConstant y))
 allAsConstant (ArwTerm (SiExArr (MkSignature name x) y)) = 
@@ -165,14 +170,15 @@ isHeadLower str =
     (x :: xs) => isLower x
 
 isImplicitVar : IdentifierU -> Bool
-isImplicitVar (MkId (imp, str)) = imp
+isImplicitVar (MkId (Variable str)) = True
+isImplicitVar (MkId (Constant str)) = False
 
 mutual
     labelImplicitExp : List Identifier -> SimpleExpr -> SimpleExprU
     labelImplicitExp nimp (IdTerm (MkId name)) = 
       if isHeadLower name && not ((MkId name) `elem` nimp)
-        then IdTerm $ MkId $ (True, name)
-        else IdTerm $ MkId (False, name)
+        then IdTerm $ MkId $ Variable name
+        else IdTerm $ MkId $ Constant name
     labelImplicitExp nimp (AppTerm x) = AppTerm $ labelImplicitApp nimp x -- TODO if left is a var it might be defined
     labelImplicitExp nimp (ArwTerm x) = ArwTerm $ labelImplicitArw nimp x
     labelImplicitExp nimp (EqTerm x) = EqTerm $ labelImplicitEq nimp x
@@ -184,7 +190,7 @@ mutual
     labelImplicitExp nimp UnitTerm = UnitTerm
 
     labelImplicitApp : List Identifier -> Application -> ApplicationU
-    labelImplicitApp nimp (MkApp (IdTerm (MkId x)) y) = MkApp (IdTerm $ MkId (False, x)) (labelImplicitExp nimp y) -- applying identifier is not a variable
+    labelImplicitApp nimp (MkApp (IdTerm (MkId x)) y) = MkApp (IdTerm $ MkId $ Constant x) (labelImplicitExp nimp y) -- applying identifier is not a variable
     labelImplicitApp nimp (MkApp x y) = MkApp (labelImplicitExp nimp x) (labelImplicitExp nimp y)
 
     labelImplicitArw : List Identifier -> Arrow False -> ArrowU False
@@ -309,7 +315,7 @@ getAppliedType (MkSpSig name1 f) x with (f)
         ExExArr arg ret = forgetSig f'
         assign : (target : SimpleExprU) -> (to : SimpleExpr) -> SimpleExprU
         assign target to =
-        case f' of
+          case f' of
             (ExExArr y z) => target
             (SiExArr (MkSignature name y) z) => assignExpr target (IdTerm $ toTypeVar name) (allAsConstant to)
       in
@@ -333,10 +339,10 @@ mutual
     getPartialType' sigs (AppTerm x) = getAppType sigs x
     getPartialType' sigs (ArwTerm x) = assert_total $ getArwType sigs x -- in getArwType, value of x always decreases
     getPartialType' sigs (EqTerm x) = getEqType sigs x
-    getPartialType' sigs (IntegerLiteral k) = Right $ Start $ MkSpSig (IdTerm $ MkId $ show k) $ IdTerm $ MkId (False, "Integer")
-    getPartialType' sigs (DoubleLiteral dbl) = Right $ Start $ MkSpSig (IdTerm $ MkId $ show dbl) $ IdTerm $ MkId (False, "Double")
-    getPartialType' sigs (CharLiteral c) = Right $ Start $ MkSpSig (IdTerm $ MkId $ show c) $ IdTerm $ MkId (False, "Char")
-    getPartialType' sigs (StringLiteral str) = Right $ Start $ MkSpSig (IdTerm $ MkId $ show str) $ IdTerm $ MkId (False, "String")
+    getPartialType' sigs (IntegerLiteral k) = Right $ Start $ MkSpSig (IdTerm $ MkId $ show k) $ IdTerm $ MkId $ Constant "Integer"
+    getPartialType' sigs (DoubleLiteral dbl) = Right $ Start $ MkSpSig (IdTerm $ MkId $ show dbl) $ IdTerm $ MkId $ Constant "Double"
+    getPartialType' sigs (CharLiteral c) = Right $ Start $ MkSpSig (IdTerm $ MkId $ show c) $ IdTerm $ MkId $ Constant "Char"
+    getPartialType' sigs (StringLiteral str) = Right $ Start $ MkSpSig (IdTerm $ MkId $ show str) $ IdTerm $ MkId $ Constant "String"
     getPartialType' sigs (PrTerm x) = getPrType sigs x
     getPartialType' sigs UnitTerm =
       let
@@ -369,7 +375,7 @@ mutual
       getArwType sigs x | ExExArr argty retty = 
           let
             tycnst : SimpleExprU
-            tycnst = IdTerm $ MkId (False, "Type")
+            tycnst = IdTerm $ MkId $ Constant "Type"
 
             isType : PartialExprSignature -> Bool
             isType sig = exprEquality (getSpSigExpr sig) tycnst
@@ -385,7 +391,7 @@ mutual
     getEqType sigs (MkEquality lty rty) =
       let
         tycnst : SimpleExprU
-        tycnst = IdTerm $ MkId (False, "Type")
+        tycnst = IdTerm $ MkId $ Constant "Type"
 
         isSameTy : PartialExprSignature -> PartialExprSignature -> Bool
         isSameTy (MkSpSig _ ty1) (MkSpSig _ ty2) = exprEquality ty1 ty2
