@@ -26,11 +26,18 @@ EqualityU = EqualityProt LabeledIdentifier
 ArrowU : Bool -> Type
 ArrowU = ArrowProt LabeledIdentifier
 
+DArrowU : Bool -> Type
+DArrowU = DArrowProt LabeledIdentifier
+
 PairU :Type
 PairU = PairProt LabeledIdentifier
 
 SignatureU : Type
 SignatureU = SignatureProt LabeledIdentifier
+
+forgetLabel : LabeledIdentifier -> String
+forgetLabel (Variable str) = str
+forgetLabel (Constant str) = str
 
 Constraints : Type
 Constraints = List (SimpleExprU, SimpleExprU)
@@ -54,6 +61,9 @@ allAsConstant (AppTerm (MkApp x y)) = AppTerm (MkApp (allAsConstant x) (allAsCon
 allAsConstant (ArwTerm (ExExArr x y)) = ArwTerm (ExExArr (allAsConstant x) (allAsConstant y))
 allAsConstant (ArwTerm (SiExArr (MkSignature name x) y)) = 
   ArwTerm $ SiExArr (MkSignature name (allAsConstant x)) (allAsConstant y)
+allAsConstant (DArwTerm (ExExDArr x y)) = DArwTerm (ExExDArr (allAsConstant x) (allAsConstant y))
+allAsConstant (DArwTerm (SiExDArr (MkSignature name x) y)) = 
+  DArwTerm $ SiExDArr (MkSignature name (allAsConstant x)) (allAsConstant y)
 allAsConstant (EqTerm (MkEquality x y)) = EqTerm $ MkEquality (allAsConstant x) (allAsConstant y)
 allAsConstant (IntegerLiteral i) = IntegerLiteral i
 allAsConstant (DoubleLiteral dbl) = DoubleLiteral dbl
@@ -61,6 +71,7 @@ allAsConstant (CharLiteral c) = CharLiteral c
 allAsConstant (StringLiteral str) = StringLiteral str
 allAsConstant (PrTerm (MkPair x y)) = PrTerm $ MkPair (allAsConstant x) (allAsConstant y)
 allAsConstant UnitTerm = UnitTerm
+
 
 
 -- token to Signature AST
@@ -131,6 +142,7 @@ mutual
             (IdTerm x) => IdTerm x
             (AppTerm x) => AppTerm $ assignApp x var replace
             (ArwTerm x) => ArwTerm $ assignArw x var replace
+            (DArwTerm x) => DArwTerm $ assignDArw x var replace
             (EqTerm x) => EqTerm $ assignEq x var replace
             (IntegerLiteral k) => IntegerLiteral k
             (DoubleLiteral dbl) => DoubleLiteral dbl
@@ -145,6 +157,10 @@ mutual
     assignArw : (target : ArrowU b) -> (var : SimpleExprU) -> (replace : SimpleExprU) -> ArrowU b
     assignArw (ExExArr x y) var replace = ExExArr (assignExpr x var replace) (assignExpr y var replace)
     assignArw (SiExArr x y) var replace = SiExArr (assignSig x var replace) (assignExpr y var replace)
+
+    assignDArw : (target : DArrowU b) -> (var : SimpleExprU) -> (replace : SimpleExprU) -> DArrowU b
+    assignDArw (ExExDArr x y) var replace = ExExDArr (assignExpr x var replace) (assignExpr y var replace)
+    assignDArw (SiExDArr x y) var replace = SiExDArr (assignSig x var replace) (assignExpr y var replace)
 
     assignSig : (target : SignatureU) -> (var : SimpleExprU) -> (expr : SimpleExprU) -> SignatureU
     assignSig (MkSignature str x) var expr = MkSignature str $ assignExpr x var expr
@@ -174,40 +190,68 @@ isImplicitVar (MkId (Variable str)) = True
 isImplicitVar (MkId (Constant str)) = False
 
 mutual
-    labelImplicitExp : List Identifier -> SimpleExpr -> SimpleExprU
-    labelImplicitExp nimp (IdTerm (MkId name)) = 
-      if isHeadLower name && not ((MkId name) `elem` nimp)
-        then IdTerm $ MkId $ Variable name
-        else IdTerm $ MkId $ Constant name
-    labelImplicitExp nimp (AppTerm x) = AppTerm $ labelImplicitApp nimp x -- TODO if left is a var it might be defined
-    labelImplicitExp nimp (ArwTerm x) = ArwTerm $ labelImplicitArw nimp x
-    labelImplicitExp nimp (EqTerm x) = EqTerm $ labelImplicitEq nimp x
-    labelImplicitExp nimp (PrTerm x) = PrTerm $ labelImplicitPr nimp x
-    labelImplicitExp nimp (IntegerLiteral k) = IntegerLiteral k
-    labelImplicitExp nimp (DoubleLiteral dbl) = DoubleLiteral dbl
-    labelImplicitExp nimp (CharLiteral c) = CharLiteral c
-    labelImplicitExp nimp (StringLiteral str) = StringLiteral str
-    labelImplicitExp nimp UnitTerm = UnitTerm
+    data IsApplying = Applying | NotApplying
 
-    labelImplicitApp : List Identifier -> Application -> ApplicationU
-    labelImplicitApp nimp (MkApp (IdTerm (MkId x)) y) = MkApp (IdTerm $ MkId $ Constant x) (labelImplicitExp nimp y) -- applying identifier is not a variable
-    labelImplicitApp nimp (MkApp x y) = MkApp (labelImplicitExp nimp x) (labelImplicitExp nimp y)
+    0 LabelCondition : Type
+    LabelCondition = IsApplying -> String -> Bool    
 
-    labelImplicitArw : List Identifier -> Arrow False -> ArrowU False
-    labelImplicitArw nimp (ExExArr x y) = ExExArr (labelImplicitExp nimp x) (labelImplicitExp nimp y)
-    labelImplicitArw nimp (SiExArr (MkSignature str x) y) = SiExArr (MkSignature str (labelImplicitExp nimp x)) (labelImplicitExp nimp y)
+    labelImplicitExp : LabelCondition -> SimpleExprU -> SimpleExprU
+    labelImplicitExp cond (IdTerm (MkId name)) =
+      let
+        name' = forgetLabel name 
+      in
+      if cond NotApplying name'
+        then IdTerm $ MkId $ Variable name'
+        else IdTerm $ MkId $ Constant name'
+    labelImplicitExp cond (AppTerm x) = AppTerm $ labelImplicitApp cond x
+    labelImplicitExp cond (ArwTerm x) = ArwTerm $ labelImplicitArw cond x
+    labelImplicitExp cond (DArwTerm x) = DArwTerm $ labelImplicitDArw cond x
+    labelImplicitExp cond (EqTerm x) = EqTerm $ labelImplicitEq cond x
+    labelImplicitExp cond (PrTerm x) = PrTerm $ labelImplicitPr cond x
+    labelImplicitExp cond (IntegerLiteral k) = IntegerLiteral k
+    labelImplicitExp cond (DoubleLiteral dbl) = DoubleLiteral dbl
+    labelImplicitExp cond (CharLiteral c) = CharLiteral c
+    labelImplicitExp cond (StringLiteral str) = StringLiteral str
+    labelImplicitExp cond UnitTerm = UnitTerm
 
-    labelImplicitEq : List Identifier -> Equality -> EqualityU
-    labelImplicitEq nimp (MkEquality x y) = MkEquality (labelImplicitExp nimp x) (labelImplicitExp nimp y)
+    labelImplicitApp : LabelCondition  -> ApplicationU -> ApplicationU
+    labelImplicitApp cond (MkApp (IdTerm (MkId name_s)) y) = 
+      let
+        name_s' = forgetLabel name_s
+        -- with applying
+        func =
+          if cond Applying name_s'
+            then IdTerm $ MkId $ Variable name_s'
+            else IdTerm $ MkId $ Constant name_s'
+      in
+        MkApp func (labelImplicitExp cond y) 
+    labelImplicitApp cond (MkApp x y) = MkApp (labelImplicitExp cond x) (labelImplicitExp cond y)
 
-    labelImplicitPr : List Identifier -> Pair -> PairU
-    labelImplicitPr nimp (MkPair x y) = MkPair (labelImplicitExp nimp x) (labelImplicitExp nimp y)
+    labelImplicitArw : LabelCondition  -> ArrowU False -> ArrowU False
+    labelImplicitArw cond (ExExArr x y) = ExExArr (labelImplicitExp cond x) (labelImplicitExp cond y)
+    labelImplicitArw cond (SiExArr (MkSignature name@(MkId name_s) x) y) = SiExArr (MkSignature name (labelImplicitExp cond x)) (labelImplicitExp (\isapp, str => str /= name_s && cond isapp str) y)
 
+    labelImplicitDArw : LabelCondition  -> DArrowU False -> DArrowU False
+    labelImplicitDArw cond (ExExDArr x y) = ExExDArr (labelImplicitExp cond x) (labelImplicitExp cond y)
+    labelImplicitDArw cond (SiExDArr (MkSignature name@(MkId name_s) x) y) = SiExDArr (MkSignature name (labelImplicitExp cond x)) (labelImplicitExp (\isapp, str => str /= name_s && cond isapp str) y)
+
+    labelImplicitEq : LabelCondition  -> EqualityU -> EqualityU
+    labelImplicitEq cond (MkEquality x y) = MkEquality (labelImplicitExp cond x) (labelImplicitExp cond y)
+
+    labelImplicitPr : LabelCondition  -> PairU -> PairU
+    labelImplicitPr cond (MkPair x y) = MkPair (labelImplicitExp cond x) (labelImplicitExp cond y)
+
+-- isHeadLower name && not ((MkId name) `elem` nimp)
+
+normalcond : List Identifier -> LabelCondition
+normalcond nimp Applying str = False
+normalcond nimp NotApplying str = 
+    isHeadLower str && not ((MkId str) `elem` nimp)
 
 labelImplicitMain : List Identifier -> SimpleExpr -> SimpleExprU
-labelImplicitMain nimp (ArwTerm (ExExArr x y)) = ArwTerm $ ExExArr (labelImplicitExp nimp x) (labelImplicitMain nimp y)
-labelImplicitMain nimp (ArwTerm (SiExArr (MkSignature name x) y)) = ArwTerm $ SiExArr (MkSignature name $ labelImplicitExp nimp x) $ labelImplicitMain (name :: nimp) y
-labelImplicitMain nimp x = labelImplicitExp nimp x
+labelImplicitMain nimp (ArwTerm (ExExArr x y)) = ArwTerm $ ExExArr (labelImplicitExp (normalcond nimp) (allAsConstant x)) (labelImplicitMain nimp y)
+labelImplicitMain nimp (ArwTerm (SiExArr (MkSignature name x) y)) = ArwTerm $ SiExArr (MkSignature name $ labelImplicitExp (normalcond nimp) (allAsConstant x)) $ labelImplicitMain (name :: nimp) y
+labelImplicitMain nimp x = labelImplicitExp (normalcond nimp) (allAsConstant x)
 
 export
 labelImplicit : SimpleExpr -> SimpleExprU
@@ -246,6 +290,7 @@ mutual
         else Left $ showUniError arg (IdTerm applied)
     unifyExpr constraints (AppTerm arg) (AppTerm applied) = unifyApp constraints arg applied
     unifyExpr constraints (ArwTerm arg) (ArwTerm applied) = unifyArw constraints arg applied
+    unifyExpr constraints (DArwTerm arg) (DArwTerm applied) = unifyDArw constraints arg applied
     unifyExpr constraints (EqTerm arg) (EqTerm applied) = unifyEq constraints arg applied
     unifyExpr constraints (PrTerm arg) (PrTerm applied) = unifyPr constraints arg applied
     unifyExpr _ arg applied = Left $ showUniError arg applied -- error
@@ -260,7 +305,14 @@ mutual
     unifyArw constraints (ExExArr x y) (ExExArr z w) = unify $ (x, z) :: (y, w) :: constraints
     unifyArw constraints (ExExArr x y) (SiExArr (MkSignature str z) w) = unify $ (x, z) :: (y, w) :: constraints
     unifyArw constraints (SiExArr (MkSignature str x) y) (ExExArr z w) = unify $ (x, z) :: (y, w) :: constraints
-    unifyArw constraints (SiExArr (MkSignature str x) y) (SiExArr (MkSignature str1 z) w) = unify $ (x, z) :: (y, w) :: constraints
+    unifyArw constraints (SiExArr (MkSignature name1 x) y) (SiExArr (MkSignature name2 z) w) = unify $ (x, z) :: (y, w) :: constraints
+
+    covering
+    unifyDArw : (constraints : Constraints) -> (arg : DArrowU False) -> (applied : DArrowU False) -> Either String Constraints
+    unifyDArw constraints (ExExDArr x y) (ExExDArr z w) = unify $ (x, z) :: (y, w) :: constraints
+    unifyDArw constraints (ExExDArr x y) (SiExDArr (MkSignature str z) w) = unify $ (x, z) :: (y, w) :: constraints
+    unifyDArw constraints (SiExDArr (MkSignature str x) y) (ExExDArr z w) = unify $ (x, z) :: (y, w) :: constraints
+    unifyDArw constraints (SiExDArr (MkSignature str x) y) (SiExDArr (MkSignature str1 z) w) = unify $ (x, z) :: (y, w) :: constraints
 
     covering
     unifyEq : (constraints : Constraints) -> (arg : EqualityU) -> (applied : EqualityU) -> Either String Constraints
@@ -338,6 +390,7 @@ mutual
     getPartialType' sigs (IdTerm x) = getIdType sigs x
     getPartialType' sigs (AppTerm x) = getAppType sigs x
     getPartialType' sigs (ArwTerm x) = assert_total $ getArwType sigs x -- in getArwType, value of x always decreases
+    getPartialType' sigs (DArwTerm x) = assert_total $ getDArwType sigs x
     getPartialType' sigs (EqTerm x) = getEqType sigs x
     getPartialType' sigs (IntegerLiteral k) = Right $ Start $ MkSpSig (IdTerm $ MkId $ show k) $ IdTerm $ MkId $ Constant "Integer"
     getPartialType' sigs (DoubleLiteral dbl) = Right $ Start $ MkSpSig (IdTerm $ MkId $ show dbl) $ IdTerm $ MkId $ Constant "Double"
@@ -360,14 +413,25 @@ mutual
         then Right $ Start (toSpSig sig)
         else getIdType sigs y
 
+    -- sub function for getAppType
+    constantToVariable : String -> SimpleExprU -> SimpleExprU
+    constantToVariable str target = labelImplicitExp (\_, str2 => str2 == str) target
 
+    -- sub function for getAppType
+    skipImplicitType : PartialExprSignature -> PartialExprSignature
+    skipImplicitType (MkSpSig name (DArwTerm $ ExExDArr expr1 expr2)) = MkSpSig name expr2
+    skipImplicitType (MkSpSig name (DArwTerm $ SiExDArr (MkSignature (MkId name_s) x) expr)) = MkSpSig name (constantToVariable name_s expr)
+    skipImplicitType sig = sig
+    -- skipImplicitType (DArwTerm (ExExDArr expr1 expr2)) = expr2
+    -- skipImplicitType (DArwTerm (SiExDArr (MkSignature (MkId name_s) x) expr)) = constantToVariable name_s expr
+    -- skipImplicitType expr = expr
 
     getAppType : (sigs : List SignatureU) -> Application -> Either String ReconsTree
     getAppType sigs (MkApp f x) =
       do
         ftree <- getPartialType' sigs f
         xtree <- getPartialType' sigs x
-        appty <- getAppliedType (getSubgoal ftree) (getSubgoal xtree)
+        appty <- getAppliedType (skipImplicitType $ getSubgoal ftree) (skipImplicitType $ getSubgoal $ xtree)
         pure $ Subgoal [ftree, xtree] appty
 
     getArwType : (sigs : List SignatureU) -> Arrow False -> Either String ReconsTree
@@ -386,6 +450,23 @@ mutual
             if isType (getSubgoal argsig) && isType (getSubgoal retsig)
                 then Right (Subgoal [argsig, retsig] (MkSpSig (ArwTerm x) tycnst))
                 else Left #"Found none "Type" identifier in arrow"#
+
+    getDArwType : (sigs : List SignatureU) -> DArrow False -> Either String ReconsTree
+    getDArwType sigs x with (forgetSigD x)
+      getDArwType sigs x | ExExDArr argty retty = 
+          let
+            tycnst : SimpleExprU
+            tycnst = IdTerm $ MkId $ Constant "Type"
+
+            isType : PartialExprSignature -> Bool
+            isType sig = exprEquality (getSpSigExpr sig) tycnst
+          in
+          do
+            argsig <- getPartialType' sigs argty
+            retsig <- getPartialType' sigs retty
+            if isType (getSubgoal argsig) && isType (getSubgoal retsig)
+                then Right (Subgoal [argsig, retsig] (MkSpSig (DArwTerm x) tycnst))
+                else Left #"Found none "Type" identifier in darrow"#
 
     getEqType : (sigs : List SignatureU) -> Equality -> Either String ReconsTree
     getEqType sigs (MkEquality lty rty) =
@@ -414,7 +495,7 @@ mutual
         Right (Subgoal [xsig, ysig] (MkSpSig (PrTerm $ MkPair x y) $ mkpair xsig ysig))
 
     getIntLitType : (sigs : List SignatureU) -> Integer -> Either String ReconsTree
-    getIntLitType sigs k = ?rhs
+    getIntLitType sigs k = ?rhs1
 
     -- getLitType : (sigs : List Signature) -> (fromlitty : PartialExprSignature) -> (literal : SimpleExpr) -> Either String ReconsTree
     -- getLitType sigs fromlitty literal = ?getLitType_rhs

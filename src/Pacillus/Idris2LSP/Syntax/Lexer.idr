@@ -11,6 +11,8 @@ data SimpleExprTokenKind =
     | SEIgnore
     | SELParen
     | SERParen
+    | SELBracket
+    | SERBracket
     | SEIdentifier
     | SEBackquote
     | SEArrow
@@ -34,6 +36,8 @@ Eq SimpleExprTokenKind where
   (==) SEIgnore SEIgnore = True
   (==) SELParen SELParen = True
   (==) SERParen SERParen = True
+  (==) SELBracket SELBracket = True
+  (==) SERBracket SERBracket = True
   (==) SEIdentifier SEIdentifier = True
   (==) SEBackquote SEBackquote = True
   (==) SEArrow SEArrow = True
@@ -54,6 +58,8 @@ Show SimpleExprTokenKind where
     show SEIgnore = "SEIgnore"
     show SELParen = "SELParen"
     show SERParen = "SERParen"
+    show SELBracket = "SELBracket"
+    show SERBracket = "SERBracket"
     show SEIdentifier = "SEIdentifier"
     show SEBackquote = "SEBackquote"
     show SEArrow =  "SEArrow"
@@ -94,6 +100,8 @@ TokenKind SimpleExprTokenKind where
   tokValue SEIgnore _ = ()
   tokValue SELParen _ = ()
   tokValue SERParen _ = ()
+  tokValue SELBracket _ = ()
+  tokValue SERBracket _ = ()
   tokValue SEIdentifier s = s
   tokValue SEBackquote _ = ()
   tokValue SEArrow _ = ()
@@ -125,6 +133,7 @@ symbolLexer = some (pred isOpChar)
 reservedSyms : List (String, SimpleExprTokenKind)
 reservedSyms = [
   ("->", SEArrow),
+  ("=>", SEDoubleArrow),
   ("=", SEEqual),
   (":", SEColon),
   ("$", SEDollar)
@@ -194,6 +203,8 @@ simpleExprTokenMap =
     toTokenMap [
       (exact "(", SELParen),
       (exact ")", SERParen),
+      (exact "{", SELBracket),
+      (exact "}", SERBracket),
       (exact "`", SEBackquote),
       (exact ",", SEComma),
       (digits, SEIntLiteral),

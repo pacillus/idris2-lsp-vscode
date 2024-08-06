@@ -32,7 +32,13 @@ testPatternch02 =
         #"repl "Enter a string: " showAverage"#
     ]
 
--- mytestPattern : List String
+mytestPattern : List String
+mytestPattern =
+    [ 
+        "f a => b",
+        "(res : Cond x) => res = res -> F res",
+        "K = K"
+    ]
 
 -- [((IdTerm (MkId "x")), (IdTerm (MkId "True")))]
 
@@ -70,7 +76,7 @@ refineResult : List (Either String SimpleExpr) -> Either (List SimpleExpr) (Stri
 refineResult xs = refineResult' 0 xs
 
 test : Either (List SimpleExpr) (String, Nat)
-test = refineResult $ parse_list testPatternch01
+test = refineResult $ parse_list mytestPattern
 
 
 isSuccess : Either String SimpleExpr -> String
@@ -87,4 +93,4 @@ parseNListResult xs =
         putStrLn $ unlines output
 
 etest : IO ()
-etest = parseNListResult testPatternch01
+etest = parseNListResult mytestPattern

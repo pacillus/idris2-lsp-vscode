@@ -111,8 +111,31 @@ testCases =
           "f : x = y -> S x = S y",
           "g : (n : Nat) -> n = n",
           "k : Nat"
+        ],
+        MkCase "f x" [
+          "f : Int -> Int",
+          "x : FromString a => a"
+        ],
+        MkCase "f x" [
+          "f : (FromString a => a -> a) -> Int",
+          "x : String -> String"
+        ], -- TODO fix this
+        MkCase "f x" [
+          "f : (FromString a => a -> a) -> Int",
+          "x : FromString String => String -> String"
+        ], -- TODO fix this
+        MkCase "f x" [
+          "f : (res : Cond x) => res = res -> F res",
+          "x : K = K"
+        ],
+        MkCase "f x y" [
+          "f : res -> (res : Cond x) => res = res -> F res",
+          "x : Type",
+          "y : K=K"
         ]
     ]
+
+
 
 test : IO ()
 test = putStr (testAllCase testCases)
