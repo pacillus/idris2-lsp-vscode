@@ -21,9 +21,9 @@ https://idris2.readthedocs.io/en/latest/cookbook/parsing.html
 
 ** SimpleExpr is NOT the SimpleExpr in Idris syntax so be careful! **
 
-TODO Auto Argument "type =>"
+TODO Auto Argument "type =>" (almost done
 TODO Operators with . will not work well(display problem)
-TODO Implicit arguments "{a : Type} ->"
+TODO Implicit arguments "{a : Type} ->" (almost done
 TODO Alpha equivalence (i.e. parse "(x : Nat) -> f x" == parse "(y : Nat) -> f y" = True
 TODO Add prefix to OpTable
 TODO Partially filled infix notation "(+3)"
@@ -33,9 +33,8 @@ TODO Dependent pair sugar syntax "(x : a ** f x)"
 TODO List sugar syntax  "[1, 2, 3]" for "1 :: 2 :: 3 :: Nil", "[]" for "Nil"
 TODO explicit argument "@{x}"
 TODO infer type of partial expression with holes
-TODO "x = y" is a sugar syntax for "Equal x y"
-TODO "(a, b)" is a sugar syntax for Pair a b when type context 
-      and "(x, y)" is a sugar syntax for MkPair x y when term context
+TODO right now (a, b) is interpreted as "Pair a b" when it may also be "MkPair a b"
+     fix this
 TODO () is a sugar syntax for Unit when type and MkUnit when term context
 TODO Unification between renamed type and not renamed 
 TODO Namespace A.B.f
@@ -99,8 +98,6 @@ List of things not gonna do
   | <SEDoubleLiteral>
   | <SEStringLiteral>
 
-<paren> ::= <SELParen> <simpleExpr> <SERParen> 
-
 <infixOperator> ::= <SESymbol>
 
 <infixFunction> ::= <SEBackquote> <SEIdentifier> <SEBackquote>
@@ -115,7 +112,6 @@ List of things not gonna do
  | <IntegerLiteral>
  | <DoubleLiteral>
  | <StringLiteral>
- | <PrTerm>
  | Unit
 <AppTerm> ::= <Application>
 <IntegerLiteral> ::= Integer
@@ -123,7 +119,6 @@ List of things not gonna do
 <StringLiteral> ::= String
 <IdTerm> ::= <Identifier>
 <ArwTerm> ::= <Arrow>
-<PrTerm> ::= <Pair>
 
 <Application> ::= <SimpleExpr> <SimpleExpr>
 
@@ -135,8 +130,6 @@ List of things not gonna do
 
 <Bracket> ::=
     <Signature> <SimpleExpr>
-
-<Pair> ::= <SimpleExpr> <SimpleExpr>
 
 <Signature> ::= <Identifier> <SimpleExpr>
 -}
@@ -174,7 +167,6 @@ mutual
         DoubleLiteral : {0 id : Type} -> Double -> SimpleExprProt id
         CharLiteral : {0 id : Type} -> Char -> SimpleExprProt id
         StringLiteral : {0 id : Type} -> String -> SimpleExprProt id
-        PrTerm : {0 id : Type} -> PairProt id -> SimpleExprProt id
         UnitTerm : {0 id : Type} -> SimpleExprProt id
 
     -- <Identifier> ::= String
@@ -206,10 +198,6 @@ mutual
     data BracketArwProt : Type -> Type where
       MkBracket : {0 id : Type} -> SignatureProt id -> SimpleExprProt id -> BracketArwProt id
 
-    public export
-    data PairProt : Type -> Type where
-        MkPair : {0 id : Type} -> SimpleExprProt id -> SimpleExprProt id -> PairProt id
-
     -- <Signature> ::= <Identifier> <SimpleExpr>
     public export
     data SignatureProt : Type -> Type where
@@ -236,10 +224,6 @@ Arrow = ArrowProt String
 public export
 DArrow : Bool -> Type
 DArrow = DArrowProt String
-
-public export
-Pair :Type
-Pair = PairProt String
 
 public export
 Signature : Type
@@ -272,11 +256,6 @@ nameeq str1 str2 =
 export
 Eq Identifier where
     (==) (MkId str) (MkId str1) = nameeq str str1
-      -- case (split (\x => x == '.') str, split (\x => x == '.') str1) of
-      --   ((head1 ::: []), (head2 ::: [])) => head1 == head2
-      --   (list@(head1 ::: (y :: xs)), (head2 ::: [])) => last list == head2
-      --   ((head1 ::: []), list@(head2 ::: (y :: xs))) => head2 == last list
-      --   (list1@(head1 ::: (z :: ys)), list2@(head2 ::: (y :: xs))) => list1 == list2
 
 mutual
     export
@@ -286,8 +265,6 @@ mutual
     exprEquality (ArwTerm x) (ArwTerm y) = sameTypeArw x y
     exprEquality (DArwTerm x) (DArwTerm y) = ?rhs
     exprEquality (BArwTerm x) (BArwTerm y) = ?rhs2
-    -- exprEquality (EqTerm x) (EqTerm y) = eqEquality x y
-    exprEquality (PrTerm x) (PrTerm y) = prEquality x y
     exprEquality (IntegerLiteral k1) (IntegerLiteral k2) = k1 == k2
     exprEquality (DoubleLiteral dbl1) (DoubleLiteral dbl2) = dbl1 == dbl2
     exprEquality (StringLiteral str1) (StringLiteral str2) = str1 == str2
@@ -297,11 +274,6 @@ mutual
     appEquality : {0 id : Type} -> Eq (IdentifierProt id) => ApplicationProt id -> ApplicationProt id -> Bool
     appEquality (MkApp x z) (MkApp y w) = exprEquality x y && exprEquality z w
 
-    -- eqEquality : {0 id : Type} -> Eq (IdentifierProt id) => EqualityProt id -> EqualityProt id -> Bool
-    -- eqEquality (MkEquality le1 re1) (MkEquality le2 re2) = exprEquality le1 le2 && exprEquality re1 re2
-
-    prEquality : {0 id : Type} -> Eq (IdentifierProt id) => PairProt id -> PairProt id -> Bool
-    prEquality (MkPair lfst lsnd) (MkPair rfst rsnd) = exprEquality lfst rfst && exprEquality lsnd rsnd
 
     sameTypeArw : {0 id : Type} -> Eq (IdentifierProt id) => ArrowProt id b1 -> ArrowProt id b2 -> Bool
     sameTypeArw (ExExArr x z) (ExExArr y w) = exprEquality x z && exprEquality y w
@@ -329,8 +301,6 @@ mutual
   showSimpleExpr d (ArwTerm x) = showArw d x
   showSimpleExpr d (DArwTerm x) = showDArw d x
   showSimpleExpr d (BArwTerm x) = showBArw d x
-  -- showSimpleExpr d (EqTerm x) = showEq d x
-  showSimpleExpr d (PrTerm x) = showPr d x
   showSimpleExpr d (IntegerLiteral k) = show k
   showSimpleExpr d (DoubleLiteral dbl) = show dbl
   showSimpleExpr d (CharLiteral c) = show c
@@ -352,12 +322,13 @@ mutual
   showBArw : {0 id : Type} -> Show (IdentifierProt id) => Nat -> BracketArwProt id -> String
   showBArw d (MkBracket (MkSignature name x) y) = showParens (d >= 2) $ "{" ++ show name ++ " : " ++ showSimpleExpr 0 x ++ "} -> " ++ showSimpleExpr 2 y
 
-  showPr : {0 id : Type} -> Show (IdentifierProt id) => Nat -> PairProt id -> String
-  showPr d x = "(" ++ showPrNoBracket x ++ ")"
 
-  showPrNoBracket : {0 id : Type} -> Show (IdentifierProt id) => PairProt id -> String
-  showPrNoBracket (MkPair x (PrTerm y)) = showSimpleExpr 0 x ++ ", " ++ showPrNoBracket y
-  showPrNoBracket (MkPair x y) = showSimpleExpr 0 x ++ ", " ++ showSimpleExpr 0 y
+  --| keep this one because someday we will consider about resugaring like these |--
+  -- showPr : {0 id : Type} -> Show (IdentifierProt id) => Nat -> PairProt id -> String
+  -- showPr d x = "(" ++ showPrNoBracket x ++ ")"
+  -- showPrNoBracket : {0 id : Type} -> Show (IdentifierProt id) => PairProt id -> String
+  -- showPrNoBracket (MkPair x (PrTerm y)) = showSimpleExpr 0 x ++ ", " ++ showPrNoBracket y
+  -- showPrNoBracket (MkPair x y) = showSimpleExpr 0 x ++ ", " ++ showSimpleExpr 0 y
 
 export
 %hint
@@ -494,7 +465,7 @@ mutual
       <|>
         operation optable
 
-    pair : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True Pair
+    pair : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True SimpleExpr
     pair optable = 
       do
         match SELParen
@@ -502,19 +473,19 @@ mutual
         match SERParen
         pure p
 
-    pairSub : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True Pair
+    pairSub : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True SimpleExpr
     pairSub optable =
       do
         e <- simpleExpr optable
         match SEComma
         p <- pairSub optable
-        pure $ (MkPair e $ PrTerm p)
+        pure $ AppTerm $ MkApp (AppTerm $ MkApp (IdTerm $ MkId "Pair") e) p 
       <|>
       do
         e1 <- simpleExpr optable
         match SEComma
         e2 <- simpleExpr optable
-        pure $ (MkPair e1 e2)
+        pure $ AppTerm $ MkApp (AppTerm $ MkApp (IdTerm $ MkId "Pair") e1) e2
 
     -- <arrow> ::= 
     --   | <operation> <SEArrow> <expr>
@@ -631,7 +602,8 @@ mutual
         pure UnitTerm
       <|>
       do
-        map PrTerm $ pair optable
+        pair optable
+        -- map PrTerm $ pair optable
       <|>
       do
         id <- identifier 

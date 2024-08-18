@@ -30,9 +30,6 @@ DArrowU = DArrowProt LabeledIdentifier
 BArrowU : Type
 BArrowU = BracketArwProt LabeledIdentifier
 
-PairU :Type
-PairU = PairProt LabeledIdentifier
-
 SignatureU : Type
 SignatureU = SignatureProt LabeledIdentifier
 
@@ -71,7 +68,6 @@ allAsConstant (IntegerLiteral i) = IntegerLiteral i
 allAsConstant (DoubleLiteral dbl) = DoubleLiteral dbl
 allAsConstant (CharLiteral c) = CharLiteral c
 allAsConstant (StringLiteral str) = StringLiteral str
-allAsConstant (PrTerm (MkPair x y)) = PrTerm $ MkPair (allAsConstant x) (allAsConstant y)
 allAsConstant UnitTerm = UnitTerm
 
 
@@ -150,7 +146,6 @@ mutual
             (DoubleLiteral dbl) => DoubleLiteral dbl
             (CharLiteral c) => CharLiteral c
             (StringLiteral str) => StringLiteral str
-            (PrTerm x) => PrTerm $ assignPr x var replace
             UnitTerm => UnitTerm
 
     assignApp : (target : ApplicationU) -> (var : SimpleExprU) -> (replace : SimpleExprU) -> ApplicationU
@@ -170,10 +165,6 @@ mutual
 
     assignSig : (target : SignatureU) -> (var : SimpleExprU) -> (expr : SimpleExprU) -> SignatureU
     assignSig (MkSignature str x) var expr = MkSignature str $ assignExpr x var expr
-
-
-    assignPr : (target : PairU) -> (var : SimpleExprU) -> (replace : SimpleExprU) -> PairU
-    assignPr (MkPair x y) var replace = MkPair (assignExpr x var replace) (assignExpr y var replace)
 
 assignL : (constraints : Constraints) -> (var : SimpleExprU) -> (expr : SimpleExprU) -> Constraints
 assignL [] var expr = []
@@ -211,7 +202,6 @@ mutual
     labelImplicitExp cond (ArwTerm x) = ArwTerm $ labelImplicitArw cond x
     labelImplicitExp cond (DArwTerm x) = DArwTerm $ labelImplicitDArw cond x
     labelImplicitExp cond (BArwTerm x) = BArwTerm $ labelImplicitBArw cond x
-    labelImplicitExp cond (PrTerm x) = PrTerm $ labelImplicitPr cond x
     labelImplicitExp cond (IntegerLiteral k) = IntegerLiteral k
     labelImplicitExp cond (DoubleLiteral dbl) = DoubleLiteral dbl
     labelImplicitExp cond (CharLiteral c) = CharLiteral c
@@ -241,9 +231,6 @@ mutual
 
     labelImplicitBArw : LabelCondition -> BArrowU -> BArrowU
     labelImplicitBArw cond (MkBracket (MkSignature name@(MkId name_s) x) y) = MkBracket (MkSignature name (labelImplicitExp cond x)) (labelImplicitExp (\isapp, str => str /= name_s && cond isapp str) y)
-
-    labelImplicitPr : LabelCondition  -> PairU -> PairU
-    labelImplicitPr cond (MkPair x y) = MkPair (labelImplicitExp cond x) (labelImplicitExp cond y)
 
 -- isHeadLower name && not ((MkId name) `elem` nimp)
 
@@ -285,7 +272,6 @@ mutual
     unifyExpr constraints (AppTerm arg) (AppTerm applied) = unifyApp constraints arg applied
     unifyExpr constraints (ArwTerm arg) (ArwTerm applied) = unifyArw constraints arg applied
     unifyExpr constraints (DArwTerm arg) (DArwTerm applied) = unifyDArw constraints arg applied
-    unifyExpr constraints (PrTerm arg) (PrTerm applied) = unifyPr constraints arg applied
     unifyExpr _ arg applied = Left $ showUniError arg applied -- error
     
     covering
@@ -325,10 +311,6 @@ mutual
     unifyDArw constraints (ExExDArr x y) (SiExDArr (MkSignature str z) w) = unify $ (x, z) :: (y, w) :: constraints
     unifyDArw constraints (SiExDArr (MkSignature str x) y) (ExExDArr z w) = unify $ (x, z) :: (y, w) :: constraints
     unifyDArw constraints (SiExDArr (MkSignature str x) y) (SiExDArr (MkSignature str1 z) w) = unify $ (x, z) :: (y, w) :: constraints
-
-    covering 
-    unifyPr: (constraints : Constraints) -> (arg : PairU) -> (applied : PairU) -> Either String Constraints
-    unifyPr constraints (MkPair x y) (MkPair z w) = unify $ (x, z) :: (y, w) :: constraints
 
     covering
     uniVarExprL : (constraints : Constraints) -> (var : SimpleExprU) -> (expr : SimpleExprU) -> Either String Constraints
@@ -404,7 +386,6 @@ mutual
     getPartialType' sigs (DoubleLiteral dbl) = Right $ Start $ MkSpSig (IdTerm $ MkId $ show dbl) $ IdTerm $ MkId $ Constant "Double"
     getPartialType' sigs (CharLiteral c) = Right $ Start $ MkSpSig (IdTerm $ MkId $ show c) $ IdTerm $ MkId $ Constant "Char"
     getPartialType' sigs (StringLiteral str) = Right $ Start $ MkSpSig (IdTerm $ MkId $ show str) $ IdTerm $ MkId $ Constant "String"
-    getPartialType' sigs (PrTerm x) = getPrType sigs x
     getPartialType' sigs UnitTerm =
       let
         sig = MkSpSig (IdTerm $ MkId "MkUnit") UnitTerm
@@ -489,18 +470,6 @@ mutual
         if isType (getSubgoal argsig) && isType (getSubgoal retsig)
             then Right (Subgoal [argsig, retsig] (MkSpSig (BArwTerm x) tycnst))
             else Left #"Found none "Type" identifier in darrow"#
-         
-
-    getPrType : (sigs : List SignatureU) -> Pair -> Either String ReconsTree
-    getPrType sigs (MkPair x y) =
-      let
-        mkpair : ReconsTree -> ReconsTree -> SimpleExprU
-        mkpair x y = PrTerm $ MkPair (getSpSigExpr $ getSubgoal x) (getSpSigExpr $ getSubgoal y)
-      in
-      do
-        xsig <- getPartialType' sigs x
-        ysig <- getPartialType' sigs y
-        Right (Subgoal [xsig, ysig] (MkSpSig (PrTerm $ MkPair x y) $ mkpair xsig ysig))
 
     getIntLitType : (sigs : List SignatureU) -> Integer -> Either String ReconsTree
     getIntLitType sigs k = ?rhs1
