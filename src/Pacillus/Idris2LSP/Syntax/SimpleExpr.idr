@@ -121,7 +121,6 @@ List of things not gonna do
 <IntegerLiteral> ::= Integer
 <DoubleLiteral> ::= Double
 <StringLiteral> ::= String
-<EqTerm> ::= <Equality>
 <IdTerm> ::= <Identifier>
 <ArwTerm> ::= <Arrow>
 <PrTerm> ::= <Pair>
@@ -130,13 +129,12 @@ List of things not gonna do
 
 <Identifier> ::= String
 
-<Equality> ::= <SimpleExpr> <SimpleExpr>
-
 <Arrow> ::=
     <SimpleExpr> <SimpleExpr>
   | <Signature> <SimpleExpr>
-  | <BracketSignature> <SimpleExpr>
 
+<Bracket> ::=
+    <Signature> <SimpleExpr>
 
 <Pair> ::= <SimpleExpr> <SimpleExpr>
 
@@ -151,7 +149,6 @@ mutual
     -- <SimpleExpr> ::=
     --    <IdTerm>
     --  | <AppTerm>
-    --  | <EqTerm>
     --  | <ArwTerm>
     --  | <IntegerLiteral>
     --  | <DoubleLiteral>
@@ -163,7 +160,6 @@ mutual
     -- <IntegerLiteral> ::= Integer
     -- <DoubleLiteral> ::= Double
     -- <StringLiteral> ::= String
-    -- <EqTerm> ::= <Equality>
     -- <IdTerm> ::= <Identifier>
     -- <ArwTerm> ::= <Arrow>
     -- <PrTerm> ::= <Pair>
@@ -173,7 +169,7 @@ mutual
         AppTerm : {0 id : Type} -> ApplicationProt id -> SimpleExprProt id
         ArwTerm : {0 id : Type} -> ArrowProt id False -> SimpleExprProt id
         DArwTerm : {0 id : Type} -> DArrowProt id False -> SimpleExprProt id
-        EqTerm : {0 id : Type} -> EqualityProt id -> SimpleExprProt id
+        BArwTerm : {0 id : Type} -> BracketArwProt id -> SimpleExprProt id
         IntegerLiteral : {0 id : Type} -> Integer -> SimpleExprProt id
         DoubleLiteral : {0 id : Type} -> Double -> SimpleExprProt id
         CharLiteral : {0 id : Type} -> Char -> SimpleExprProt id
@@ -191,16 +187,10 @@ mutual
     data ApplicationProt : Type -> Type where
         MkApp : {0 id : Type} -> SimpleExprProt id -> SimpleExprProt id -> ApplicationProt id
 
-    -- <Equality> ::= <Expr> <Expr>
-    public export
-    data EqualityProt : Type -> Type where
-      MkEquality : {0 id : Type} -> SimpleExprProt id ->  SimpleExprProt id -> EqualityProt id
-
     -- Arrow True eliminates the pattern of SiExArr
     -- <Arrow> ::=
     --     <SimpleExpr> <SimpleExpr>
     --   | <Signature> <SimpleExpr>
-    --   | <BracketSignature> <SimpleExpr>
     public export
     data ArrowProt : Type -> (nosig : Bool) -> Type where
         ExExArr : {0 id : Type} -> {0 b : Bool} -> SimpleExprProt id -> SimpleExprProt id -> ArrowProt id b
@@ -211,14 +201,21 @@ mutual
         ExExDArr : {0 id : Type} -> {0 b : Bool} -> SimpleExprProt id -> SimpleExprProt id -> DArrowProt id b
         SiExDArr : {0 id : Type} -> SignatureProt id -> SimpleExprProt id -> DArrowProt id False
 
+    -- <BracketSignature> ::= <Identifier> <SimpleExpr>
+    public export
+    data BracketArwProt : Type -> Type where
+      MkBracket : {0 id : Type} -> SignatureProt id -> SimpleExprProt id -> BracketArwProt id
+
     public export
     data PairProt : Type -> Type where
         MkPair : {0 id : Type} -> SimpleExprProt id -> SimpleExprProt id -> PairProt id
 
-    -- <Signature> ::= <SimpleExpr> <SimpleExpr>
+    -- <Signature> ::= <Identifier> <SimpleExpr>
     public export
     data SignatureProt : Type -> Type where
       MkSignature : {0 id : Type} -> (name : IdentifierProt String) -> SimpleExprProt id -> SignatureProt id
+
+
 
 public export
 SimpleExpr : Type
@@ -231,10 +228,6 @@ Identifier = IdentifierProt String
 public export
 Application : Type
 Application = ApplicationProt String
-
-public export
-Equality : Type
-Equality = EqualityProt String
 
 public export
 Arrow : Bool -> Type
@@ -252,14 +245,18 @@ public export
 Signature : Type
 Signature = SignatureProt String
 
+public export
+BracketArw : Type
+BracketArw = BracketArwProt String
+
 -- Arrow 
 export
-forgetSig : ArrowProt id b -> ArrowProt id True
+forgetSig : {0 id : Type} -> ArrowProt id b -> ArrowProt id True
 forgetSig (ExExArr x y) = ExExArr x y
 forgetSig (SiExArr (MkSignature str x) y) = ExExArr x y
 
 export
-forgetSigD : DArrowProt id b -> DArrowProt id True
+forgetSigD : {0 id : Type} -> DArrowProt id b -> DArrowProt id True
 forgetSigD (ExExDArr x y) = ExExDArr x y
 forgetSigD (SiExDArr (MkSignature str x) y) = ExExDArr x y
 
@@ -287,7 +284,9 @@ mutual
     exprEquality (IdTerm x) (IdTerm y) = x == y
     exprEquality (AppTerm x) (AppTerm y) = appEquality x y
     exprEquality (ArwTerm x) (ArwTerm y) = sameTypeArw x y
-    exprEquality (EqTerm x) (EqTerm y) = eqEquality x y
+    exprEquality (DArwTerm x) (DArwTerm y) = ?rhs
+    exprEquality (BArwTerm x) (BArwTerm y) = ?rhs2
+    -- exprEquality (EqTerm x) (EqTerm y) = eqEquality x y
     exprEquality (PrTerm x) (PrTerm y) = prEquality x y
     exprEquality (IntegerLiteral k1) (IntegerLiteral k2) = k1 == k2
     exprEquality (DoubleLiteral dbl1) (DoubleLiteral dbl2) = dbl1 == dbl2
@@ -298,8 +297,8 @@ mutual
     appEquality : {0 id : Type} -> Eq (IdentifierProt id) => ApplicationProt id -> ApplicationProt id -> Bool
     appEquality (MkApp x z) (MkApp y w) = exprEquality x y && exprEquality z w
 
-    eqEquality : {0 id : Type} -> Eq (IdentifierProt id) => EqualityProt id -> EqualityProt id -> Bool
-    eqEquality (MkEquality le1 re1) (MkEquality le2 re2) = exprEquality le1 le2 && exprEquality re1 re2
+    -- eqEquality : {0 id : Type} -> Eq (IdentifierProt id) => EqualityProt id -> EqualityProt id -> Bool
+    -- eqEquality (MkEquality le1 re1) (MkEquality le2 re2) = exprEquality le1 le2 && exprEquality re1 re2
 
     prEquality : {0 id : Type} -> Eq (IdentifierProt id) => PairProt id -> PairProt id -> Bool
     prEquality (MkPair lfst lsnd) (MkPair rfst rsnd) = exprEquality lfst rfst && exprEquality lsnd rsnd
@@ -329,7 +328,8 @@ mutual
   showSimpleExpr d (AppTerm x) = showApp d x
   showSimpleExpr d (ArwTerm x) = showArw d x
   showSimpleExpr d (DArwTerm x) = showDArw d x
-  showSimpleExpr d (EqTerm x) = showEq d x
+  showSimpleExpr d (BArwTerm x) = showBArw d x
+  -- showSimpleExpr d (EqTerm x) = showEq d x
   showSimpleExpr d (PrTerm x) = showPr d x
   showSimpleExpr d (IntegerLiteral k) = show k
   showSimpleExpr d (DoubleLiteral dbl) = show dbl
@@ -348,8 +348,9 @@ mutual
   showDArw d (ExExDArr x y) = showParens (d >= 2) $ showSimpleExpr 2 x ++ " => " ++ showSimpleExpr 1 y
   showDArw d (SiExDArr (MkSignature name x) y) = showParens (d >= 2) $ "(" ++ show name ++ " : " ++ showSimpleExpr 0 x ++ ") => " ++ showSimpleExpr 2 y
 
-  showEq : {0 id : Type} -> Show (IdentifierProt id) => Nat -> EqualityProt id -> String
-  showEq d (MkEquality x y) = showParens (d >= 1) $ showSimpleExpr 1 x ++ " = " ++ showSimpleExpr 1 y
+
+  showBArw : {0 id : Type} -> Show (IdentifierProt id) => Nat -> BracketArwProt id -> String
+  showBArw d (MkBracket (MkSignature name x) y) = showParens (d >= 2) $ "{" ++ show name ++ " : " ++ showSimpleExpr 0 x ++ "} -> " ++ showSimpleExpr 2 y
 
   showPr : {0 id : Type} -> Show (IdentifierProt id) => Nat -> PairProt id -> String
   showPr d x = "(" ++ showPrNoBracket x ++ ")"
@@ -467,7 +468,7 @@ equality : Grammar state SimpleExprToken True (SimpleExpr -> SimpleExpr -> Simpl
 equality =
   do
     match SEEqual
-    pure $ \x,y => EqTerm (MkEquality x y)
+    pure $ \x,y => AppTerm $ (MkApp (AppTerm $ MkApp (IdTerm $ MkId "Equal") x)) y
 
 -- this is parsed using optable
 appOp : Grammar state SimpleExprToken True (SimpleExpr -> SimpleExpr -> SimpleExpr)
@@ -488,6 +489,8 @@ mutual
         map ArwTerm (arrow optable)
       <|>
         map DArwTerm (darrow optable)
+      <|>
+        map BArwTerm (barrow optable)
       <|>
         operation optable
 
@@ -547,6 +550,16 @@ mutual
         match SEDoubleArrow
         e <- simpleExpr optable
         pure $ SiExDArr sig e
+
+    barrow : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True BracketArw
+    barrow optable = 
+      do
+        match SELBracket
+        sig <- signature optable
+        match SERBracket
+        match SEArrow
+        e <- simpleExpr optable
+        pure $ MkBracket sig e
 
     -- specially parsed using optable
     -- includes infix function, infix operation, and equality

@@ -131,7 +131,11 @@ testCases =
         MkCase "f x y" [
           "f : res -> (res : Cond x) => res = res -> F res",
           "x : Type",
-          "y : K=K"
+          "y : K = K"
+        ],
+        MkCase "f x" [
+          "f : Int -> Int",
+          "x : {a : Type} -> a"
         ]
     ]
 

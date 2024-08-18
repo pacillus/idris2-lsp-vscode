@@ -37,7 +37,8 @@ mytestPattern =
     [ 
         "f a => b",
         "(res : Cond x) => res = res -> F res",
-        "K = K"
+        "K = K",
+        "{a : Type} -> List a"
     ]
 
 -- [((IdTerm (MkId "x")), (IdTerm (MkId "True")))]
