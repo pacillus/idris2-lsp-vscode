@@ -39,6 +39,7 @@ TODO () is a sugar syntax for Unit when type and MkUnit when term context
 TODO Unification between renamed type and not renamed 
 TODO Namespace A.B.f
 TODO projection sugar syntax "dat .member"
+TODO normalize expression on unification to absorb differnces between any two expression that relates by beta equivalence
 
 List of things not gonna do
 ・let, case, do, if, and user defined syntax
@@ -257,35 +258,38 @@ export
 Eq Identifier where
     (==) (MkId str) (MkId str1) = nameeq str str1
 
-mutual
-    export
-    exprEquality : {0 id : Type} -> Eq (IdentifierProt id) => SimpleExprProt id -> SimpleExprProt id -> Bool
-    exprEquality (IdTerm x) (IdTerm y) = x == y
-    exprEquality (AppTerm x) (AppTerm y) = appEquality x y
-    exprEquality (ArwTerm x) (ArwTerm y) = sameTypeArw x y
-    exprEquality (DArwTerm x) (DArwTerm y) = ?rhs
-    exprEquality (BArwTerm x) (BArwTerm y) = ?rhs2
-    exprEquality (IntegerLiteral k1) (IntegerLiteral k2) = k1 == k2
-    exprEquality (DoubleLiteral dbl1) (DoubleLiteral dbl2) = dbl1 == dbl2
-    exprEquality (StringLiteral str1) (StringLiteral str2) = str1 == str2
-    exprEquality UnitTerm UnitTerm = True
-    exprEquality _ _ = False
+-- mutual
+--     export
+--     exprEquality : {0 id : Type} -> Eq (IdentifierProt id) => SimpleExprProt id -> SimpleExprProt id -> Bool
+--     exprEquality (IdTerm x) (IdTerm y) = x == y
+--     exprEquality (AppTerm x) (AppTerm y) = appEquality x y
+--     exprEquality (ArwTerm x) (ArwTerm y) = sameTypeArw x y
+--     exprEquality (DArwTerm x) (DArwTerm y) = ?rhs
+--     exprEquality (BArwTerm x) (BArwTerm y) = ?rhs2
+--     exprEquality (IntegerLiteral k1) (IntegerLiteral k2) = k1 == k2
+--     exprEquality (DoubleLiteral dbl1) (DoubleLiteral dbl2) = dbl1 == dbl2
+--     exprEquality (StringLiteral str1) (StringLiteral str2) = str1 == str2
+--     exprEquality UnitTerm UnitTerm = True
+--     exprEquality _ _ = False
 
-    appEquality : {0 id : Type} -> Eq (IdentifierProt id) => ApplicationProt id -> ApplicationProt id -> Bool
-    appEquality (MkApp x z) (MkApp y w) = exprEquality x y && exprEquality z w
+--     appEquality : {0 id : Type} -> Eq (IdentifierProt id) => ApplicationProt id -> ApplicationProt id -> Bool
+--     appEquality (MkApp x z) (MkApp y w) = exprEquality x y && exprEquality z w
 
 
-    sameTypeArw : {0 id : Type} -> Eq (IdentifierProt id) => ArrowProt id b1 -> ArrowProt id b2 -> Bool
-    sameTypeArw (ExExArr x z) (ExExArr y w) = exprEquality x z && exprEquality y w
-    sameTypeArw (ExExArr x z) (SiExArr y w) =
-        let MkSignature _ yex = y in exprEquality x z && exprEquality yex w
-    sameTypeArw (SiExArr x z) (ExExArr y w) =
-        let MkSignature _ xex = x in exprEquality xex z && exprEquality y w
-    sameTypeArw (SiExArr x z) (SiExArr y w) =
-        let 
-          MkSignature _ xex = x
-          MkSignature _ yex = y
-        in exprEquality xex z && exprEquality yex w
+--     sameTypeArw : {0 id : Type} -> Eq (IdentifierProt id) => ArrowProt id b1 -> ArrowProt id b2 -> Bool
+--     sameTypeArw (ExExArr x z) (ExExArr y w) = exprEquality x z && exprEquality y w
+--     sameTypeArw (ExExArr x z) (SiExArr y w) =
+--       let MkSignature _ yex = y in 
+--         exprEquality x z && exprEquality yex w
+--     sameTypeArw (SiExArr x z) (ExExArr y w) =
+--       let MkSignature _ xex = x in 
+--         exprEquality xex z && exprEquality y w
+--     sameTypeArw (SiExArr x z) (SiExArr y w) =
+--       let 
+--         MkSignature _ xex = x
+--         MkSignature _ yex = y
+--       in 
+--         exprEquality xex z && exprEquality yex w
 
 export
 Show Identifier where
