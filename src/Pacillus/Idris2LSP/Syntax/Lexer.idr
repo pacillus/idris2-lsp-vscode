@@ -184,7 +184,7 @@ idLexer =
 -- <SESymbol> ::= [:!#$%&*+./<=>\?@\\^|-~]+
 -- <SELParen> ::= \(
 -- <SERParen> ::= \)
--- <SEIdentifier> ::= [a-zA-Z][a-zA-Z0-9]+
+-- <SEIdentifier> ::= [a-zA-Z][a-zA-Z0-9]*
 -- <SEIgnore> ::= [空白文字]+
 -- <SEBackquote> ::= `
 -- <SEIntLiteral> ::= [0-9]+

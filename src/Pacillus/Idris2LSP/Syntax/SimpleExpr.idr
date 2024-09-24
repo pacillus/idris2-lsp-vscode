@@ -1,5 +1,6 @@
 module Pacillus.Idris2LSP.Syntax.SimpleExpr
 
+import Data.Fin
 import Data.List
 import Data.List1
 import Data.Maybe
@@ -26,7 +27,7 @@ TODO Operators with . will not work well(display problem)
 TODO Implicit arguments "{a : Type} ->" (almost done
 TODO Alpha equivalence (i.e. parse "(x : Nat) -> f x" == parse "(y : Nat) -> f y" = True
 TODO Add prefix to OpTable
-TODO Partially filled infix notation "(+3)"
+TODO Sugar syntax for Partially filled infix notation "(+3)"
 TODO lambda expression "\x=>x"
 TODO quantitive types "(0 x : a) ->"
 TODO Dependent pair sugar syntax "(x : a ** f x)"
@@ -45,7 +46,7 @@ List of things not gonna do
 ・let, case, do, if, and user defined syntax
 
 ##Token##
-<SESymbol> ::= [:!#$%&*+./<=>?@\\^|-~]+
+<SESymbol> ::= [:!#$%&*\+\./<=>?@\\^\|\-~]+
 <SELParen> ::= (
 <SERParen> ::= )
 <SEIdentifier> ::= [a-zA-Z][a-zA-Z0-9]+
@@ -614,7 +615,7 @@ mutual
         pure $ IdTerm id
       <|> literal <|> paren optable
 
-    -- <var> ::= <SEIdentifier>
+    -- <identifier> ::= <SEIdentifier>
     identifier : Grammar state SimpleExprToken True Identifier
     identifier =
         map MkId (match SEIdentifier)
@@ -623,7 +624,7 @@ mutual
         match SELParen
         id <- identifier
         match SERParen
-        pure id
+        pure id -- TODO do we need this?
 
     -- <literal> ::=
     --     <SEIntLiteral>
@@ -678,5 +679,3 @@ parse opmap x =
   case lexSimpleExpr x of
     Just toks => parseSimpleExpr opmap toks
     Nothing => Left "Failed to lex."
-
-
