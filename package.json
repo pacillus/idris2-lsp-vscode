@@ -28,6 +28,14 @@
 				{
 					"command": "idris2-lsp.repl.eval",
 					"when": "editorLangId == idris"
+				},
+				{
+					"command": "idris2-lsp.pacillus.test",
+					"when": "editorLangId == idris"
+				},
+				{
+					"command": "idris2-lsp.repl.typeat",
+					"when": "editorLangId == idris"
 				}
 			]
 		},
@@ -41,6 +49,18 @@
 			{
 				"command": "idris2-lsp.repl.eval",
 				"title": "Idris: Evaluate selection",
+				"enablement": "editorLangId == idris",
+				"icon": "$(preview)"
+			},
+			{
+				"command": "idris2-lsp.pacillus.test",
+				"title": "Idris: Infer type of selection",
+				"enablement": "editorLangId == idris",
+				"icon": "$(preview)"
+			},
+			{
+				"command": "idris2-lsp.repl.typeat",
+				"title": "Idris: Gets type of selected",
 				"enablement": "editorLangId == idris",
 				"icon": "$(preview)"
 			}
@@ -67,32 +87,32 @@
 					"definition": "The log level of the Server."
 				},
 				"idris2-lsp.logFile": {
-					"type" : "string",
+					"type": "string",
 					"default": "stderr",
 					"definition": "Absolute location of the log file for the server."
 				},
 				"idris2-lsp.longActionTimeout": {
-					"type" : "number",
+					"type": "number",
 					"default": 5000,
 					"definition": "Timeout in ms for long actions, e.g. expression search."
 				},
 				"idris2-lsp.maxCodeActionResults": {
-					"type" : "number",
+					"type": "number",
 					"default": 5,
 					"definition": "Maximum number of multiple code actions for a single command, e.g. expression search."
 				},
 				"idris2-lsp.showImplicits": {
-					"type" : "boolean",
+					"type": "boolean",
 					"default": false,
 					"definition": "Show implicits in hovers."
 				},
 				"idris2-lsp.showMachineNames": {
-					"type" : "boolean",
+					"type": "boolean",
 					"default": false,
 					"definition": "Show machine names in hovers."
 				},
 				"idris2-lsp.fullNamespace": {
-					"type" : "boolean",
+					"type": "boolean",
 					"default": false,
 					"definition": "Show full namespace in hovers"
 				},
@@ -177,6 +197,7 @@
 		"test": "sh ./scripts/e2e.sh"
 	},
 	"dependencies": {
+		"@vscode/vsce": "^2.22.0",
 		"vscode-languageclient": "^7.0.0"
 	},
 	"devDependencies": {

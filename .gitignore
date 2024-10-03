@@ -1,3 +1,13 @@
 out
 node_modules
 .vscode-test
+*.ttc
+*.ttm
+*.so
+*.ss
+src/build/exec/**
+.DS_Store
+idris2-lsp-0.7.1.vsix
+.gitignore
+src/echolex.js
+src/echotype.js
