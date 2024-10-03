@@ -470,27 +470,15 @@ mutual
       <|>
         operation optable
 
-    pair : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True SimpleExpr
-    pair optable = 
+    -- <signature> ::= <SEIdentifier> <SEColon> <SimpleExpr>
+    export
+    signature : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True Signature
+    signature optable = 
       do
-        match SELParen
-        p <- pairSub optable
-        match SERParen
-        pure p
-
-    pairSub : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True SimpleExpr
-    pairSub optable =
-      do
+        id <- match SEIdentifier
+        match SEColon
         e <- simpleExpr optable
-        match SEComma
-        p <- pairSub optable
-        pure $ AppTerm $ MkApp (AppTerm $ MkApp (IdTerm $ MkId "Pair") e) p 
-      <|>
-      do
-        e1 <- simpleExpr optable
-        match SEComma
-        e2 <- simpleExpr optable
-        pure $ AppTerm $ MkApp (AppTerm $ MkApp (IdTerm $ MkId "Pair") e1) e2
+        pure $ MkSignature (MkId id) e
 
     -- <arrow> ::= 
     --   | <operation> <SEArrow> <expr>
@@ -551,18 +539,6 @@ mutual
       <|>
         term optable
 
-    -- <signature> ::= <SEIdentifier> <SEColon> <SimpleExpr>
-    export
-    signature : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True Signature
-    signature optable = 
-      do
-        id <- match SEIdentifier
-        match SEColon
-        e <- simpleExpr optable
-        pure $ MkSignature (MkId id) e
-
-
-
     -- left most part of application must be a identifier
     -- <app> ::=
     --     <identifier> <term> <appSub1> 
@@ -614,6 +590,28 @@ mutual
         id <- identifier 
         pure $ IdTerm id
       <|> literal <|> paren optable
+
+    pair : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True SimpleExpr
+    pair optable = 
+      do
+        match SELParen
+        p <- pairSub optable
+        match SERParen
+        pure p
+
+    pairSub : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True SimpleExpr
+    pairSub optable =
+      do
+        e <- simpleExpr optable
+        match SEComma
+        p <- pairSub optable
+        pure $ AppTerm $ MkApp (AppTerm $ MkApp (IdTerm $ MkId "Pair") e) p 
+      <|>
+      do
+        e1 <- simpleExpr optable
+        match SEComma
+        e2 <- simpleExpr optable
+        pure $ AppTerm $ MkApp (AppTerm $ MkApp (IdTerm $ MkId "Pair") e1) e2
 
     -- <identifier> ::= <SEIdentifier>
     identifier : Grammar state SimpleExprToken True Identifier
