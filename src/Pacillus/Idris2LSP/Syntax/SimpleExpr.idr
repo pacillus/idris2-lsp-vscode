@@ -22,6 +22,8 @@ https://idris2.readthedocs.io/en/latest/cookbook/parsing.html
 
 ** SimpleExpr is NOT the SimpleExpr in Idris syntax so be careful! **
 
+TODO show infix operators in a infix form on display (it is shown in a prefix form right now e.g. (+) 1 2)
+
 TODO Auto Argument "type =>" (almost done
 TODO Operators with . will not work well(display problem)
 TODO Implicit arguments "{a : Type} ->" (almost done
