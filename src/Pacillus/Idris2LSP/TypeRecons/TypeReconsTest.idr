@@ -136,7 +136,28 @@ testCases =
         MkCase "f x" [
           "f : Int -> Int",
           "x : {a : Type} -> a"
+        ],
+        MkCase "q p" [
+          "p : (x : Nat) -> f x",
+          "q : ((y : Nat) -> f y) -> String"
         ]
+        -- MkCase "MkDPair (srjf prfs) (MkInverse (finv prfs prfi) (invf prfs))" [
+        --   "Builtin.DPair.MkDPair : (fst_0 : a_0) -> p_0 fst_0 -> DPair a_0 p_0",
+        --   "Main.srjf : {f_1 : a_1 -> b_1} -> ((y_1 : b_1) -> DPair a_1 (\x_1 => f_1 x_1 = y_1)) -> b_1 -> a_1",
+        --   "prfs : (y_2 : b_2) -> DPair a_2 (\x_2 => f_2 x_2 = y_2)",
+        --   "((x_3 : a_3) -> inverse (f_3 x_3) = x_3) -> ((y_3 : b_3) -> f_3 (inverse y_3) = y_3) -> Inverse f_3 inverse"
+        -- ]
+        -- MkCase "MkInverse finv" [
+        --   "MkInverse : ({f : a -> b} -> {g : b -> a} -> ((x : a) -> g (f x) = x)) -> ((y : b) -> f (g y) = y) -> Inverse f g",
+        --   "finv : {f : a -> b} -> {srjf : b -> a} -> (x : a) -> srjf (f x) = x"
+        -- ]
+        -- 課題:暗黙の引数の情報を明記する必要がある場合がある
+
+        -- zeros : (x : a) -> (n : Nat) -> Vect n a
+        -- let c = 
+        -- \x => zeros c x
+
+        -- _ 
     ]
 
 

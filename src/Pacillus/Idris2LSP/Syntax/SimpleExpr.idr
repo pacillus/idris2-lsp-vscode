@@ -43,6 +43,7 @@ TODO Unification between renamed type and not renamed
 TODO Namespace A.B.f
 TODO projection sugar syntax "dat .member"
 TODO normalize expression on unification to absorb differnces between any two expression that relates by beta equivalence
+TODO syntax might be wrong when there is multiple fixity declarations
 
 List of things not gonna do
 ・let, case, do, if, and user defined syntax

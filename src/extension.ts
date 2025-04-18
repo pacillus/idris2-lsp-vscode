@@ -237,8 +237,6 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
             })
           } else {
 
-
-
             const g = (syms : string[], i: number, max: number) => {
               if (i < max) {
                 client
