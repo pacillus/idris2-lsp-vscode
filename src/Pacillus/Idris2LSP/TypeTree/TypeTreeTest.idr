@@ -1,10 +1,12 @@
-module Pacillus.Idris2LSP.TypeRecons.TypeReconsTest
+module Pacillus.Idris2LSP.TypeTree.TypeTreeTest
 
 import Data.String
 import Text.Parser.Expression
 
-import Pacillus.Idris2LSP.Syntax.SimpleExpr
-import Pacillus.Idris2LSP.TypeRecons.TypeRecons
+import Pacillus.Idris2LSP.Parser.Basic
+import Pacillus.Idris2LSP.Parser.Desugared
+import Pacillus.Idris2LSP.Parser.Sugared
+import Pacillus.Idris2LSP.TypeTree.TypeTree
 
 opMap : InOperatorMap
 opMap = 
@@ -42,8 +44,9 @@ testSingleCase (MkCase expr types) =
     result =
       do
         sigs <- convertInList2ListIn ty_list
+        sigs' <- map desugarSig sigs
         tgt <- target
-        getPartialType sigs tgt
+        getPartialType sigs' tgt
   in 
     case result of
         Left error => error
