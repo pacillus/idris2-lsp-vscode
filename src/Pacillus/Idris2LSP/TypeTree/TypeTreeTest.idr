@@ -43,10 +43,10 @@ testSingleCase (MkCase expr types) =
     ty_list = map (parseSig opMap) types
     result =
       do
-        sigs <- convertInList2ListIn ty_list
-        sigs' <- map desugarSig sigs
-        tgt <- target
-        getPartialType sigs' tgt
+        sigs <- convertInList2ListIn ty_list -- x : f (a, b)
+        sigs' <- map desugarSig sigs         -- ==> Pair a b
+        tgt <- target                        -- ==> MkPair a b
+        getPartialType sigs' tgt             -- ==> Pair x y
   in 
     case result of
         Left error => error

@@ -2,7 +2,7 @@ module Pacillus.Idris2LSP.Parser.Desugared
 
 import Data.List
 
-import Pacillus.Idris2LSP.Syntax.Basic
+import Pacillus.Idris2LSP.Parser.Basic
 
 operatorToIdentifier : Operator -> Identifier
 operatorToIdentifier (MkOperator str) = MkIdentifier str
@@ -71,7 +71,7 @@ desugarWithContext xs (PairSugar x y) =
   do
     x' <- desugarWithContext xs x 
     y' <- desugarWithContext xs y
-    [Application  x' y']
+    [Application (Application (Constant NameId $ MkIdentifier "Pair") x') y']
 desugarWithContext xs (OpInfixSugar x op y) = 
   do
     x' <- desugarWithContext xs x 

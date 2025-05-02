@@ -1,4 +1,4 @@
-module Pacillus.Idris2LSP.Parser.Parse
+module Pacillus.Idris2LSP.Parser.Sugared
 
 import Data.List
 import Text.Parser
@@ -28,24 +28,13 @@ ignored : WithBounds SimpleExprToken -> Bool
 ignored (MkBounded (Tok SEIgnore _) _ _) = True
 ignored _ = False
 
--- converting infix into application form
--- used in main parser
-simpleExprInf2App : String -> Sugared Expr -> Sugared Expr -> Sugared Expr
-simpleExprInf2App inid t1 t2 =
-  let
-    infixid = IdTerm (MkId inid)
-    firstapp = AppTerm $ MkApp infixid t1
-  in
-    AppTerm $ MkApp firstapp t2
-
-
 -- <infixOperator> ::= <SESymbol>
 infixOperator : (symbol_name : String) -> Grammar state SimpleExprToken True (Sugared Expr -> Sugared Expr -> Sugared Expr)
 infixOperator symbol_name =
   do
     sym <- match SESymbol
     when (sym /= symbol_name) $ fail "not a matching operator" -- only parses the symbol of arg
-    pure $ simpleExprInf2App $ "(" ++ sym ++ ")"
+    pure $ \e1, e2 => OpInfixSugar e1 (MkOperator sym) e2
 
 -- <infixFunction> ::= <SEBackquote> <SEIdentifier> <SEBackquote>
 infixFunction : Grammar state SimpleExprToken True (Sugared Expr -> Sugared Expr -> Sugared Expr)
@@ -54,7 +43,7 @@ infixFunction =
     match SEBackquote
     id <- match SEIdentifier
     match SEBackquote
-    pure $ simpleExprInf2App id
+    pure $ \e1, e2 => InfixSugar e1 (MkIdentifier id) e2
 
 -- dynnamically constructs a OperatorTable for parsing expr
 dynOperatorTable : InOperatorMap -> OperatorTable state SimpleExprToken (Sugared Expr)
@@ -104,14 +93,16 @@ equality : Grammar state SimpleExprToken True (Sugared Expr -> Sugared Expr -> S
 equality =
   do
     match SEEqual
-    pure $ \x,y => AppTerm $ (MkApp (AppTerm $ MkApp (IdTerm $ MkId "Equal") x)) y
+    pure $ \x,y => EqualSugar x y
+
+    -- pure $ \x,y => AppTerm $ (MkApp (AppTerm $ MkApp (IdTerm $ MkId "Equal") x)) y
 
 -- this is parsed using optable
 appOp : Grammar state SimpleExprToken True (Sugared Expr -> Sugared Expr -> Sugared Expr)
 appOp =
   do
     match SEDollar
-    pure $ \x, y => AppTerm $ MkApp x y
+    pure $ \x, y => DollarSugar x y
 
 -- the main parser
 -- starts in expr
@@ -125,11 +116,11 @@ mutual
     tArrows : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
     tArrows optable =
       do
-        map ArwTerm (arrow optable)
+        arrow optable
       <|>
-        map DArwTerm (darrow optable)
+        darrow optable
       <|>
-        map BArwTerm (barrow optable)
+        barrow optable
       <|>
         tOperators optable
 
@@ -137,7 +128,7 @@ mutual
     tOperators optable = operation optable
 
     tApp : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
-    tApp optable = map AppTerm (app optable) <|> term optable
+    tApp optable = app optable <|> term optable
 
     -- <signature> ::= <SEIdentifier> <SEColon> <SimpleExpr>
     export
@@ -147,18 +138,18 @@ mutual
         id <- match SEIdentifier
         match SEColon
         e <- tArrows optable
-        pure $ MkSignature (MkId id) e
+        pure $ Signature (MkIdentifier id) e
 
     -- <arrow> ::= 
     --   | <operation> <SEArrow> <expr>
     --   | <SELParen> <signature> <SERParen> <SEArrow> <expr>
-    arrow : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Arrow False)
+    arrow : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
     arrow optable =
       do
         e1 <- tOperators optable
         match SEArrow
         e2 <- tArrows optable
-        pure $ ExExArr e1 e2
+        pure $ Arrow SingleLine e1 e2
       <|>
       do
         match SELParen
@@ -166,15 +157,15 @@ mutual
         match SERParen
         match SEArrow
         e <- tArrows optable
-        pure $ SiExArr sig e
+        pure $ SignatureArrow SingleLine sig e
     
-    darrow : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True (DArrow False)
+    darrow : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
     darrow optable =
       do
         e1 <- tOperators optable
         match SEDoubleArrow
         e2 <- tArrows optable
-        pure $ ExExDArr e1 e2
+        pure $ Arrow DoubleLine e1 e2
       <|>
       do
         match SELParen
@@ -182,9 +173,9 @@ mutual
         match SERParen
         match SEDoubleArrow
         e <- tArrows optable
-        pure $ SiExDArr sig e
+        pure $ SignatureArrow DoubleLine sig e
 
-    barrow : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True BracketArw
+    barrow : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
     barrow optable = 
       do
         match SELBracket
@@ -192,7 +183,7 @@ mutual
         match SERBracket
         match SEArrow
         e <- tArrows optable
-        pure $ MkBracket sig e
+        pure $ BracketArrow sig e
 
     -- specially parsed using optable
     -- includes infix function, infix operation, and equality
@@ -202,7 +193,7 @@ mutual
     --   | <operation> <SEEqual> <operation>
     --   | <app>
     --   | <term>
-    operation : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True SimpleExpr
+    operation : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
     operation optable =
         buildExpressionParser (optable ++ [[Infix equality AssocNone, Infix appOp AssocRight]]) (tApp optable)
       <|>
@@ -215,28 +206,28 @@ mutual
     --   | <appWithParen>
     -- <appSub1> ::= <appSub2> | ε
     -- <appSub2> ::= <term> <appSub1>
-    app : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True Application
+    app : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
     app optable =
       -- the first two sytax corresponds to this part
       do
         id <- identifier
         t <- term optable
-        appSub1 optable $ MkApp (IdTerm id) t
+        appSub1 optable $ Application id t
       <|>
       do
         a <- paren optable
         t <- term optable
-        appSub1 optable (MkApp a t)
+        appSub1 optable (Application a t)
 
     -- subfunction for app
-    appSub1 : OperatorTable state SimpleExprToken SimpleExpr -> Application -> Grammar state SimpleExprToken False Application
+    appSub1 : OperatorTable state SimpleExprToken (Sugared Expr) -> Sugared Expr -> Grammar state SimpleExprToken False (Sugared Expr)
     appSub1 optable e = appSub2 optable e <|> pure e
 
     -- subfunction for app
-    appSub2 : OperatorTable state SimpleExprToken SimpleExpr -> Application -> Grammar state SimpleExprToken True Application
+    appSub2 : OperatorTable state SimpleExprToken (Sugared Expr) -> Sugared Expr -> Grammar state SimpleExprToken True (Sugared Expr)
     appSub2 optable app = do
       t <- term optable
-      appSub1 optable $ MkApp (AppTerm app) t
+      appSub1 optable $ Application app t
 
     -- <term> ::=
     --     <unit>
@@ -244,23 +235,18 @@ mutual
     --     <var>
     --   | <literal>
     --   | <paren>
-    term : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True SimpleExpr
+    term : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
     term optable =
       do
         match SELParen
         match SERParen
-        pure UnitTerm
-      <|>
-      do
-        pair optable
-        -- map PrTerm $ pair optable
-      <|>
-      do
-        id <- identifier 
-        pure $ IdTerm id
-      <|> literal <|> paren optable
+        pure UnitSugar
+      <|> pair optable
+      <|> identifier 
+      <|> literal 
+      <|> paren optable
 
-    pair : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True SimpleExpr
+    pair : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
     pair optable = 
       do
         match SELParen
@@ -268,24 +254,24 @@ mutual
         match SERParen
         pure p
 
-    pairSub : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True SimpleExpr
+    pairSub : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
     pairSub optable =
       do
         e <- simpleExpr optable
         match SEComma
         p <- pairSub optable
-        pure $ AppTerm $ MkApp (AppTerm $ MkApp (IdTerm $ MkId "Pair") e) p 
+        pure $ PairSugar e p
       <|>
       do
         e1 <- simpleExpr optable
         match SEComma
         e2 <- simpleExpr optable
-        pure $ AppTerm $ MkApp (AppTerm $ MkApp (IdTerm $ MkId "Pair") e1) e2
+        pure $ PairSugar e1 e2
 
     -- <identifier> ::= <SEIdentifier>
-    identifier : Grammar state SimpleExprToken True Identifier
+    identifier : Grammar state SimpleExprToken True (Sugared Expr)
     identifier =
-        map MkId (match SEIdentifier)
+        map (IdentifierTerm . MkIdentifier) (match SEIdentifier)
       <|>
       do
         match SELParen
@@ -298,26 +284,26 @@ mutual
     --   | <SEDoubleLiteral>
     --   | <SECharLiteral>
     --   | <SEStringLiteral>
-    literal : Grammar state SimpleExprToken True SimpleExpr
+    literal : Grammar state SimpleExprToken True (Sugared Expr)
     literal =
       do
         n <- match SEIntLiteral
-        pure $ IntegerLiteral n
+        pure $ Literal IntegerL n
       <|>
       do
         n <- match SEDoubleLiteral
-        pure $ DoubleLiteral n
+        pure $ Literal DoubleL n
       <|>
       do
         c <- match SECharLiteral
-        pure $ CharLiteral c
+        pure $ Literal CharL c
       <|>
       do
         s <- match SEStringLiteral
-        pure $ StringLiteral s
+        pure $ Literal StringL s
       
     -- <paren> ::= <SELParen> <simplExpr> <SERParen> 
-    paren : OperatorTable state SimpleExprToken SimpleExpr -> Grammar state SimpleExprToken True SimpleExpr
+    paren : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
     paren optable =
       do
         match SELParen
@@ -341,7 +327,7 @@ parseSimpleExpr opmap toks =
 
 -- parses string to AST
 export
-parse : InOperatorMap -> String -> Either String Sugared
+parse : InOperatorMap -> String -> Either String (Sugared Expr)
 parse opmap x =
   case lexSimpleExpr x of
     Just toks => parseSimpleExpr opmap toks

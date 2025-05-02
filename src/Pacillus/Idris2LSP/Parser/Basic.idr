@@ -37,29 +37,36 @@ namespace Sugared
     public export
     data Sugared : SubSyntaxGroup -> Type where
         -- expressions
-        IdentifierTerm : Identifier -> Sugared Expr
-        Application : Sugared Expr -> Sugared Expr -> Sugared Expr
-        Arrow : ArrowType -> Sugared Expr -> Sugared Expr -> Sugared Expr
-        SignatureArrow : ArrowType -> Sugared Sig -> Sugared Expr -> Sugared Expr
-        BracketArrow : Sugared Sig -> Sugared Expr -> Sugared Expr
-        AnonymousFunction : Identifier -> Sugared Expr -> Sugared Expr
-        Literal : (t : LiteralType) -> LiteralTypeOf t -> Sugared Expr
-        UnitSugar : Sugared Expr
-        PairSugar : Sugared Expr -> Sugared Expr -> Sugared Expr
-        OpInfixSugar : Sugared Expr -> Operator -> Sugared Expr -> Sugared Expr
-        InfixSugar : Sugared Expr -> Identifier -> Sugared Expr -> Sugared Expr
-        DependentPairSugar : Identifier -> Sugared Expr -> Sugared Expr -> Sugared Expr
-        EqualSugar : Sugared Expr -> Sugared Expr -> Sugared Expr
-        MemberSugar : Sugared Expr -> Member -> Sugared Expr
-        DollarSugar : Sugared Expr -> Sugared Expr -> Sugared Expr
+        IdentifierTerm : Identifier -> Sugared Expr -- ex) id
+        Application : Sugared Expr -> Sugared Expr -> Sugared Expr -- ex) f x
+        Arrow : ArrowType -> Sugared Expr -> Sugared Expr -> Sugared Expr -- ex) a -> b A => B
+        SignatureArrow : ArrowType -> Sugared Sig -> Sugared Expr -> Sugared Expr -- ex) (x : a) -> B(x) (x : A) => B
+        BracketArrow : Sugared Sig -> Sugared Expr -> Sugared Expr -- ex) {x : a} -> B(x)
+        AnonymousFunction : Identifier -> Sugared Expr -> Sugared Expr -- \x => e
+        Literal : (t : LiteralType) -> LiteralTypeOf t -> Sugared Expr 
+        -- _
+        UnitSugar : Sugared Expr -- () MkUnit Unit
+        PairSugar : Sugared Expr -> Sugared Expr -> Sugared Expr -- (a, b) Pair a b Mkpair a b
+        OpInfixSugar : Sugared Expr -> Operator -> Sugared Expr -> Sugared Expr -- 1 + 2
+        InfixSugar : Sugared Expr -> Identifier -> Sugared Expr -> Sugared Expr -- 1 'function' 2
+        DependentPairSugar : Identifier -> Sugared Expr -> Sugared Expr -> Sugared Expr -- (x : A ** B)
+        -- (x ** y) MkDPair
+        EqualSugar : Sugared Expr -> Sugared Expr -> Sugared Expr -- x = y
+        MemberSugar : Sugared Expr -> Member -> Sugared Expr -- x.fst (.fst)
+        DollarSugar : Sugared Expr -> Sugared Expr -> Sugared Expr -- a $ b 
         -- signature
-        Signature : Identifier -> Sugared Expr -> Sugared Sig
+        Signature : Identifier -> Sugared Expr -> Sugared Sig -- x : a
 
 
 
 namespace Desugared
     public export
     data BinderType = Pi | Lambda | Auto | Implicit
+    -- (x : a) -> b
+    -- \x => e
+    -- (x : a) => b
+    -- {x : a} -> b(x)
+    -- a -> b
 
     public export
     Eq BinderType where
@@ -103,8 +110,8 @@ namespace Desugared
         Application : Desugared t -> Desugared t -> Desugared t
         Binder : BinderType -> BinderName -> Desugared t -> Desugared t -> Desugared t
         Literal : (t : LiteralType) -> LiteralTypeOf t -> Desugared dt
-        WildCard : Desugared NoHole
-        ImplicitHole : Nat -> Desugared WithHole
+        WildCard : Desugared NoHole -- _
+        ImplicitHole : Nat -> Desugared WithHole -- 
     
     public export
     data DesugaredSignature : DesugaredType -> Type where

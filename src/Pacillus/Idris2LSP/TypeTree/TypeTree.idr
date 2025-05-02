@@ -2,13 +2,14 @@ module Pacillus.Idris2LSP.TypeTree.TypeTree
 
 import Data.Vect
 
-import Pacillus.Idris2LSP.Syntax.Basic
+import Pacillus.Idris2LSP.Parser.Basic
 
 public export
 data ExprSignature : Type where
     MkExprSignature : Desugared WithHole -> Desugared WithHole -> ExprSignature
 
 (.type) : ExprSignature -> Desugared WithHole
+(MkExprSignature e ty).type = ty
 
 public export
 data ReconsTree : Type where
@@ -193,7 +194,7 @@ getPartialTypeMain binder_types (MkDSig t1 x ty :: xs) e@(Constant t2 y) =
     else getPartialTypeMain binder_types xs e
 getPartialTypeMain binder_types _ e@(Index k) with (getAt k binder_types)
   getPartialTypeMain binder_types _ e@(Index k) | Nothing = Left "corrputedly bound variable found"
-  getPartialTypeMain binder_types _ e@(Index k) | (Just x) = Right $ Start $ MkExprSignature e x
+  getPartialTypeMain binder_types _ e@(Index k) | (Just x) = Right $ Start $ MkExprSignature e x -- Eq Int => \y : b => 1
 getPartialTypeMain binder_types sigs e@(Application f x) = 
   do
     f' <- getPartialTypeMain binder_types sigs f
