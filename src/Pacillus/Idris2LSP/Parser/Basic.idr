@@ -11,15 +11,29 @@ LiteralTypeOf CharL = Char
 LiteralTypeOf StringL = String
 
 public export
-data Identifier = MkIdentifier String
+data IdentifierType = NameId | OperatorId | MemberId
+
+public export
+Eq IdentifierType where
+    NameId == NameId = True
+    OperatorId == OperatorId = True
+    MemberId == MemberId = True
+    _ == _ = False
+
+public export
+data Identifier = MkIdentifier IdentifierType String
 
 public export
 Show Identifier where
-    show (MkIdentifier str) = str
+    show (MkIdentifier NameId str) = str
+    show (MkIdentifier OperatorId str) = str
+    show (MkIdentifier MemberId str) = "." ++ str
 
 export
 Eq Identifier where
-    (MkIdentifier strl) == (MkIdentifier strr) = strl == strr
+    (MkIdentifier tl strl) == (MkIdentifier tr strr) = tl == tr && strl == strr
+
+
 
 public export
 data Operator = MkOperator String
@@ -43,8 +57,8 @@ namespace Sugared
         SignatureArrow : ArrowType -> Sugared Sig -> Sugared Expr -> Sugared Expr -- ex) (x : a) -> B(x) (x : A) => B
         BracketArrow : Sugared Sig -> Sugared Expr -> Sugared Expr -- ex) {x : a} -> B(x)
         AnonymousFunction : Identifier -> Sugared Expr -> Sugared Expr -- \x => e
-        Literal : (t : LiteralType) -> LiteralTypeOf t -> Sugared Expr 
-        -- _
+        Literal : (t : LiteralType) -> LiteralTypeOf t -> Sugared Expr
+        Wildcard : Sugared Expr -- _
         UnitSugar : Sugared Expr -- () MkUnit Unit
         PairSugar : Sugared Expr -> Sugared Expr -> Sugared Expr -- (a, b) Pair a b Mkpair a b
         OpInfixSugar : Sugared Expr -> Operator -> Sugared Expr -> Sugared Expr -- 1 + 2
@@ -53,7 +67,6 @@ namespace Sugared
         -- (x ** y) MkDPair
         EqualSugar : Sugared Expr -> Sugared Expr -> Sugared Expr -- x = y
         MemberSugar : Sugared Expr -> Member -> Sugared Expr -- x.fst (.fst)
-        DollarSugar : Sugared Expr -> Sugared Expr -> Sugared Expr -- a $ b 
         -- signature
         Signature : Identifier -> Sugared Expr -> Sugared Sig -- x : a
 
@@ -76,28 +89,22 @@ namespace Desugared
         Implicit == Implicit = True
         _ == _ = False
 
-    public export
-    data IdentifierType = NameId | OperatorId | MemberId | InfixId
 
-    public export
-    sameIdGroup : IdentifierType -> IdentifierType -> Bool
-    sameIdGroup NameId NameId = True
-    sameIdGroup OperatorId OperatorId = True
-    sameIdGroup MemberId MemberId = True
-    sameIdGroup InfixId InfixId = True
-    sameIdGroup NameId InfixId = True
-    sameIdGroup InfixId NameId = True
-    sameIdGroup _ _ = False
 
     public export
     data BinderName : Type where
         NamedBinder : Identifier -> BinderName
         AnonymousBinder : BinderName
 
+    public export
+    Show BinderName where
+        show (NamedBinder id) = show id
+        show AnonymousBinder = "_"
+
     export
     getBinderName : BinderName -> Identifier
     getBinderName (NamedBinder x) = x
-    getBinderName AnonymousBinder = MkIdentifier "_"
+    getBinderName AnonymousBinder = MkIdentifier NameId "_"
 
     public export
     data DesugaredType = NoHole | WithHole
@@ -105,15 +112,32 @@ namespace Desugared
     public export
     data Desugared : DesugaredType -> Type where
         -- expressions
-        Constant : IdentifierType -> Identifier -> Desugared t
-        Index : Nat -> Desugared t
+        Constant : Identifier -> Desugared t
+        Index : Identifier -> Nat -> Desugared t
         Application : Desugared t -> Desugared t -> Desugared t
         Binder : BinderType -> BinderName -> Desugared t -> Desugared t -> Desugared t
         Literal : (t : LiteralType) -> LiteralTypeOf t -> Desugared dt
-        WildCard : Desugared NoHole -- _
-        ImplicitHole : Nat -> Desugared WithHole -- 
+        Wildcard : Desugared NoHole -- _
+        ImplicitHole : Identifier -> Nat -> Desugared WithHole -- 
     
+    -- Show (Desugared WithHole) where
+    --     showPrec (Constant x y) = ?rhs_0
+    --     show (Index id k) = show id
+    --     show (Application x y) = ?rhs_2
+    --     show (Binder Pi (NamedBinder id) ty e) = "(" ++ show id ++ " : " ++show ty ++ ") -> " ++ show e
+    --     show (Binder Pi AnonymousBinder ty e) = show ty ++ " -> " ++ show e
+    --     show (Binder Lambda (NamedBinder x) z w) = ?rhs_9
+    --     show (Binder Lambda AnonymousBinder z w) = ?rhs_10
+    --     show (Binder Auto y z w) = ?rhs_6
+    --     show (Binder Implicit y z w) = ?rhs_7
+    --     show (Literal IntegerL x) = show x
+    --     show (Literal DoubleL x) = show x
+    --     show (Literal CharL x) = show x
+    --     show (Literal StringL x) = show x
+    --     show (ImplicitHole id k) = "?" ++ show id
+    
+
     public export
     data DesugaredSignature : DesugaredType -> Type where
-        MkDSig : IdentifierType -> Identifier -> Desugared t -> DesugaredSignature t
+        MkDSig : Identifier -> Desugared t -> DesugaredSignature t
 

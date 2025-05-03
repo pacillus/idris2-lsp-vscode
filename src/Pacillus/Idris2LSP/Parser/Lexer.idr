@@ -14,6 +14,8 @@ data SimpleExprTokenKind =
     | SELBracket
     | SERBracket
     | SEIdentifier
+    | SEOperator
+    | SEMember
     | SEBackquote
     | SEArrow
     | SEDoubleArrow
@@ -21,6 +23,7 @@ data SimpleExprTokenKind =
     | SEColon
     | SEComma
     | SEDollar
+    | SEWildcard
     | SEIntLiteral
     | SECharLiteral
     | SEDoubleLiteral
@@ -39,6 +42,8 @@ Eq SimpleExprTokenKind where
   (==) SELBracket SELBracket = True
   (==) SERBracket SERBracket = True
   (==) SEIdentifier SEIdentifier = True
+  (==) SEOperator SEOperator = True
+  (==) SEMember SEMember = True
   (==) SEBackquote SEBackquote = True
   (==) SEArrow SEArrow = True
   (==) SEDoubleArrow SEDoubleArrow = True
@@ -46,6 +51,7 @@ Eq SimpleExprTokenKind where
   (==) SEColon SEColon = True
   (==) SEComma SEComma = True
   (==) SEDollar SEDollar = True
+  (==) SEWildcard SEWildcard = True
   (==) SEIntLiteral SEIntLiteral = True
   (==) SEDoubleLiteral SEDoubleLiteral = True
   (==) SECharLiteral SECharLiteral = True
@@ -61,6 +67,8 @@ Show SimpleExprTokenKind where
     show SELBracket = "SELBracket"
     show SERBracket = "SERBracket"
     show SEIdentifier = "SEIdentifier"
+    show SEOperator = "SEOperator"
+    show SEMember = "SEMember"
     show SEBackquote = "SEBackquote"
     show SEArrow =  "SEArrow"
     show SEDoubleArrow = "SEDoubleArrow"
@@ -68,6 +76,7 @@ Show SimpleExprTokenKind where
     show SEColon = "SEColon"
     show SEComma = "SEComma"
     show SEDollar = "SEDollar"
+    show SEWildcard = "SEWildcard"
     show SEIntLiteral = "SEIntLiteral"
     show SEDoubleLiteral = "SEDoubleLiteral"
     show SECharLiteral = "SECharLiteral"
@@ -89,6 +98,8 @@ Show SimpleExprToken where
 export
 TokenKind SimpleExprTokenKind where
   TokType SEIdentifier = String
+  TokType SEOperator = String
+  TokType SEMember = String
   TokType SESymbol = String
   TokType SEIntLiteral = Integer
   TokType SEDoubleLiteral = Double
@@ -103,6 +114,8 @@ TokenKind SimpleExprTokenKind where
   tokValue SELBracket _ = ()
   tokValue SERBracket _ = ()
   tokValue SEIdentifier s = s
+  tokValue SEOperator s = trim $ strSubstr 1 ((cast $ length s) - 2) s
+  tokValue SEMember s = s
   tokValue SEBackquote _ = ()
   tokValue SEArrow _ = ()
   tokValue SEDoubleArrow _ = ()
@@ -110,6 +123,7 @@ TokenKind SimpleExprTokenKind where
   tokValue SEColon _ = ()
   tokValue SEComma _ = ()
   tokValue SEDollar _ = ()
+  tokValue SEWildcard _ = ()
   tokValue SEIntLiteral s = fromMaybe 0 $ parseInteger s
   tokValue SEDoubleLiteral s = fromMaybe 0 $ parseDouble s
   tokValue SECharLiteral s =
@@ -172,8 +186,17 @@ doubleLit
 nameLexer : Lexer
 nameLexer =
     alpha <+> many (alphaNum <|> is '_' <|> is '\'')
-  <|>
-    is '(' <+> many spaces <+> symbolLexer <+> many spaces <+> is ')'
+  -- <|>
+  --   is '(' <+> many spaces <+> symbolLexer <+> many spaces <+> is ')'
+
+memberLexer : Lexer
+memberLexer = is '.' <+> nameLexer
+
+symbolIdLexer : Lexer
+symbolIdLexer = is '(' <+> many spaces <+> symbolLexer <+> many spaces <+> is ')'
+
+memberIdLexer : Lexer
+memberIdLexer = is '(' <+> many spaces <+> memberLexer <+> many spaces <+> is ')'
 
 idLexer : Lexer
 idLexer =
@@ -194,6 +217,8 @@ simpleExprTokenMap : TokenMap SimpleExprToken
 simpleExprTokenMap =
     toTokenMap [(spaces, SEIgnore)] ++
     toTokenMap [(idLexer, SEIdentifier )] ++
+    toTokenMap [(symbolIdLexer, SEOperator)] ++
+    toTokenMap [(memberIdLexer, SEMember)] ++
     [(symbolLexer, \s =>
       case lookup s reservedSyms of
         (Just kind) => Tok kind s

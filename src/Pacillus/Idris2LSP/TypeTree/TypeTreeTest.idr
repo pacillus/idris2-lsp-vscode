@@ -1,5 +1,6 @@
 module Pacillus.Idris2LSP.TypeTree.TypeTreeTest
 
+import Data.List1
 import Data.String
 import Text.Parser.Expression
 
@@ -7,6 +8,7 @@ import Pacillus.Idris2LSP.Parser.Basic
 import Pacillus.Idris2LSP.Parser.Desugared
 import Pacillus.Idris2LSP.Parser.Sugared
 import Pacillus.Idris2LSP.TypeTree.TypeTree
+import Pacillus.Idris2LSP.TypeTree.Output
 
 opMap : InOperatorMap
 opMap = 
@@ -41,16 +43,16 @@ testSingleCase (MkCase expr types) =
   let
     target = parse opMap expr
     ty_list = map (parseSig opMap) types
+    sigs = convertInList2ListIn ty_list
     result =
       do
-        sigs <- convertInList2ListIn ty_list -- x : f (a, b)
-        sigs' <- map desugarSig sigs         -- ==> Pair a b
-        tgt <- target                        -- ==> MkPair a b
-        getPartialType sigs' tgt             -- ==> Pair x y
-  in 
+        target <- target
+        des_sigs <- map (map (head . desugarSig)) sigs
+        getPartialType des_sigs (head $ desugar target)
+  in
     case result of
         Left error => error
-        Right tree => show tree
+        Right tree => output tree
 
 testAllCase : List TestCase -> String
 testAllCase xs =

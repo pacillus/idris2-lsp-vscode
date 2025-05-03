@@ -12,20 +12,20 @@ data ExprSignature : Type where
 (MkExprSignature e ty).type = ty
 
 public export
-data ReconsTree : Type where
-    Start : ExprSignature -> ReconsTree
-    Subgoal : List ReconsTree -> ExprSignature -> ReconsTree
+data TypeTree : Type where
+    Start : ExprSignature -> TypeTree
+    Subgoal : List TypeTree -> ExprSignature -> TypeTree
 
-getSubgoal : ReconsTree -> ExprSignature
+getSubgoal : TypeTree -> ExprSignature
 getSubgoal (Start x) = x
 getSubgoal (Subgoal xs x) = x
 
 
 replaceIndex : Nat -> Nat -> Desugared WithHole -> Desugared WithHole
-replaceIndex index holes_count (Constant x y) = Constant x y
-replaceIndex index holes_count (Index k) with (index == k)
-  replaceIndex index holes_count (Index k) | False = Index k
-  replaceIndex index holes_count (Index k) | True = ImplicitHole holes_count
+replaceIndex index holes_count (Constant x) = Constant x
+replaceIndex index holes_count e@(Index name k) with (index == k)
+  replaceIndex index holes_count e@(Index _ _) | False = e
+  replaceIndex index holes_count e@(Index name k) | True = ImplicitHole name holes_count
 replaceIndex index holes_count (Application f x) = 
   let
     f' = replaceIndex index holes_count f
@@ -39,11 +39,11 @@ replaceIndex index holes_count (Binder t id ty e) =
   in
     Binder t id ty' e'
 replaceIndex index holes_count (Literal x y) = Literal x y
-replaceIndex index holes_count (ImplicitHole k) = ImplicitHole k
+replaceIndex index holes_count e@(ImplicitHole _ _) = e
 
 toWithHole : Nat -> Desugared NoHole -> (Nat, Desugared WithHole)
-toWithHole holes_count (Constant x y) = (holes_count, Constant x y)
-toWithHole holes_count (Index k) = (holes_count, Index k)
+toWithHole holes_count (Constant x) = (holes_count, Constant x)
+toWithHole holes_count (Index name k) = (holes_count, Index name k)
 toWithHole holes_count_a (Application f x) = 
   let
     (holes_count_b, f') = toWithHole holes_count_a f
@@ -70,14 +70,14 @@ toWithHole holes_count_a (Binder Implicit id ty e) =
   in
     (holes_count_c, (Binder Implicit id ty' e'))
 toWithHole holes_count (Literal t x) = (holes_count, Literal t x)
-toWithHole holes_count WildCard = (S holes_count, ImplicitHole holes_count)
+toWithHole holes_count Wildcard = (S holes_count, ImplicitHole (MkIdentifier NameId "_") holes_count)
 
 -- toWithHole' : Desugared NoHole -> (Nat, Desugared WithHole)
 -- toWithHole' = toWithHole 0
 
 openImplicitHoles : Nat -> Desugared WithHole -> (Nat, Desugared WithHole)
-openImplicitHoles holes_count e@(Constant _ _) = (holes_count, e)
-openImplicitHoles holes_count e@(Index _) = (holes_count, e)
+openImplicitHoles holes_count e@(Constant _) = (holes_count, e)
+openImplicitHoles holes_count e@(Index _ _) = (holes_count, e)
 openImplicitHoles holes_count e@(Application _ _) = (holes_count, e)
 openImplicitHoles holes_count e@(Binder Pi _ _ _) = (holes_count, e)
 openImplicitHoles holes_count e@(Binder Lambda _ _ _) = (holes_count, e)
@@ -85,7 +85,7 @@ openImplicitHoles holes_count (Binder Auto _ _ e) = openImplicitHoles holes_coun
 openImplicitHoles holes_count (Binder Implicit _ _ e) = 
     openImplicitHoles (S holes_count) $ replaceIndex 0 holes_count e
 openImplicitHoles holes_count e@(Literal _ _) = (holes_count, e)
-openImplicitHoles holes_count e@(ImplicitHole _) = (holes_count, e)
+openImplicitHoles holes_count e@(ImplicitHole _ _) = (holes_count, e)
 
 Constraints : Type
 Constraints = List (Desugared WithHole, Desugared WithHole)
@@ -94,8 +94,8 @@ unifyError : Either String Constraints
 unifyError =  Left "unexpected error something went wrong in unification"
 
 substitute : Nat -> Desugared WithHole -> Desugared WithHole -> Desugared WithHole
-substitute k sub_with e@(Constant x y) = e
-substitute k sub_with e@(Index j) = e
+substitute k sub_with e@(Constant _) = e
+substitute k sub_with e@(Index _ _) = e
 substitute k sub_with (Application f x) =
   let
     f' = substitute k sub_with f
@@ -109,9 +109,9 @@ substitute k sub_with (Binder t id ty e) =
   in
     Binder t id ty' e'
 substitute k sub_with (Literal t x) = Literal t x
-substitute k sub_with e@(ImplicitHole j) with (k == j)
-  substitute k sub_with e@(ImplicitHole j) | False = e
-  substitute k sub_with e@(ImplicitHole j) | True = sub_with
+substitute k sub_with e@(ImplicitHole _ j) with (k == j)
+  substitute k sub_with e@(ImplicitHole _ j) | False = e
+  substitute k sub_with e@(ImplicitHole _ j) | True = sub_with
 
 substituteToConstraints : Nat -> Desugared WithHole -> Constraints -> Constraints
 substituteToConstraints k sub_with xs = map (\constraint => (substitute k sub_with (fst constraint), substitute k sub_with $ snd constraint)) xs
@@ -119,12 +119,12 @@ substituteToConstraints k sub_with xs = map (\constraint => (substitute k sub_wi
 
 unify : Constraints -> Either String Constraints
 unify [] = Right []
-unify ((Constant t1 x, Constant t2 y) :: xs) with (sameIdGroup t1 t2 && x == y)
-  unify ((Constant _ _, Constant _ _) :: _) | False = unifyError
-  unify ((Constant _ _, Constant _ _) :: xs) | True = unify xs
-unify ((Index j, Index k) :: xs) with (j == k)
-  unify ((Index j, Index k) :: xs) | False = unifyError
-  unify ((Index j, Index k) :: xs) | True = unify xs
+unify ((Constant x, Constant y) :: xs) with (x == y)
+  unify ((Constant _, Constant _) :: _) | False = unifyError
+  unify ((Constant _, Constant _) :: xs) | True = unify xs
+unify ((Index _ j, Index _ k) :: xs) with (j == k)
+  unify ((Index _ j, Index _ k) :: xs) | False = unifyError
+  unify ((Index _ j, Index _ k) :: xs) | True = unify xs
 unify ((Application f x, Application g y) :: xs) = unify $ (f, g) :: (x, y) :: xs
 unify ((Binder t1 _ ty1 e1, Binder t2 _ ty2 e2) :: xs) with (t1 == t2)
   unify ((Binder _ _ _ _, Binder _ _ _ _) :: xs) | False = unifyError
@@ -142,13 +142,13 @@ unify ((Literal CharL x, Literal CharL y) :: xs) with (x == y)
 unify ((Literal StringL x, Literal StringL y) :: xs) with (x == y)
   unify ((Literal StringL x, Literal StringL y) :: xs) | False = unifyError
   unify ((Literal StringL x, Literal StringL y) :: xs) | True = unify xs
-unify ((ImplicitHole j, ImplicitHole k) :: xs) = unify xs
-unify ((l@(ImplicitHole k), r) :: xs) =
+-- unify ((l@(ImplicitHole _ _), r@(ImplicitHole _ _)) :: xs) = (::) unify xs
+unify ((l@(ImplicitHole _ k), r) :: xs) =
   let
     substituted = substituteToConstraints k r xs -- TODO Maybe 
   in
     unify substituted >>= (\xs => Right $ (l, r) :: xs)
-unify ((l, r@(ImplicitHole k)) :: xs) = 
+unify ((l, r@(ImplicitHole _ k)) :: xs) = 
   let
     substituted = substituteToConstraints k l xs
   in
@@ -157,18 +157,18 @@ unify ((_, _) :: xs) = unifyError
 
 applyConstraints : Constraints -> Desugared WithHole -> Either String (Desugared WithHole)
 applyConstraints [] e = Right e
-applyConstraints ((ImplicitHole k, x) :: xs) e = 
+applyConstraints ((ImplicitHole _ k, x) :: xs) e = 
   let
     xs' = substituteToConstraints k x xs
-    e' = substitute k e
+    e' = substitute k x e
   in
-   applyConstraints xs' e
-applyConstraints ((x, ImplicitHole k) :: xs) e = 
+   applyConstraints xs' e'
+applyConstraints ((x, ImplicitHole _ k) :: xs) e = 
   let
     xs' = substituteToConstraints k x xs
-    e' = substitute k e
+    e' = substitute k x e
   in
-    applyConstraints xs' e
+    applyConstraints xs' e'
 applyConstraints ((_, _) :: xs) e = Left "Unexpected constraints found after unifciation"
 
 getAppliedType : ExprSignature -> ExprSignature -> Either String ExprSignature
@@ -184,17 +184,17 @@ getAppliedType (MkExprSignature f (Binder Pi _ argty retty)) (MkExprSignature x 
 getAppliedType (MkExprSignature _ _) (MkExprSignature _ _) = Left "Non appliable form found in application"
 
 typeId : ExprSignature
-typeId = MkExprSignature (Constant NameId $ MkIdentifier "Type") $ Constant NameId $ MkIdentifier "Type"
+typeId = MkExprSignature (Constant $ MkIdentifier NameId "Type") $ Constant $ MkIdentifier NameId "Type"
 
-getPartialTypeMain : List (Desugared WithHole) -> List (DesugaredSignature WithHole) -> Desugared WithHole -> Either String ReconsTree
-getPartialTypeMain _ [] (Constant x y) = Left $ "could not find the type of identifier " ++ show y
-getPartialTypeMain binder_types (MkDSig t1 x ty :: xs) e@(Constant t2 y) = 
-  if sameIdGroup t1 t2 && x == y
+getPartialTypeMain : List (Desugared WithHole) -> List (DesugaredSignature WithHole) -> Desugared WithHole -> Either String TypeTree
+getPartialTypeMain _ [] (Constant y) = Left $ "could not find the type of identifier " ++ show y
+getPartialTypeMain binder_types (MkDSig x ty :: xs) e@(Constant y) = 
+  if x == y
     then Right $ Start $ MkExprSignature e ty
     else getPartialTypeMain binder_types xs e
-getPartialTypeMain binder_types _ e@(Index k) with (getAt k binder_types)
-  getPartialTypeMain binder_types _ e@(Index k) | Nothing = Left "corrputedly bound variable found"
-  getPartialTypeMain binder_types _ e@(Index k) | (Just x) = Right $ Start $ MkExprSignature e x -- Eq Int => \y : b => 1
+getPartialTypeMain binder_types _ e@(Index _ k) with (getAt k binder_types)
+  getPartialTypeMain binder_types _ e@(Index _ k) | Nothing = Left "corrputedly bound variable found"
+  getPartialTypeMain binder_types _ e@(Index _ k) | (Just x) = Right $ Start $ MkExprSignature e x -- Eq Int => \y : b => 1
 getPartialTypeMain binder_types sigs e@(Application f x) = 
   do
     f' <- getPartialTypeMain binder_types sigs f
@@ -208,23 +208,23 @@ getPartialTypeMain binder_types sigs e@(Binder Lambda id ty e2) =
     Right $ Subgoal [e2'] $ (MkExprSignature e (Binder Pi id ty $ (getSubgoal e2').type))
 getPartialTypeMain binder_types _ e@(Binder Auto y z w) = Right $ Start typeId
 getPartialTypeMain binder_types _ e@(Binder Implicit y z w) = Right $ Start typeId
-getPartialTypeMain _ _ e@(Literal IntegerL x) = Right $ Start $ MkExprSignature e $ Constant NameId $ MkIdentifier "Integer"
-getPartialTypeMain _ _ e@(Literal DoubleL x) = Right $ Start $ MkExprSignature e $ Constant NameId $ MkIdentifier "Double"
-getPartialTypeMain _ _ e@(Literal CharL x) = Right $ Start $ MkExprSignature e $ Constant NameId $ MkIdentifier "Char"
-getPartialTypeMain _ _ e@(Literal StringL x) = Right $ Start $ MkExprSignature e $ Constant NameId $ MkIdentifier "String"
-getPartialTypeMain _ _ e@(ImplicitHole k) = ?getPartialTypeMain_rhs_5
+getPartialTypeMain _ _ e@(Literal IntegerL x) = Right $ Start $ MkExprSignature e $ Constant $ MkIdentifier NameId "Integer"
+getPartialTypeMain _ _ e@(Literal DoubleL x) = Right $ Start $ MkExprSignature e $ Constant $ MkIdentifier NameId "Double"
+getPartialTypeMain _ _ e@(Literal CharL x) = Right $ Start $ MkExprSignature e $ Constant $ MkIdentifier NameId "Char"
+getPartialTypeMain _ _ e@(Literal StringL x) = Right $ Start $ MkExprSignature e $ Constant $ MkIdentifier NameId "String"
+getPartialTypeMain _ _ e@(ImplicitHole _ k) = ?getPartialTypeMain_rhs_5
 
 convertSigs : Nat -> List (DesugaredSignature WithHole) -> List (DesugaredSignature NoHole) -> List (DesugaredSignature WithHole)
 convertSigs n acc [] = acc
-convertSigs n acc (MkDSig t id x :: xs) =
+convertSigs n acc (MkDSig id x :: xs) =
   let
     (n', x') = toWithHole n x
     (n'', x'') = openImplicitHoles n' x'
   in
-    convertSigs n'' (MkDSig t id x'' :: acc) xs
+    convertSigs n'' (MkDSig id x'' :: acc) xs
 
 export
-getPartialType : List (DesugaredSignature NoHole) -> Desugared NoHole -> Either String ReconsTree
+getPartialType : List (DesugaredSignature NoHole) -> Desugared NoHole -> Either String TypeTree
 getPartialType sigs x = 
   let
     (n, x') = toWithHole 0 x

@@ -43,7 +43,7 @@ infixFunction =
     match SEBackquote
     id <- match SEIdentifier
     match SEBackquote
-    pure $ \e1, e2 => InfixSugar e1 (MkIdentifier id) e2
+    pure $ \e1, e2 => InfixSugar e1 (MkIdentifier NameId id) e2
 
 -- dynnamically constructs a OperatorTable for parsing expr
 dynOperatorTable : InOperatorMap -> OperatorTable state SimpleExprToken (Sugared Expr)
@@ -102,7 +102,7 @@ appOp : Grammar state SimpleExprToken True (Sugared Expr -> Sugared Expr -> Suga
 appOp =
   do
     match SEDollar
-    pure $ \x, y => DollarSugar x y
+    pure $ \x, y => Application x y
 
 -- the main parser
 -- starts in expr
@@ -138,7 +138,19 @@ mutual
         id <- match SEIdentifier
         match SEColon
         e <- tArrows optable
-        pure $ Signature (MkIdentifier id) e
+        pure $ Signature (MkIdentifier NameId id) e
+      <|>
+      do
+        id <- match SEOperator
+        match SEColon
+        e <- tArrows optable
+        pure $ Signature (MkIdentifier OperatorId id) e
+      <|>
+      do
+        id <- match SEMember
+        match SEColon
+        e <- tArrows optable
+        pure $ Signature (MkIdentifier MemberId id) e
 
     -- <arrow> ::= 
     --   | <operation> <SEArrow> <expr>
@@ -244,6 +256,7 @@ mutual
       <|> pair optable
       <|> identifier 
       <|> literal 
+      <|> wildcard
       <|> paren optable
 
     pair : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
@@ -271,7 +284,7 @@ mutual
     -- <identifier> ::= <SEIdentifier>
     identifier : Grammar state SimpleExprToken True (Sugared Expr)
     identifier =
-        map (IdentifierTerm . MkIdentifier) (match SEIdentifier)
+        map (IdentifierTerm . MkIdentifier NameId) (match SEIdentifier)
       <|>
       do
         match SELParen
@@ -302,6 +315,13 @@ mutual
         s <- match SEStringLiteral
         pure $ Literal StringL s
       
+    -- <wildcard> ::= <SEWildcard>
+    wildcard : Grammar state SimpleExprToken True (Sugared Expr)
+    wildcard = 
+      do
+        match SEWildcard
+        pure $ Wildcard
+
     -- <paren> ::= <SELParen> <simplExpr> <SERParen> 
     paren : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
     paren optable =
@@ -325,6 +345,13 @@ parseSimpleExpr opmap toks =
     Right (l, xs) => Left $ show xs -- Left "contains tokens that were not consumed"
     Left e => Left (show e)
 
+parseSignature : InOperatorMap -> List (WithBounds SimpleExprToken) -> Either String (Sugared Sig)
+parseSignature opmap toks =
+  case parse (signature $ opTable opmap) $ filter (not . ignored) toks of
+    Right (l, []) => Right l
+    Right (l, xs) => Left $ show xs -- Left "contains tokens that were not consumed"
+    Left e => Left (show e)
+
 -- parses string to AST
 export
 parse : InOperatorMap -> String -> Either String (Sugared Expr)
@@ -332,3 +359,9 @@ parse opmap x =
   case lexSimpleExpr x of
     Just toks => parseSimpleExpr opmap toks
     Nothing => Left "Failed to lex."
+
+export
+parseSig : InOperatorMap -> String -> Either String (Sugared Sig)
+parseSig opmap str with (lexSimpleExpr str)
+  parseSig opmap str | Nothing = Left "Failed to lex."
+  parseSig opmap str | Just toks = parseSignature opmap toks
