@@ -126,8 +126,8 @@ desugar : Sugared Expr -> List1 (Desugared NoHole)
 desugar x = desugarWithContext [] x
 
 
-getImplicitList : Sugared Expr -> List Identifier
-getImplicitList (IdentifierTerm x@(MkIdentifier NameId str)) =
+getImplicitList : List Identifier -> Sugared Expr -> List Identifier
+getImplicitList ids (IdentifierTerm x@(MkIdentifier NameId str)) =
   let
     isHeadLower : String -> Bool
     isHeadLower str =
@@ -135,25 +135,28 @@ getImplicitList (IdentifierTerm x@(MkIdentifier NameId str)) =
         [] => False
         (x :: xs) => isLower x
   in
-  if isHeadLower str
+  if isHeadLower str && not (x `elem` ids)
     then [x]
     else []
-getImplicitList (IdentifierTerm (MkIdentifier _ _)) = []
-getImplicitList (Application (IdentifierTerm _) e) = getImplicitList e
-getImplicitList (Application e1 e2) = nub $ getImplicitList e1 ++ getImplicitList e2
-getImplicitList (Arrow _ ty e) = nub $ getImplicitList ty ++ getImplicitList e
-getImplicitList (SignatureArrow _ (Signature _ ty) e) = nub $ getImplicitList ty ++ getImplicitList e
-getImplicitList (BracketArrow (Signature _ ty) e) = nub $ getImplicitList ty ++ getImplicitList e
-getImplicitList (AnonymousFunction _ e) = getImplicitList e
-getImplicitList (Literal _ _) = []
-getImplicitList Wildcard = []
-getImplicitList UnitSugar = []
-getImplicitList (PairSugar e1 e2) = nub $ getImplicitList e1 ++ getImplicitList e2
-getImplicitList (OpInfixSugar e1 _ e2) = nub $ getImplicitList e1 ++ getImplicitList e2
-getImplicitList (InfixSugar e1 _ e2) = nub $ getImplicitList e1 ++ getImplicitList e2
-getImplicitList (DependentPairSugar _ ty e) = nub $ getImplicitList ty ++ getImplicitList e
-getImplicitList (EqualSugar e1 e2) = nub $ getImplicitList e1 ++ getImplicitList e2
-getImplicitList (MemberSugar e _) = nub $ getImplicitList e
+getImplicitList _ (IdentifierTerm (MkIdentifier _ _)) = []
+getImplicitList ids (Application (IdentifierTerm _) e) = getImplicitList ids e
+getImplicitList ids (Application e1 e2) = nub $ getImplicitList ids e1 ++ getImplicitList ids e2
+getImplicitList ids (Arrow _ ty e) = nub $ getImplicitList ids ty ++ getImplicitList ids e
+getImplicitList ids (SignatureArrow _ (Signature id ty) e) = 
+    nub $ getImplicitList ids ty ++ getImplicitList (id :: ids) e
+getImplicitList ids (BracketArrow (Signature id ty) e) =
+    nub $ getImplicitList ids ty ++ getImplicitList (id :: ids) e
+getImplicitList ids (AnonymousFunction _ e) = getImplicitList ids e
+getImplicitList _ (Literal _ _) = []
+getImplicitList _ Wildcard = []
+getImplicitList _ UnitSugar = []
+getImplicitList ids (PairSugar e1 e2) = nub $ getImplicitList ids e1 ++ getImplicitList ids e2
+getImplicitList ids (OpInfixSugar e1 _ e2) = nub $ getImplicitList ids e1 ++ getImplicitList ids e2
+getImplicitList ids (InfixSugar e1 _ e2) = nub $ getImplicitList ids e1 ++ getImplicitList ids e2
+getImplicitList ids (DependentPairSugar id ty e) =
+    nub $ getImplicitList ids ty ++ getImplicitList (id :: ids) e
+getImplicitList ids (EqualSugar e1 e2) = nub $ getImplicitList ids e1 ++ getImplicitList ids e2
+getImplicitList ids (MemberSugar e _) = nub $ getImplicitList ids e
 -- getImplicitList : Desugared NoHole -> List Identifier
 -- getImplicitList (Constant x@(MkIdentifier NameId str)) =
 --   let
@@ -180,7 +183,7 @@ addImplictsFromList [] e = e
 addImplictsFromList (id :: ids) e = addImplictsFromList ids $ BracketArrow (Signature id Wildcard) e
 
 addImplicits : Sugared Expr -> Sugared Expr
-addImplicits e = addImplictsFromList (getImplicitList e) e
+addImplicits e = addImplictsFromList (getImplicitList [] e) e
 
 export
 desugarType : Sugared Expr -> List1 (Desugared NoHole)

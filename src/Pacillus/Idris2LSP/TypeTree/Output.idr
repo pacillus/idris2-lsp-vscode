@@ -29,7 +29,7 @@ namespace Desugared
     output' _ (Literal DoubleL x) = show x
     output' _ (Literal CharL x) = show x
     output' _ (Literal StringL x) = show x
-    output' _ (ImplicitHole id _) = show id
+    output' _ (ImplicitHole id _) = "?" ++ show id
 
     export
     output : Desugared WithHole -> String
