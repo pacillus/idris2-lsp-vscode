@@ -143,6 +143,11 @@ testCases =
         MkCase "q p" [
           "p : (x : Nat) -> f x",
           "q : ((y : Nat) -> f y) -> String"
+        ],
+        MkCase "reverse . decorate . reverse" [
+          "reverse : List a -> List a",
+          "(.) : (b -> c) -> (a -> b) -> a -> c",
+          "decorate : a -> a"
         ]
         -- MkCase "MkDPair (srjf prfs) (MkInverse (finv prfs prfi) (invf prfs))" [
         --   "Builtin.DPair.MkDPair : (fst_0 : a_0) -> p_0 fst_0 -> DPair a_0 p_0",
@@ -166,7 +171,7 @@ testCases =
 
 
 test : IO ()
-test = putStr (testAllCase testCases)
+test = putStrLn (testAllCase testCases)
 
 0 Prop : Nat -> Type
 

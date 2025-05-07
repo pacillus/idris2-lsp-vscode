@@ -1,6 +1,7 @@
 module Pacillus.Idris2LSP.Parser.Lexer
 
 import Text.Lexer
+import Data.List1
 import Data.Maybe
 import Data.String
 
@@ -92,6 +93,12 @@ export
 Show SimpleExprToken where
  show (Tok kind text) = "Tok kind: " ++ show kind ++ " text: " ++ text
 
+trimNamespace : String -> String
+trimNamespace str = last $ split (\c => c == '.') str
+
+disposeUntilLparen : String -> String
+disposeUntilLparen str = last $ split (\c => c == '(') str
+
 -- TokenType implementation contains defining their value type and value
 -- symbol and identifier has their value as its own id.
 -- nat has the corresponding Nat value.
@@ -113,9 +120,13 @@ TokenKind SimpleExprTokenKind where
   tokValue SERParen _ = ()
   tokValue SELBracket _ = ()
   tokValue SERBracket _ = ()
-  tokValue SEIdentifier s = s
-  tokValue SEOperator s = trim $ strSubstr 1 ((cast $ length s) - 2) s
-  tokValue SEMember s = s
+  tokValue SEIdentifier s = trimNamespace s
+  tokValue SEOperator s = 
+    let s' = disposeUntilLparen s in
+      trim $ strSubstr 0 ((cast $ length s') - 1) s'
+  tokValue SEMember s =
+    let s' = disposeUntilLparen s in
+      trim $ strSubstr 0 ((cast $ length s') - 1) s'
   tokValue SEBackquote _ = ()
   tokValue SEArrow _ = ()
   tokValue SEDoubleArrow _ = ()
@@ -193,10 +204,10 @@ memberLexer : Lexer
 memberLexer = is '.' <+> nameLexer
 
 symbolIdLexer : Lexer
-symbolIdLexer = is '(' <+> many spaces <+> symbolLexer <+> many spaces <+> is ')'
+symbolIdLexer = many (pred isUpper <+> many alphaNum <+> is '.') <+> is '(' <+> many spaces <+> symbolLexer <+> many spaces <+> is ')'
 
 memberIdLexer : Lexer
-memberIdLexer = is '(' <+> many spaces <+> memberLexer <+> many spaces <+> is ')'
+memberIdLexer = many (pred isUpper <+> many alphaNum <+> is '.') <+> is '(' <+> many spaces <+> memberLexer <+> many spaces <+> is ')'
 
 idLexer : Lexer
 idLexer =
