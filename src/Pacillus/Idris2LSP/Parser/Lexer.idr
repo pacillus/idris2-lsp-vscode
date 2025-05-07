@@ -24,6 +24,7 @@ data SimpleExprTokenKind =
     | SEColon
     | SEComma
     | SEDollar
+    | SEDoubleStar
     | SEWildcard
     | SEIntLiteral
     | SECharLiteral
@@ -52,6 +53,7 @@ Eq SimpleExprTokenKind where
   (==) SEColon SEColon = True
   (==) SEComma SEComma = True
   (==) SEDollar SEDollar = True
+  SEDoubleStar == SEDoubleStar = True
   (==) SEWildcard SEWildcard = True
   (==) SEIntLiteral SEIntLiteral = True
   (==) SEDoubleLiteral SEDoubleLiteral = True
@@ -77,6 +79,7 @@ Show SimpleExprTokenKind where
     show SEColon = "SEColon"
     show SEComma = "SEComma"
     show SEDollar = "SEDollar"
+    show SEDoubleStar = "SEDoubleStar"
     show SEWildcard = "SEWildcard"
     show SEIntLiteral = "SEIntLiteral"
     show SEDoubleLiteral = "SEDoubleLiteral"
@@ -134,6 +137,7 @@ TokenKind SimpleExprTokenKind where
   tokValue SEColon _ = ()
   tokValue SEComma _ = ()
   tokValue SEDollar _ = ()
+  tokValue SEDoubleStar _ = ()
   tokValue SEWildcard _ = ()
   tokValue SEIntLiteral s = fromMaybe 0 $ parseInteger s
   tokValue SEDoubleLiteral s = fromMaybe 0 $ parseDouble s
@@ -161,7 +165,8 @@ reservedSyms = [
   ("=>", SEDoubleArrow),
   ("=", SEEqual),
   (":", SEColon),
-  ("$", SEDollar)
+  ("$", SEDollar),
+  ("**", SEDoubleStar)
 ]
 
 -- same from Idris Source "Parser.Lexer.Source.doubleLit"

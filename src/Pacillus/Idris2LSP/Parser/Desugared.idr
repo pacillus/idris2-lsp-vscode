@@ -104,6 +104,16 @@ desugarWithContext xs (DependentPairSugar id a b) =
     a' <- desugarWithContext xs a,
     b' <- desugarWithContext (NamedBinder id :: xs) b
   ]
+desugarWithContext xs (DependentPairConstructorSugar e1 e2) = 
+  let
+    dpairconstructor : Desugared NoHole
+    dpairconstructor = Constant $ MkIdentifier NameId "MkDPair"
+  in
+  [
+    Application (Application dpairconstructor e1') e2' |
+    e1' <- desugarWithContext xs e1,
+    e2' <- desugarWithContext xs e2
+  ]  
 desugarWithContext xs (EqualSugar e1 e2) = 
   let
     equal : Desugared NoHole
@@ -155,6 +165,8 @@ getImplicitList ids (OpInfixSugar e1 _ e2) = nub $ getImplicitList ids e1 ++ get
 getImplicitList ids (InfixSugar e1 _ e2) = nub $ getImplicitList ids e1 ++ getImplicitList ids e2
 getImplicitList ids (DependentPairSugar id ty e) =
     nub $ getImplicitList ids ty ++ getImplicitList (id :: ids) e
+getImplicitList ids (DependentPairConstructorSugar e1 e2) =
+    nub $ getImplicitList ids e1 ++ getImplicitList ids e2
 getImplicitList ids (EqualSugar e1 e2) = nub $ getImplicitList ids e1 ++ getImplicitList ids e2
 getImplicitList ids (MemberSugar e _) = nub $ getImplicitList ids e
 -- getImplicitList : Desugared NoHole -> List Identifier

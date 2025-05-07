@@ -64,7 +64,7 @@ namespace Sugared
         OpInfixSugar : Sugared Expr -> Operator -> Sugared Expr -> Sugared Expr -- 1 + 2
         InfixSugar : Sugared Expr -> Identifier -> Sugared Expr -> Sugared Expr -- 1 'function' 2
         DependentPairSugar : Identifier -> Sugared Expr -> Sugared Expr -> Sugared Expr -- (x : A ** B)
-        -- (x ** y) MkDPair
+        DependentPairConstructorSugar : Sugared Expr -> Sugared Expr -> Sugared Expr-- (x ** y) MkDPair
         EqualSugar : Sugared Expr -> Sugared Expr -> Sugared Expr -- x = y
         MemberSugar : Sugared Expr -> Member -> Sugared Expr -- x.fst (.fst)
         -- signature
@@ -89,7 +89,12 @@ namespace Desugared
         Implicit == Implicit = True
         _ == _ = False
 
-
+    public export
+    Show BinderType where
+        show Pi = "Pi"
+        show Lambda = "Lambda"
+        show Auto = "Auto"
+        show Implicit = "Implicit"
 
     public export
     data BinderName : Type where
@@ -141,3 +146,20 @@ namespace Desugared
     data DesugaredSignature : DesugaredType -> Type where
         MkDSig : Identifier -> Desugared t -> DesugaredSignature t
 
+public export
+data ExprSignature : Type where
+    MkExprSignature : Desugared WithHole -> Desugared WithHole -> ExprSignature
+
+export
+(.type) : ExprSignature -> Desugared WithHole
+(MkExprSignature e ty).type = ty
+
+public export
+data TypeTree : Type where
+    Start : ExprSignature -> TypeTree
+    Subgoal : List TypeTree -> ExprSignature -> TypeTree
+
+export
+getSubgoal : TypeTree -> ExprSignature
+getSubgoal (Start x) = x
+getSubgoal (Subgoal xs x) = x

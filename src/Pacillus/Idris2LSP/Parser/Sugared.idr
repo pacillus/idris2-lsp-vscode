@@ -113,14 +113,20 @@ mutual
     simpleExpr : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
     simpleExpr = tArrows
 
+    top : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
+    top = tArrows
+
     tArrows : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
     tArrows optable =
-      do
         arrow optable
       <|>
         darrow optable
       <|>
         barrow optable
+      <|>
+        dependentPair optable
+      <|>
+        dependentPairConstructor optable
       <|>
         tOperators optable
 
@@ -129,6 +135,29 @@ mutual
 
     tApp : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
     tApp optable = app optable <|> term optable
+
+    -- <dependentPair> ::= <SELParen> <identifier> <SEColon> <tArrows> <SEDoubleStar> <tDepPair> <SERParen>
+    dependentPair : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
+    dependentPair optable = 
+      do
+        match SELParen
+        id <- identifier
+        match SEColon
+        ty <- tArrows optable
+        match SEDoubleStar
+        e <- tArrows optable
+        match SERParen
+        pure $ DependentPairSugar id ty e
+    -- <dependentPairConstructor>
+    dependentPairConstructor : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
+    dependentPairConstructor optable = 
+      do
+        match SELParen
+        e1 <- tArrows optable
+        match SEDoubleStar
+        e2 <- tArrows optable
+        match SERParen
+        pure $ DependentPairConstructorSugar e1 e2
 
     -- <signature> ::= <SEIdentifier> <SEColon> <SimpleExpr>
     export
@@ -222,7 +251,7 @@ mutual
     app optable =
       -- the first two sytax corresponds to this part
       do
-        id <- identifier
+        id <- map IdentifierTerm identifier
         t <- term optable
         appSub1 optable $ Application id t
       <|>
@@ -254,7 +283,7 @@ mutual
         match SERParen
         pure UnitSugar
       <|> pair optable
-      <|> identifier 
+      <|> map IdentifierTerm identifier
       <|> literal 
       <|> wildcard
       <|> paren optable
@@ -282,9 +311,9 @@ mutual
         pure $ PairSugar e1 e2
 
     -- <identifier> ::= <SEIdentifier>
-    identifier : Grammar state SimpleExprToken True (Sugared Expr)
+    identifier : Grammar state SimpleExprToken True Identifier
     identifier =
-        map (IdentifierTerm . MkIdentifier NameId) (match SEIdentifier)
+        map (MkIdentifier NameId) (match SEIdentifier)
       <|>
       do
         match SELParen
@@ -327,7 +356,7 @@ mutual
     paren optable =
       do
         match SELParen
-        e <-  tArrows optable
+        e <-  top optable
         match SERParen
         pure e
 

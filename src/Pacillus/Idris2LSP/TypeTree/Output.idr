@@ -1,7 +1,7 @@
 module Pacillus.Idris2LSP.TypeTree.Output
 
 import Pacillus.Idris2LSP.Parser.Basic
-import Pacillus.Idris2LSP.TypeTree.TypeTree
+-- import Pacillus.Idris2LSP.TypeTree.TypeTree
 import Data.String
 
 namespace Identifier
@@ -34,6 +34,18 @@ namespace Desugared
     export
     output : Desugared WithHole -> String
     output x = output' 0 x
+
+public export
+Show (Desugared WithHole) where
+    show (Constant x) = show x
+    show (Index x k) = "(Index : \{show k}(\{show x}))"
+    show (Application x y) = "(\{show x} \{show y})"
+    show (Binder x y z w) = "(Binder \{show x} (\{show y} : \{show z}). \{show w})"
+    show (Literal IntegerL x) = show x
+    show (Literal DoubleL x) = show x
+    show (Literal CharL x) = show x
+    show (Literal StringL x) = show x
+    show (ImplicitHole x k) = "(Hole : \{show k}(\{show x}))"
 
 namespace ExprSignature
     export

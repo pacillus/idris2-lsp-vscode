@@ -3,23 +3,7 @@ module Pacillus.Idris2LSP.TypeTree.TypeTree
 import Data.Vect
 
 import Pacillus.Idris2LSP.Parser.Basic
-
-public export
-data ExprSignature : Type where
-    MkExprSignature : Desugared WithHole -> Desugared WithHole -> ExprSignature
-
-(.type) : ExprSignature -> Desugared WithHole
-(MkExprSignature e ty).type = ty
-
-public export
-data TypeTree : Type where
-    Start : ExprSignature -> TypeTree
-    Subgoal : List TypeTree -> ExprSignature -> TypeTree
-
-getSubgoal : TypeTree -> ExprSignature
-getSubgoal (Start x) = x
-getSubgoal (Subgoal xs x) = x
-
+import Pacillus.Idris2LSP.TypeTree.Output
 
 replaceIndex : Nat -> Nat -> Desugared WithHole -> Desugared WithHole
 replaceIndex index holes_count (Constant x) = Constant x
@@ -103,8 +87,8 @@ openImplicitHoles holes_count e@(ImplicitHole _ _) = (holes_count, e)
 Constraints : Type
 Constraints = List (Desugared WithHole, Desugared WithHole)
 
-unifyError : Either String Constraints
-unifyError =  Left "unexpected error something went wrong in unification"
+unifyError : Desugared WithHole -> Desugared WithHole -> Either String Constraints
+unifyError x y =  Left "unification failed between \{show x} and \{show y}"
 
 substituteToImplicit : Nat -> Desugared WithHole -> Desugared WithHole -> Desugared WithHole
 substituteToImplicit k sub_with e@(Constant _) = e
@@ -139,7 +123,7 @@ substituteToIndex k sub_with (Application f x) =
     Application f' x'
 substituteToIndex k sub_with (Binder t id ty e) = 
   let
-    ty' = substituteToIndex (S k) sub_with ty
+    ty' = substituteToIndex k sub_with ty
     e' = substituteToIndex (S k) sub_with e
   in
     Binder t id ty' e'
@@ -148,34 +132,32 @@ substituteToIndex k sub_with e@(ImplicitHole _ _) = e
 
 substituteToConstraints : Nat -> Desugared WithHole -> Constraints -> Constraints
 substituteToConstraints k sub_with xs = map (\constraint => (substituteToImplicit k sub_with (fst constraint), substituteToImplicit k sub_with $ snd constraint)) xs
--- substituteToConstraints R k sub_with xs = map (\constraint => (fst constraint, substituteToImplicit k sub_with (snd constraint))) xs
 
 unify : Constraints -> Either String Constraints
 unify [] = Right []
-unify ((Constant x, Constant y) :: xs) with (x == y)
-  unify ((Constant _, Constant _) :: _) | False = unifyError
-  unify ((Constant _, Constant _) :: xs) | True = unify xs
-unify ((Index _ j, Index _ k) :: xs) with (j == k)
-  unify ((Index _ j, Index _ k) :: xs) | False = unifyError
-  unify ((Index _ j, Index _ k) :: xs) | True = unify xs
+unify ((e1@(Constant x), e2@(Constant y)) :: xs) with (x == y)
+  unify ((e1@(Constant _), e2@(Constant _)) :: _) | False = unifyError e1 e2
+  unify ((e1@(Constant _), e2@(Constant _)) :: xs) | True = unify xs
+unify ((e1@(Index _ j), e2@(Index _ k)) :: xs) with (j == k)
+  unify ((e1@(Index _ j), e2@(Index _ k)) :: xs) | False = unifyError e1 e2
+  unify ((e1@(Index _ j), e2@(Index _ k)) :: xs) | True = unify xs
 unify ((Application f x, Application g y) :: xs) = unify $ (f, g) :: (x, y) :: xs
-unify ((Binder t1 _ ty1 e1, Binder t2 _ ty2 e2) :: xs) with (t1 == t2)
-  unify ((Binder _ _ _ _, Binder _ _ _ _) :: xs) | False = unifyError
-  unify ((Binder _ _ ty1 e1, Binder _ _ ty2 e2) :: xs) | True = 
+unify ((el@(Binder t1 _ ty1 e1), er@(Binder t2 _ ty2 e2)) :: xs) with (t1 == t2)
+  unify ((el@(Binder _ _ _ _), er@(Binder _ _ _ _)) :: xs) | False = unifyError el er
+  unify ((el@(Binder _ _ ty1 e1), er@(Binder _ _ ty2 e2)) :: xs) | True = 
     unify $ (ty1, ty2) :: (e1, e2) :: xs
-unify ((Literal IntegerL x, Literal IntegerL y) :: xs) with (x == y)
-  unify ((Literal IntegerL x, Literal IntegerL y) :: xs) | False = unifyError
-  unify ((Literal IntegerL x, Literal IntegerL y) :: xs) | True = unify xs
-unify ((Literal DoubleL x, Literal DoubleL y) :: xs) with (x == y)
-  unify ((Literal DoubleL x, Literal DoubleL y) :: xs) | False = unifyError
-  unify ((Literal DoubleL x, Literal DoubleL y) :: xs) | True = unify xs
-unify ((Literal CharL x, Literal CharL y) :: xs) with (x == y)
-  unify ((Literal CharL x, Literal CharL y) :: xs) | False = unifyError
-  unify ((Literal CharL x, Literal CharL y) :: xs) | True = unify xs
-unify ((Literal StringL x, Literal StringL y) :: xs) with (x == y)
-  unify ((Literal StringL x, Literal StringL y) :: xs) | False = unifyError
-  unify ((Literal StringL x, Literal StringL y) :: xs) | True = unify xs
--- unify ((l@(ImplicitHole _ _), r@(ImplicitHole _ _)) :: xs) = (::) unify xs
+unify ((e1@(Literal IntegerL x), e2@(Literal IntegerL y)) :: xs) with (x == y)
+  unify ((e1@(Literal IntegerL x), e2@(Literal IntegerL y)) :: xs) | False = unifyError e1 e2
+  unify ((e1@(Literal IntegerL x), e2@(Literal IntegerL y)) :: xs) | True = unify xs
+unify ((e1@(Literal DoubleL x), e2@(Literal DoubleL y)) :: xs) with (x == y)
+  unify ((e1@(Literal DoubleL x), e2@(Literal DoubleL y)) :: xs) | False = unifyError e1 e2
+  unify ((e1@(Literal DoubleL x), e2@(Literal DoubleL y)) :: xs) | True = unify xs
+unify ((e1@(Literal CharL x), e2@(Literal CharL y)) :: xs) with (x == y)
+  unify ((e1@(Literal CharL x), e2@(Literal CharL y)) :: xs) | False = unifyError e1 e2
+  unify ((e1@(Literal CharL x), e2@(Literal CharL y)) :: xs) | True = unify xs
+unify ((e1@(Literal StringL x), e2@(Literal StringL y)) :: xs) with (x == y)
+  unify ((e1@(Literal StringL x), e2@(Literal StringL y)) :: xs) | False = unifyError e1 e2
+  unify ((e1@(Literal StringL x), e2@(Literal StringL y)) :: xs) | True = unify xs
 unify ((l@(ImplicitHole _ k), r) :: xs) =
   let
     substituteToImplicitd = substituteToConstraints k r xs -- TODO Maybe 
@@ -186,7 +168,7 @@ unify ((l, r@(ImplicitHole _ k)) :: xs) =
     substituteToImplicitd = substituteToConstraints k l xs
   in
     unify substituteToImplicitd >>= (\xs => Right $ (l, r) :: xs)
-unify ((_, _) :: xs) = Left "test" --unifyError
+unify ((e1, e2) :: xs) = unifyError e1 e2
 
 applyConstraints : Constraints -> Desugared WithHole -> Either String (Desugared WithHole)
 applyConstraints [] e = Right e
