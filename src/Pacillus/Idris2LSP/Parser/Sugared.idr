@@ -110,9 +110,6 @@ mutual
     -- <simpleExpr> ::=
     --     <arrow>
     --   | <operation>
-    simpleExpr : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
-    simpleExpr = tArrows
-
     top : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
     top = tArrows
 
@@ -299,15 +296,15 @@ mutual
     pairSub : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
     pairSub optable =
       do
-        e <- simpleExpr optable
+        e <- top optable
         match SEComma
         p <- pairSub optable
         pure $ PairSugar e p
       <|>
       do
-        e1 <- simpleExpr optable
+        e1 <- top optable
         match SEComma
-        e2 <- simpleExpr optable
+        e2 <- top optable
         pure $ PairSugar e1 e2
 
     -- <identifier> ::= <SEIdentifier>
@@ -369,7 +366,7 @@ opTable opmap = dynOperatorTable opmap
 -- parses token list
 parseSimpleExpr : InOperatorMap -> List (WithBounds SimpleExprToken) -> Either String (Sugared Expr)
 parseSimpleExpr opmap toks =
-  case parse (simpleExpr $ opTable opmap) $ filter (not . ignored) toks of
+  case parse (top $ opTable opmap) $ filter (not . ignored) toks of
     Right (l, []) => Right l
     Right (l, xs) => Left $ show xs -- Left "contains tokens that were not consumed"
     Left e => Left (show e)

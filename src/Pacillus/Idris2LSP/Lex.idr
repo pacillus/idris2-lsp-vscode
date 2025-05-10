@@ -6,10 +6,9 @@ import Language.JSON
 import System
 import Text.Lexer
 
-import Pacillus.Idris2LSP.Syntax.Lexer
+import Pacillus.Idris2LSP.Parser.Lexer
 
 isNoType : SimpleExprToken -> Bool
-isNoType (Tok SEDollar text) = True
 isNoType (Tok SESymbol text) = False
 isNoType (Tok SEIgnore text) = True
 isNoType (Tok SELParen text) = True
@@ -17,12 +16,17 @@ isNoType (Tok SERParen text) = True
 isNoType (Tok SELBracket _) = True
 isNoType (Tok SERBracket _) = True
 isNoType (Tok SEIdentifier text) = False
+isNoType (Tok SEOperator text) = False
+isNoType (Tok SEMember text) = False
 isNoType (Tok SEBackquote text) = True
 isNoType (Tok SEArrow text) = True
 isNoType (Tok SEDoubleArrow text) = True
 isNoType (Tok SEEqual text) = True
 isNoType (Tok SEColon text) = True
 isNoType (Tok SEComma text) = True
+isNoType (Tok SEDollar text) = True
+isNoType (Tok SEDoubleStar _) = True
+isNoType (Tok SEWildcard _) = True
 isNoType (Tok SEIntLiteral text) = True
 isNoType (Tok SEDoubleLiteral text) = True
 isNoType (Tok SECharLiteral text) = True

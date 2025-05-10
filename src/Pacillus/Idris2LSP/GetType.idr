@@ -1,13 +1,17 @@
 module Pacillus.Idris2LSP.GetType
 
 import Data.List
+import Data.List1
 import Data.String
 import Language.JSON
 import System
 import Text.Parser.Expression
 
-import Pacillus.Idris2LSP.Syntax.SimpleExpr
-import Pacillus.Idris2LSP.TypeRecons.TypeRecons
+import Pacillus.Idris2LSP.Parser.Basic
+import Pacillus.Idris2LSP.Parser.Sugared
+import Pacillus.Idris2LSP.Parser.Desugared
+import Pacillus.Idris2LSP.TypeTree.TypeTree
+import Pacillus.Idris2LSP.TypeTree.Output
 
 convertInList2ListIn : Monad f => List (f b) -> f (List b)
 convertInList2ListIn [] = pure []
@@ -80,21 +84,26 @@ parseInput str =
     Nothing => Left "Error : Input JSON parse failed"
     (Just x) => json2Info x
 
-
+parseAndDesugarSigs : InOperatorMap -> List String -> Either String (List (Desugared NoHole))
+parseAndDesugarSigs _ [] = Right []
+parseAndDesugarSigs opmap (str :: xs) with (parseSig opmap str)
+  parseAndDesugarSigs opmap (str :: xs) | (Left x) = Left x
+  parseAndDesugarSigs opmap (str :: xs) | (Right x) = ?rhs
 
 inferType : String -> InOperatorMap -> List String -> String
 inferType expr opmap types =
   let
-    target = (parse opmap) expr
     ty_list = map (parseSig opmap) types
+    sigs = convertInList2ListIn ty_list
     result = 
       do
-        sigs <- convertInList2ListIn ty_list
-        target >>= getPartialType sigs
+        target <- (parse opmap) expr
+        des_sigs <- map (map (head . desugarSig)) sigs
+        getPartialType des_sigs (head $ desugar target)
   in
   case result of
     (Left error) => error
-    (Right tree) => show tree
+    (Right tree) => output tree
 
 process : String -> String
 process str =
