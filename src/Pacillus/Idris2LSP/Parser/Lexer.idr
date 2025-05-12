@@ -20,6 +20,7 @@ data SimpleExprTokenKind =
     | SEBackquote
     | SEArrow
     | SEDoubleArrow
+    | SEBackslash
     | SEEqual
     | SEColon
     | SEComma
@@ -49,6 +50,7 @@ Eq SimpleExprTokenKind where
   (==) SEBackquote SEBackquote = True
   (==) SEArrow SEArrow = True
   (==) SEDoubleArrow SEDoubleArrow = True
+  SEBackslash == SEBackslash = True
   (==) SEEqual SEEqual = True
   (==) SEColon SEColon = True
   (==) SEComma SEComma = True
@@ -75,6 +77,7 @@ Show SimpleExprTokenKind where
     show SEBackquote = "SEBackquote"
     show SEArrow =  "SEArrow"
     show SEDoubleArrow = "SEDoubleArrow"
+    show SEBackslash = "SEBackslash"
     show SEEqual = "SEEqual"
     show SEColon = "SEColon"
     show SEComma = "SEComma"
@@ -133,6 +136,7 @@ TokenKind SimpleExprTokenKind where
   tokValue SEBackquote _ = ()
   tokValue SEArrow _ = ()
   tokValue SEDoubleArrow _ = ()
+  tokValue SEBackslash _ = ()
   tokValue SEEqual _ = ()
   tokValue SEColon _ = ()
   tokValue SEComma _ = ()
@@ -166,7 +170,8 @@ reservedSyms = [
   ("=", SEEqual),
   (":", SEColon),
   ("$", SEDollar),
-  ("**", SEDoubleStar)
+  ("**", SEDoubleStar),
+  ("\\", SEBackslash)
 ]
 
 -- same from Idris Source "Parser.Lexer.Source.doubleLit"

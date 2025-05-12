@@ -20,7 +20,7 @@ namespace Desugared
     output' k (Application x y) = "(\{output' k x} \{output' k y})"
     output' k (Binder Pi (NamedBinder id) ty e) = "((\{show id} : \{output' k ty}) -> \{output' k e})"
     output' k (Binder Pi AnonymousBinder ty e) = "(\{output' k ty} -> \{output' k e})"
-    output' k (Binder Lambda id ty e) = "\\\{show id} : (\{output' k ty}) => (\{output' k e})"
+    output' k (Binder Lambda id ty e) = "(\\\{show id} : \{output' k ty} => \{output' k e})"
     output' k (Binder Auto (NamedBinder id) ty e) = "(\{show id} : (\{output' k ty})) => (\{output' k e})"
     output' k (Binder Auto AnonymousBinder ty e) = "(\{output' k ty}) => (\{output' k e})"
     output' k (Binder Implicit (NamedBinder id) ty e) = "(\{show id} : (\{output' k ty})) -> (\{output' k e})"

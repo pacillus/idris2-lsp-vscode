@@ -159,6 +159,14 @@ testCases =
         MkCase "MkDPair srjf" [
           "MkDPair :{p : a -> Type} -> (fst : a) -> p fst -> DPair a p",
           "srjf : B -> A"
+        ],
+        MkCase "(\\x => x) 10" [
+
+        ],
+        MkCase "MkDPair (\\y => fst (prfs y))" [
+          "Builtin.DPair.MkDPair : (fst : a) -> p fst -> DPair a p",
+          "Builtin.DPair.DPair.fst : DPair a p -> a",
+          "prfs : (y : b) -> (x : a ** f x = y)"
         ]
         -- MkCase "MkInverse finv" [
         --   "MkInverse : ({f : a -> b} -> {g : b -> a} -> ((x : a) -> g (f x) = x)) -> ((y : b) -> f (g y) = y) -> Inverse f g",

@@ -125,6 +125,8 @@ mutual
       <|>
         dependentPairConstructor optable
       <|>
+        anonymousFunction optable
+      <|>
         tOperators optable
 
     tOperators : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
@@ -222,6 +224,15 @@ mutual
         match SEArrow
         e <- tArrows optable
         pure $ BracketArrow sig e
+
+    anonymousFunction : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
+    anonymousFunction optable = 
+      do
+        match SEBackslash
+        id <- identifier
+        match SEDoubleArrow
+        e <-  top optable
+        pure $ AnonymousFunction id e
 
     -- specially parsed using optable
     -- includes infix function, infix operation, and equality

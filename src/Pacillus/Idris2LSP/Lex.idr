@@ -21,6 +21,7 @@ isNoType (Tok SEMember text) = False
 isNoType (Tok SEBackquote text) = True
 isNoType (Tok SEArrow text) = True
 isNoType (Tok SEDoubleArrow text) = True
+isNoType (Tok SEBackslash text) = True
 isNoType (Tok SEEqual text) = True
 isNoType (Tok SEColon text) = True
 isNoType (Tok SEComma text) = True

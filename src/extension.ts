@@ -206,9 +206,10 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
           return;
         }
 
-
+        console.log("code:".concat(code))
 
         var str : string = String(Pacillus_Idris2LSP_Lex_lexAndOutput(code))
+        console.log("str:".concat(str))
         var json = JSON.parse(str)
         var tops : number[] = json.pos.map((x : string) => parseInt(x));
         var sigs : string[] = new Array();
@@ -223,16 +224,18 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
             client
             .sendRequest('textDocument/hover', {textDocument: {uri: "file://" + uri}, position: {line: ln, character: ch + tops[i]}})
             .then((my_res: any) => {
-              console.log(my_res);
-              const splited: any[] = my_res.contents.value.split("\n");
-              var sig = String(splited[splited.length - 2].trim())
-              sigs.push(sig);
-              var str : string = String(Pacillus_Idris2LSP_Lex_lexAndOutput(sig));
-              console.log(str);
-              var json = JSON.parse(str);
-              console.log(json);
-              console.log(json.syms);
-              syms = syms.concat(json.syms);
+                console.log(my_res);
+                if(my_res != null) {
+                const splited: any[] = my_res.contents.value.split("\n");
+                var sig = String(splited[splited.length - 2].trim())
+                sigs.push(sig);
+                var str : string = String(Pacillus_Idris2LSP_Lex_lexAndOutput(sig));
+                console.log(str);
+                var json = JSON.parse(str);
+                console.log(json);
+                console.log(json.syms);
+                syms = syms.concat(json.syms);
+              }
               f(tops, i + 1, max);
             })
           } else {
@@ -265,7 +268,7 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
                 var inputobj : object = {
                   expr : code,
                   ops : ops,
-                  sigs : sigs
+                  sigs : sigs.filter(x => x != null)
                 };
                 console.log(inputobj);
                 console.log(JSON.stringify(inputobj));
@@ -274,7 +277,7 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
                     replDecorationType,
                     [{
                       range: editor.selection,
-                      hoverMessage: new MarkdownString().appendCodeblock(output, 'idris')
+                      hoverMessage: new MarkdownString().appendCodeblock(output, 'text')
                       // renderOptions: {
                       //   after: {
                       //     contentText: ' => ' + inlineReplPreviewFor(res.preview) + ' ',
