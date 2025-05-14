@@ -167,6 +167,49 @@ testCases =
           "Builtin.DPair.MkDPair : (fst : a) -> p fst -> DPair a p",
           "Builtin.DPair.DPair.fst : DPair a p -> a",
           "prfs : (y : b) -> (x : a ** f x = y)"
+        ],
+        MkCase "(\\x => prfi (fst (prfs (f x))) x (snd (prfs (f x))))" [
+          "prfi : (x : a) -> (y : a) -> f x = f y -> x = y",
+          "Builtin.DPair.DPair.fst : DPair a p -> a",
+          "prfs : (y : b) -> (x' : a ** f x' = y)",
+          "f : a -> b",
+          "Builtin.DPair.DPair.snd : (rec : DPair a p) -> p (fst rec)"
+        ],
+        MkCase "\\y => snd (prfs (f y))" [
+          "prfi : (x : a) -> (y : a) -> f x = f y -> x = y",
+          "Builtin.DPair.DPair.fst : DPair a p -> a",
+          "prfs : (y : b) -> (x' : a ** f x' = y)",
+          "f : a -> b",
+          "Builtin.DPair.DPair.snd : (rec : DPair a p) -> p (fst rec)"
+        ],
+        MkCase "snd (prfs (f x))" [
+          "prfi : (x : a) -> (y : a) -> f x = f y -> x = y",
+          "Builtin.DPair.DPair.fst : DPair a p -> a",
+          "prfs : (y : b) -> (x' : a ** f x' = y)",
+          "f : a -> b",
+          "Builtin.DPair.DPair.snd : (rec : DPair a p) -> p (fst rec)",
+          "x : _"
+        ],
+        MkCase "\\x_0 => prfi (fst (prfs (f x_0))) x_0" [
+          "prfi : (x_1 : a) -> (y : a) -> f x_1 = f y -> x_1 = y",
+          "Builtin.DPair.DPair.fst : DPair a p -> a",
+          "prfs : (y : b) -> (x_2 : a ** f x_2 = y)",
+          "f : a -> b",
+          "Builtin.DPair.DPair.snd : (rec : DPair a p) -> p (fst rec)"
+        ],
+        MkCase "prfi (fst (prfs (f x))) x (snd (prfs (f x)))" [
+          "prfi : (x : a) -> (y : a) -> f x = f y -> x = y",
+          "Builtin.DPair.DPair.fst : DPair a p -> a",
+          "prfs : (y : b) -> (x : a ** f x = y)",
+          "f : a -> b",
+          "Builtin.DPair.DPair.snd : (rec : DPair a p) -> p (fst rec)",
+          "x : _"
+        ],
+        MkCase "MkInverse f (\\y => fst (prfs y))" [
+          "prfs : (y : b) -> (x : a ** f x = y)",
+          "Builtin.DPair.DPair.fst : DPair a p -> a",
+          "Main.MkInverse : (f : (a -> b)) -> (g : (b -> a)) -> ((x : a) -> g (f x) = x) -> ((y : b) -> f (g y) = y) -> Inverse f g",
+          "f : a -> b"
         ]
         -- MkCase "MkInverse finv" [
         --   "MkInverse : ({f : a -> b} -> {g : b -> a} -> ((x : a) -> g (f x) = x)) -> ((y : b) -> f (g y) = y) -> Inverse f g",

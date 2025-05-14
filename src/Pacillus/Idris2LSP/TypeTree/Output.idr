@@ -30,6 +30,7 @@ namespace Desugared
     output' _ (Literal CharL x) = show x
     output' _ (Literal StringL x) = show x
     output' _ (ImplicitHole id _) = "?" ++ show id
+    output' _ (Assumption id n) = show id -- "#" ++ show id
 
     export
     output : Desugared WithHole -> String
@@ -46,6 +47,7 @@ Show (Desugared WithHole) where
     show (Literal CharL x) = show x
     show (Literal StringL x) = show x
     show (ImplicitHole x k) = "(Hole : \{show k}(\{show x}))"
+    show (Assumption x k) = "(Assumption : \{show k}(\{show x}))"
 
 namespace ExprSignature
     export

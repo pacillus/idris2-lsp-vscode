@@ -253,6 +253,7 @@ simpleExprTokenMap =
       (exact "}", SERBracket),
       (exact "`", SEBackquote),
       (exact ",", SEComma),
+      (exact "_", SEWildcard),
       (digits, SEIntLiteral),
       (doubleLit, SEDoubleLiteral),
       (charLit, SECharLiteral),

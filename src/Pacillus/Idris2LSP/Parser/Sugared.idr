@@ -180,12 +180,23 @@ mutual
         e <- tArrows optable
         pure $ Signature (MkIdentifier MemberId id) e
 
+    ignoreZero : Grammar state SimpleExprToken False ()
+    ignoreZero = 
+      (>>=) {c2 = False} (match SEIntLiteral)  (
+          \n =>
+            if n == 0
+              then Core.pure {state, tok = SimpleExprToken} ()
+              else fail {state, c = False} "non zero Type")
+      <|>
+        pure ()
+
     -- <arrow> ::= 
     --   | <operation> <SEArrow> <expr>
     --   | <SELParen> <signature> <SERParen> <SEArrow> <expr>
     arrow : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
     arrow optable =
       do
+        ignoreZero
         e1 <- tOperators optable
         match SEArrow
         e2 <- tArrows optable
@@ -193,6 +204,7 @@ mutual
       <|>
       do
         match SELParen
+        ignoreZero
         sig <- signature optable
         match SERParen
         match SEArrow
@@ -202,6 +214,7 @@ mutual
     darrow : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
     darrow optable =
       do
+        ignoreZero
         e1 <- tOperators optable
         match SEDoubleArrow
         e2 <- tArrows optable
@@ -209,6 +222,7 @@ mutual
       <|>
       do
         match SELParen
+        ignoreZero
         sig <- signature optable
         match SERParen
         match SEDoubleArrow
@@ -218,7 +232,8 @@ mutual
     barrow : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
     barrow optable = 
       do
-        match SELBracket
+        ignoreZero
+        match SELBracket -- {
         sig <- signature optable
         match SERBracket
         match SEArrow

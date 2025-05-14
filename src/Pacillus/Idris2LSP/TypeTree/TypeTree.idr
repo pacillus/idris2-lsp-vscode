@@ -24,6 +24,7 @@ replaceIndex index holes_count (Binder t id ty e) =
     Binder t id ty' e'
 replaceIndex index holes_count (Literal x y) = Literal x y
 replaceIndex index holes_count e@(ImplicitHole _ _) = e
+replaceIndex index holes_count e@(Assumption _ _) = e
 
 toWithHole : Nat -> Desugared NoHole -> (Nat, Desugared WithHole)
 toWithHole holes_count (Constant x) = (holes_count, Constant x)
@@ -83,6 +84,7 @@ openImplicitHoles holes_count (Binder Implicit _ _ e) =
     openImplicitHoles (S holes_count) $ replaceIndex 0 holes_count e
 openImplicitHoles holes_count e@(Literal _ _) = (holes_count, e)
 openImplicitHoles holes_count e@(ImplicitHole _ _) = (holes_count, e)
+openImplicitHoles holes_count e@(Assumption _ _) = (holes_count, e)
 
 Constraints : Type
 Constraints = List (Desugared WithHole, Desugared WithHole)
@@ -109,6 +111,7 @@ substituteToImplicit k sub_with (Literal t x) = Literal t x
 substituteToImplicit k sub_with e@(ImplicitHole _ j) with (k == j)
   substituteToImplicit k sub_with e@(ImplicitHole _ j) | False = e
   substituteToImplicit k sub_with e@(ImplicitHole _ j) | True = sub_with
+substituteToImplicit k sub_with e@(Assumption _ _) = e
 
 substituteToIndex : Nat -> Desugared WithHole -> Desugared WithHole -> Desugared WithHole
 substituteToIndex k sub_with e@(Constant _) = e
@@ -129,9 +132,37 @@ substituteToIndex k sub_with (Binder t id ty e) =
     Binder t id ty' e'
 substituteToIndex k sub_with e@(Literal _ _) = e
 substituteToIndex k sub_with e@(ImplicitHole _ _) = e
+substituteToIndex k sub_with e@(Assumption _ _) = e
 
 substituteToConstraints : Nat -> Desugared WithHole -> Constraints -> Constraints
 substituteToConstraints k sub_with xs = map (\constraint => (substituteToImplicit k sub_with (fst constraint), substituteToImplicit k sub_with $ snd constraint)) xs
+
+binderToAssumptionMain : Nat -> Desugared WithHole -> Desugared WithHole
+binderToAssumptionMain _ e@(Constant _) = e
+binderToAssumptionMain j e@(Index id k) with (j == k)
+  binderToAssumptionMain j e@(Index id k) | False = e
+  binderToAssumptionMain j e@(Index id k) | True = Assumption id 0
+binderToAssumptionMain k (Application f x) = Application (binderToAssumptionMain k f) (binderToAssumptionMain k x)
+binderToAssumptionMain k (Binder bty id ty e) = Binder bty id (binderToAssumptionMain k ty) (binderToAssumptionMain (S k) e)
+binderToAssumptionMain _ e@(Literal _ _) = e
+binderToAssumptionMain _ e@(ImplicitHole _ _) = e
+binderToAssumptionMain _ (Assumption id k) = Assumption id (S k)
+
+binderToAssumption : Desugared WithHole -> Desugared WithHole
+binderToAssumption x = binderToAssumptionMain 0 x
+
+assumptionToBinderMain : Nat -> Desugared WithHole -> Desugared WithHole
+assumptionToBinderMain _ e@(Constant _) = e
+assumptionToBinderMain _ e@(Index _ _) = e
+assumptionToBinderMain k (Application x y) = Application (assumptionToBinderMain k x) (assumptionToBinderMain k y)
+assumptionToBinderMain k (Binder bty id ty e) = Binder bty id (assumptionToBinderMain k ty) (assumptionToBinderMain (S k) e)
+assumptionToBinderMain k e@(Literal t x) = e
+assumptionToBinderMain k e@(ImplicitHole _ _) = e
+assumptionToBinderMain k (Assumption id 0) = Index id k
+assumptionToBinderMain j (Assumption id (S k)) = Assumption id k
+
+assumptionToBinder : Desugared WithHole -> Desugared WithHole
+assumptionToBinder x = assumptionToBinderMain 0 x
 
 unify : Constraints -> Either String Constraints
 unify [] = Right []
@@ -160,15 +191,30 @@ unify ((e1@(Literal StringL x), e2@(Literal StringL y)) :: xs) with (x == y)
   unify ((e1@(Literal StringL x), e2@(Literal StringL y)) :: xs) | True = unify xs
 unify ((l@(ImplicitHole _ k), r) :: xs) =
   let
-    substituteToImplicitd = substituteToConstraints k r xs -- TODO Maybe 
+    substitutedToImplicit = substituteToConstraints k r xs -- TODO Maybe 
   in
-    unify substituteToImplicitd >>= (\xs => Right $ (l, r) :: xs)
+    unify substitutedToImplicit >>= (\xs => Right $ (l, r) :: xs)
 unify ((l, r@(ImplicitHole _ k)) :: xs) = 
   let
-    substituteToImplicitd = substituteToConstraints k l xs
+    substitutedToImplicit = substituteToConstraints k l xs
   in
-    unify substituteToImplicitd >>= (\xs => Right $ (l, r) :: xs)
+    unify substitutedToImplicit >>= (\xs => Right $ (l, r) :: xs)
+unify ((e1@(Assumption _ j), e2@(Assumption _ k)) :: xs) with (j == k)
+  unify ((e1@(Assumption _ j), e2@(Assumption _ k)) :: xs) | False = unifyError e1 e2
+  unify ((e1@(Assumption _ j), e2@(Assumption _ k)) :: xs) | True = unify xs
 unify ((e1, e2) :: xs) = unifyError e1 e2
+
+simpleEval : Desugared WithHole -> Desugared WithHole
+simpleEval e@(Constant x) = e
+simpleEval e@(Index x k) = e
+simpleEval (Application (Binder Lambda _ _ applying) applied) = substituteToIndex 0 applied applying
+simpleEval (Application f x) = Application (simpleEval f) (simpleEval x)
+simpleEval (Binder bty id ty e) = Binder bty id (simpleEval ty) (simpleEval e)
+simpleEval e@(Literal t x) = e
+simpleEval e@(ImplicitHole x k) = e
+simpleEval e@(Assumption x k) = e
+-- simpleEval (Application (Binder Lambda _ _ applying) applied) = substituteToIndex 0 applied applying
+-- simpleEval e = e
 
 applyConstraints : Constraints -> Desugared WithHole -> Either String (Desugared WithHole)
 applyConstraints [] e = Right e
@@ -193,9 +239,9 @@ getAppliedType (MkExprSignature f (Binder Pi _ argty retty)) (MkExprSignature x 
     name = Application f x
   in
   do 
-    constraints <-  unify [(argty, ty2)]
+    constraints <- unify [(argty, ty2)]
     retty'' <- applyConstraints constraints retty'
-    Right $ MkExprSignature name retty''
+    Right $ MkExprSignature name (simpleEval retty'')
 getAppliedType (MkExprSignature _ _) (MkExprSignature _ _) = Left "Non appliable form found in application"
 
 skipAuto : TypeTree -> TypeTree
@@ -208,36 +254,40 @@ typeId = MkExprSignature (Constant $ MkIdentifier NameId "Type") $ Constant $ Mk
 
 getPartialTypeMain : List (Desugared WithHole) -> List (DesugaredSignature WithHole) -> Desugared WithHole -> Either String TypeTree
 getPartialTypeMain _ [] (Constant y) = Left $ "could not find the type of identifier " ++ show y
-getPartialTypeMain binder_types (MkDSig x ty :: xs) e@(Constant y) = 
+getPartialTypeMain assumption_types (MkDSig x ty :: xs) e@(Constant y) = 
   if x == y
     then Right $ Start $ MkExprSignature e ty
-    else getPartialTypeMain binder_types xs e
-getPartialTypeMain binder_types _ e@(Index _ k) with (getAt k binder_types)
-  getPartialTypeMain binder_types _ e@(Index _ k) | Nothing = Left "corrputedly bound variable found"
-  getPartialTypeMain binder_types _ e@(Index _ k) | (Just x) = Right $ Start $ MkExprSignature e x -- Eq Int => \y : b => 1
-getPartialTypeMain binder_types sigs e@(Application f x) = 
+    else getPartialTypeMain assumption_types xs e
+getPartialTypeMain assumption_types _ e@(Index _ k) with (getAt k assumption_types)
+  getPartialTypeMain assumption_types _ e@(Index _ k) | Nothing = Left "corrputedly bound variable found"
+  getPartialTypeMain assumption_types _ e@(Index _ k) | (Just x) = Right $ Start $ MkExprSignature e x -- Eq Int => \y : b => 1
+getPartialTypeMain assumption_types sigs e@(Application f x) = 
   do  
-    f' <- getPartialTypeMain binder_types sigs f
-    x' <- getPartialTypeMain binder_types sigs x
+    f' <- getPartialTypeMain assumption_types sigs f
+    x' <- getPartialTypeMain assumption_types sigs x
     -----
     f'' <- Right $ skipAuto f'
     x'' <- Right $ skipAuto x'
     -- ==> let f'' = skipAuto f'; x'' = skipAuto x' in
     appty <- getAppliedType (getSubgoal f'') (getSubgoal x'')
-    Right $ Subgoal [f'', x''] appty
+    Right $  Subgoal [f'', x''] appty
 
-getPartialTypeMain binder_types _ e@(Binder Pi y z w) = Right $ Start typeId
-getPartialTypeMain binder_types sigs e@(Binder Lambda id ty e2) = 
+getPartialTypeMain assumption_types _ e@(Binder Pi y z w) = Right $ Start typeId
+getPartialTypeMain assumption_types sigs e@(Binder Lambda id ty e2) = 
   do
-    e2' <- getPartialTypeMain (ty :: binder_types) sigs e2
-    Right $ Subgoal [e2'] $ (MkExprSignature e (Binder Pi id ty $ (getSubgoal e2').type))
-getPartialTypeMain binder_types _ e@(Binder Auto y z w) = Right $ Start typeId
-getPartialTypeMain binder_types _ e@(Binder Implicit y z w) = Right $ Start typeId
+    typetree <- getPartialTypeMain (ty :: assumption_types) sigs (binderToAssumption e2)
+    retty <- Right $ assumptionToBinder $ (getSubgoal typetree).type
+    Right $ Subgoal [typetree] $ (MkExprSignature e (Binder Pi id ty retty))
+getPartialTypeMain assumption_types _ e@(Binder Auto y z w) = Right $ Start typeId
+getPartialTypeMain assumption_types _ e@(Binder Implicit y z w) = Right $ Start typeId
 getPartialTypeMain _ _ e@(Literal IntegerL x) = Right $ Start $ MkExprSignature e $ Constant $ MkIdentifier NameId "Integer"
 getPartialTypeMain _ _ e@(Literal DoubleL x) = Right $ Start $ MkExprSignature e $ Constant $ MkIdentifier NameId "Double"
 getPartialTypeMain _ _ e@(Literal CharL x) = Right $ Start $ MkExprSignature e $ Constant $ MkIdentifier NameId "Char"
 getPartialTypeMain _ _ e@(Literal StringL x) = Right $ Start $ MkExprSignature e $ Constant $ MkIdentifier NameId "String"
 getPartialTypeMain _ _ e@(ImplicitHole _ k) = ?getPartialTypeMain_rhs_5
+getPartialTypeMain assumption_types _ e@(Assumption _ k) with (getAt k assumption_types)
+  getPartialTypeMain assumption_types _ e@(Assumption _ k) | Nothing = Left "corrputed assumption"
+  getPartialTypeMain assumption_types _ e@(Assumption _ k) | (Just ty) = Right $ Start (MkExprSignature e ty)
 
 convertSigs : Nat -> List (DesugaredSignature WithHole) -> List (DesugaredSignature NoHole) -> List (DesugaredSignature WithHole)
 convertSigs n acc [] = acc
@@ -258,9 +308,6 @@ getPartialType sigs x =
     sigs' = convertSigs n' [] sigs
   in
     getPartialTypeMain [] sigs' x''
-
-
-
 
 
 -- f : a -> Type

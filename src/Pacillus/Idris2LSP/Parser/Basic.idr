@@ -124,6 +124,7 @@ namespace Desugared
         Literal : (t : LiteralType) -> LiteralTypeOf t -> Desugared dt
         Wildcard : Desugared NoHole -- _
         ImplicitHole : Identifier -> Nat -> Desugared WithHole -- 
+        Assumption : Identifier -> Nat -> Desugared WithHole
     
     -- Show (Desugared WithHole) where
     --     showPrec (Constant x y) = ?rhs_0
