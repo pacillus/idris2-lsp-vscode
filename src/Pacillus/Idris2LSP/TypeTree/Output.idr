@@ -11,30 +11,88 @@ namespace Identifier
     output (MkIdentifier OperatorId str) = "(\{str})"
     output (MkIdentifier MemberId str) = "." ++ str
 
+data SyntaxLevel = Term | Application | Operator | Arrows 
+
+Eq SyntaxLevel where
+ Term == Term = True
+ Application == Application = True
+ Operator == Operator = True
+ Arrows == Arrows = True
+ _ == _ = False
+
+Ord SyntaxLevel where
+    compare Term Term = EQ
+    compare Term r = LT
+    compare Application Term = GT
+    compare Application Application = EQ
+    compare Application r = LT
+    compare Operator Arrows = LT
+    compare Operator Operator = EQ
+    compare Operator r = GT
+    compare Arrows Arrows = EQ
+    compare Arrows y = GT
+
+withParen : Bool -> String -> String
+withParen False str = str
+withParen True str = "(\{str})"
+
 namespace Desugared
-    output' : Nat -> Desugared WithHole -> String
-    output' k (Constant id) = output id
-    output' k (Index id _) = show id
-    output' k (Application (Application (Constant (MkIdentifier OperatorId w)) z) y) = "(\{output' k z} \{w} \{output' k y})"
-    output' k (Application (Constant (MkIdentifier MemberId w)) y) = "(\{output' k y}.\{show w})"
-    output' k (Application x y) = "(\{output' k x} \{output' k y})"
-    output' k (Binder Pi (NamedBinder id) ty e) = "((\{show id} : \{output' k ty}) -> \{output' k e})"
-    output' k (Binder Pi AnonymousBinder ty e) = "(\{output' k ty} -> \{output' k e})"
-    output' k (Binder Lambda id ty e) = "(\\\{show id} : \{output' k ty} => \{output' k e})"
-    output' k (Binder Auto (NamedBinder id) ty e) = "(\{show id} : (\{output' k ty})) => (\{output' k e})"
-    output' k (Binder Auto AnonymousBinder ty e) = "(\{output' k ty}) => (\{output' k e})"
-    output' k (Binder Implicit (NamedBinder id) ty e) = "(\{show id} : (\{output' k ty})) -> (\{output' k e})"
-    output' k (Binder Implicit AnonymousBinder ty e) = "(_ : \{output' k ty}) -> (\{output' k e})"
+    output' : SyntaxLevel -> Desugared WithHole -> String
+    output' _ (Constant id) = output id
+    output' _ (Index id _) = show id
+
+    output' level (Application (Application (Constant (MkIdentifier OperatorId "===")) z) y) = 
+        withParen (level < Operator) ("\{output' Application z} = \{output' Application y}")
+    output' level (Application (Application (Constant (MkIdentifier OperatorId w)) z) y) = 
+        withParen (level < Operator) (output' Application z ++ " " ++ w ++ " " ++ output' Application y)
+    output' level (Application (Constant (MkIdentifier MemberId w)) y) = 
+        withParen (level < Term) "\{output' Term y}.\{show w}"
+    output' level (Application x@(Application (Constant str) z) y@(Binder Lambda w v s)) with (str == MkIdentifier NameId "DPair")
+      output' level (Application x@(Application (Constant str) z) y@(Binder Lambda w v s)) | False = 
+        withParen (level < Application) "\{output' Application x} \{output' Term y}"
+      output' level (Application x@(Application (Constant _) z) y@(Binder Lambda w _ s)) | True =
+        "(\{show w} : \{output' Arrows z} ** \{output' Arrows s})"
+    output' level (Application x@(Application (Constant str) z) y) with (str)
+      output' level (Application x@(Application (Constant _) z) y) | MkIdentifier NameId "MkDPair" =
+        "(\{output' Arrows z} ** \{output' Arrows y})"
+      output' level (Application x@(Application (Constant str) z) y) | MkIdentifier NameId "Pair" = 
+        "(\{output' Arrows z}, \{output' Arrows y})"
+      output' level (Application x@(Application (Constant str) z) y) | id = 
+        withParen (level < Application) "\{output' Application x} \{output' Term y}"
+
+    output' level (Application x y) = 
+        withParen (level < Application) "\{output' Application x} \{output' Term y}"
+    output' level (Binder Pi (NamedBinder id) ty e) = 
+        withParen (level < Arrows) "(\{show id} : \{output' Arrows ty}) -> \{output' Arrows e}"
+    output' level (Binder Pi AnonymousBinder ty e) = 
+        withParen (level < Arrows) "\{output' Operator ty} -> \{output' Arrows e}"
+    output' level (Binder Lambda id ty@(ImplicitHole (MkIdentifier x str) k) e) with (str == "_")
+      output' level (Binder Lambda id ty@(ImplicitHole (MkIdentifier x str) k) e) | False =
+        withParen (level < Arrows) "\\\{show id} : \{output' Arrows ty} => \{output' Arrows e}"
+      output' level (Binder Lambda id ty@(ImplicitHole (MkIdentifier x str) k) e) | True = 
+        withParen (level < Arrows) "\\\{show id} => \{output' Arrows e}"
+    output' level (Binder Lambda id ty e) =
+        withParen (level < Arrows) "\\\{show id} : \{output' Arrows ty} => \{output' Arrows e}"
+    output' level (Binder Auto (NamedBinder id) ty e) = 
+        withParen (level < Arrows) "(\{show id} : (\{output' Arrows ty})) => \{output' Arrows e}"
+    output' level (Binder Auto AnonymousBinder ty e) = 
+        withParen (level < Arrows) "\{output' Operator ty} => \{output' Arrows e}"
+    output' level (Binder Implicit (NamedBinder id) (ImplicitHole _ _) e) = 
+        withParen (level < Arrows) "\{show id} -> \{output' Arrows e}"
+    output' level (Binder Implicit (NamedBinder id) ty e) = 
+        withParen (level < Arrows) "(\{show id} : \{output' Arrows ty}) -> \{output' Arrows e}"
+    output' level (Binder Implicit AnonymousBinder ty e) = 
+        withParen (level < Arrows) "(_ : \{output' Arrows ty}) -> (\{output' Arrows e})"
     output' _ (Literal IntegerL x) = show x
     output' _ (Literal DoubleL x) = show x
     output' _ (Literal CharL x) = show x
     output' _ (Literal StringL x) = show x
-    output' _ (ImplicitHole id _) = "?" ++ show id
+    output' _ (ImplicitHole id _) = show id -- "?" ++ show id --
     output' _ (Assumption id n) = show id -- "#" ++ show id
 
     export
     output : Desugared WithHole -> String
-    output x = output' 0 x
+    output x = output' Arrows x
 
 public export
 Show (Desugared WithHole) where
@@ -62,4 +120,4 @@ namespace TypeTree
       let
         pres = map ((++) "| ") $ foldl (++) [] $ map (lines . output) xs
       in
-        unlines $ output x :: "----------" :: pres
+        unlines $ output x :: "+---------" :: pres
