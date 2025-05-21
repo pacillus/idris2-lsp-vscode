@@ -73,7 +73,10 @@ desugarWithContext xs (AnonymousFunction id e) =
     Binder Lambda (NamedBinder id) Wildcard e' |
     e' <- desugarWithContext (NamedBinder id :: xs) e
   ]
-desugarWithContext xs (Literal a x) = pure $ Literal a x
+desugarWithContext xs (Literal IntegerL x) = pure $ Application (Constant (MkIdentifier NameId "fromInteger")) (Literal IntegerL x)
+desugarWithContext xs (Literal DoubleL x) = pure $ Application (Constant (MkIdentifier NameId "fromDouble")) (Literal DoubleL x)
+desugarWithContext xs (Literal CharL x) = pure $ Application (Constant (MkIdentifier NameId "fromChar")) (Literal CharL x)
+desugarWithContext xs (Literal StringL x) = pure $ Application (Constant (MkIdentifier NameId "fromString")) (Literal StringL x) -- pure $ Literal a x
 desugarWithContext xs Wildcard = pure $ Wildcard
 desugarWithContext xs UnitSugar = (Constant $ MkIdentifier NameId "Unit") ::: [Constant $ MkIdentifier NameId "MkUnit"]
 desugarWithContext xs (PairSugar x y) =

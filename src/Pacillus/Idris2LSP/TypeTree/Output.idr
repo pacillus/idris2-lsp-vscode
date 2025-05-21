@@ -59,7 +59,14 @@ namespace Desugared
         "(\{output' Arrows z}, \{output' Arrows y})"
       output' level (Application x@(Application (Constant str) z) y) | id = 
         withParen (level < Application) "\{output' Application x} \{output' Term y}"
-
+    output' level (Application (Constant $ MkIdentifier NameId "fromInteger") (Literal IntegerL n)) = 
+        "\{show n}"
+    output' level (Application (Constant $ MkIdentifier NameId "fromDouble") (Literal DoubleL n)) = 
+        "\{show n}"
+    output' level (Application (Constant $ MkIdentifier NameId "fromChar") (Literal CharL n)) = 
+        "\{show n}"
+    output' level (Application (Constant $ MkIdentifier NameId "fromString") (Literal StringL n)) = 
+        "\{show n}"
     output' level (Application x y) = 
         withParen (level < Application) "\{output' Application x} \{output' Term y}"
     output' level (Binder Pi (NamedBinder id) ty e) = 

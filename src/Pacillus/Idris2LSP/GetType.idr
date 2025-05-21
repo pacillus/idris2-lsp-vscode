@@ -115,6 +115,10 @@ process str =
           "Builtin.DPair.DPair : (a : Type) -> (a -> Type) -> Type" ::
           "Builtin.DPair.MkDPair : (fst : a) -> p fst -> DPair a p" :: 
           "Builtin.Pair : Type -> Type -> Type" ::
+          "Prelude.fromInteger : Num ty => Integer -> ty" ::
+          "Builtin.fromDouble : FromDouble ty => Double -> ty" ::
+          "Builtin.fromChar : FromChar ty => Char -> ty" ::
+          "Builtin.fromString : FromString ty => String -> ty" ::
             types)
 
 main : IO ()
