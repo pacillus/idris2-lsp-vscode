@@ -110,7 +110,7 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
             (res) => {
               const code = res as string;
               return {
-                hover: new MarkdownString().appendCodeblock(code, 'idris'),
+                hover: new MarkdownString().appendCodeblock(code, 'text'),
                 preview: code
               };
             },
@@ -277,7 +277,7 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
                     replDecorationType,
                     [{
                       range: editor.selection,
-                      hoverMessage: new MarkdownString().appendCodeblock(output, 'text')
+                      hoverMessage: new MarkdownString().appendCodeblock(output, 'idris')
                       // renderOptions: {
                       //   after: {
                       //     contentText: ' => ' + inlineReplPreviewFor(res.preview) + ' ',

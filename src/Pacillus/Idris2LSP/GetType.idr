@@ -111,8 +111,11 @@ process str =
     (Left err) => err
     (Right info) =>
       let (expr, opmap, types) = info in
-        inferType expr opmap types
-
+        inferType expr opmap (
+          "Builtin.DPair.DPair : (a : Type) -> (a -> Type) -> Type" ::
+          "Builtin.DPair.MkDPair : (fst : a) -> p fst -> DPair a p" :: 
+          "Builtin.Pair : Type -> Type -> Type" ::
+            types)
 
 main : IO ()
 main =
