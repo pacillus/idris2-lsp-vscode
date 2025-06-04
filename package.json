@@ -53,8 +53,8 @@
 				"icon": "$(preview)"
 			},
 			{
-				"command": "idris2-lsp.pacillus.test",
-				"title": "Idris: Infer type of selection",
+				"command": "idris2-lsp.pacillus.derivetype",
+				"title": "Idris: Show the Type Derivation Tree of selection",
 				"enablement": "editorLangId == idris",
 				"icon": "$(preview)"
 			},

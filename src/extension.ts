@@ -192,7 +192,7 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
   );
   context.subscriptions.push(
     commands.registerTextEditorCommand(
-      'idris2-lsp.pacillus.test',
+      'idris2-lsp.pacillus.derivetype',
       (editor: TextEditor, _edit: TextEditorEdit, customCode) => {
         const code: string = customCode || editor.document.getText(editor.selection);
         const uri = editor.document.uri.fsPath
@@ -225,7 +225,7 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
         var ops : object[] = new Array();
         var syms :string[] = json.syms;
 
-        
+        // an odd code reproducing the for loop
         // magic code that makes all well
         // made with recursion
         const f = (tops : {line : number, character : number} [], i: number, max: number) => {
