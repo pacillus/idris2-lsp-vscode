@@ -11,7 +11,6 @@ operatorToIdentifier (MkOperator str) = MkIdentifier OperatorId str
 MemberToIdentifier : Member -> Identifier
 MemberToIdentifier (MkMember str) = MkIdentifier MemberId str
 
-
 indexMain : Nat -> List BinderName -> Identifier -> Maybe Nat 
 indexMain _ [] _ = Nothing
 indexMain k (NamedBinder x :: xs) y with (x == y)
@@ -22,11 +21,8 @@ indexMain k (AnonymousBinder :: xs) y = indexMain (S k) xs y
 index : List BinderName -> Identifier -> Maybe Nat
 index xs x = indexMain 0 xs x
 
-
-
-
 -- List BinderName is the list of binder-identifiers from inside
---   it is used to index the variables
+-- They are used to index the variables
 export
 desugarWithContext : List BinderName -> Sugared Expr -> List1 (Desugared NoHole)
 desugarWithContext xs (IdentifierTerm x) with (index xs x)
@@ -172,26 +168,6 @@ getImplicitList ids (DependentPairConstructorSugar e1 e2) =
     nub $ getImplicitList ids e1 ++ getImplicitList ids e2
 getImplicitList ids (EqualSugar e1 e2) = nub $ getImplicitList ids e1 ++ getImplicitList ids e2
 getImplicitList ids (MemberSugar e _) = nub $ getImplicitList ids e
--- getImplicitList : Desugared NoHole -> List Identifier
--- getImplicitList (Constant x@(MkIdentifier NameId str)) =
---   let
---     isHeadLower : String -> Bool
---     isHeadLower str =
---       case unpack str of
---         [] => False
---         (x :: xs) => isLower x
---   in
---   if isHeadLower str
---     then [x]
---     else []
--- getImplicitList (Constant _) = []
--- getImplicitList (Index _ _) = []
--- getImplicitList (Application (Constant _) x) = getImplicitList x
--- getImplicitList (Application f x) = getImplicitList f ++ getImplicitList x
--- getImplicitList (Binder _ (NamedBinder id) ty e) = getImplicitList ty ++ getImplicitList e --no need to delete id from "getImplicitList" since they are already deleted by desugaring
--- getImplicitList (Binder _ AnonymousBinder ty e) = getImplicitList ty ++ getImplicitList e
--- getImplicitList (Literal _ _) = []
--- getImplicitList WildCard = []
 
 addImplictsFromList : List Identifier -> Sugared Expr -> Sugared Expr
 addImplictsFromList [] e = e

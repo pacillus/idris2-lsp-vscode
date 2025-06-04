@@ -1,5 +1,6 @@
 module Pacillus.Idris2LSP.Parser.Basic
 
+-- Identifiers to tell which type the Literal is
 public export
 data LiteralType = IntegerL | DoubleL | CharL | StringL
 
@@ -32,8 +33,6 @@ Show Identifier where
 export
 Eq Identifier where
     (MkIdentifier tl strl) == (MkIdentifier tr strr) = tl == tr && strl == strr
-
-
 
 public export
 data Operator = MkOperator String
@@ -79,7 +78,6 @@ namespace Desugared
     -- \x => e
     -- (x : a) => b
     -- {x : a} -> b(x)
-    -- a -> b
 
     public export
     Eq BinderType where
@@ -98,8 +96,8 @@ namespace Desugared
 
     public export
     data BinderName : Type where
-        NamedBinder : Identifier -> BinderName
-        AnonymousBinder : BinderName
+        NamedBinder : Identifier -> BinderName -- \x => 
+        AnonymousBinder : BinderName -- \_ =>
 
     public export
     Show BinderName where
@@ -124,24 +122,7 @@ namespace Desugared
         Literal : (t : LiteralType) -> LiteralTypeOf t -> Desugared dt
         Wildcard : Desugared NoHole -- _
         ImplicitHole : Identifier -> Nat -> Desugared WithHole -- 
-        Assumption : Identifier -> Nat -> Desugared WithHole
-    
-    -- Show (Desugared WithHole) where
-    --     showPrec (Constant x y) = ?rhs_0
-    --     show (Index id k) = show id
-    --     show (Application x y) = ?rhs_2
-    --     show (Binder Pi (NamedBinder id) ty e) = "(" ++ show id ++ " : " ++show ty ++ ") -> " ++ show e
-    --     show (Binder Pi AnonymousBinder ty e) = show ty ++ " -> " ++ show e
-    --     show (Binder Lambda (NamedBinder x) z w) = ?rhs_9
-    --     show (Binder Lambda AnonymousBinder z w) = ?rhs_10
-    --     show (Binder Auto y z w) = ?rhs_6
-    --     show (Binder Implicit y z w) = ?rhs_7
-    --     show (Literal IntegerL x) = show x
-    --     show (Literal DoubleL x) = show x
-    --     show (Literal CharL x) = show x
-    --     show (Literal StringL x) = show x
-    --     show (ImplicitHole id k) = "?" ++ show id
-    
+        Assumption : Identifier -> Nat -> Desugared WithHole  
 
     public export
     data DesugaredSignature : DesugaredType -> Type where

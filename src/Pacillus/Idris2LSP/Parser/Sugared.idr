@@ -7,6 +7,9 @@ import Text.Parser.Expression
 import Pacillus.Idris2LSP.Parser.Basic
 import Pacillus.Idris2LSP.Parser.Lexer
 
+-- this program was made referencing "Documentation for the Idris 2 Language/Cookbook/Parsing"
+-- https://idris2.readthedocs.io/en/latest/cookbook/parsing.html
+
 -- information of operator used for parsing
 public export
 data OpRecord = MkOpRecord String Nat Assoc
@@ -21,13 +24,14 @@ sortOpMap opmap = (sortBy compRec opmap)
     compRec : OpRecord -> OpRecord -> Ordering
     compRec (MkOpRecord str n1 x) (MkOpRecord str1 n2 y) = compare n1 n2
 
-    -- ---Parser related functions---
+-- ---Parser related functions---
 -- defining what Tokens to ignore
 export
 ignored : WithBounds SimpleExprToken -> Bool
 ignored (MkBounded (Tok SEIgnore _) _ _) = True
 ignored _ = False
 
+-- ---Parsers---
 -- <infixOperator> ::= <SESymbol>
 infixOperator : (symbol_name : String) -> Grammar state SimpleExprToken True (Sugared Expr -> Sugared Expr -> Sugared Expr)
 infixOperator symbol_name =
@@ -105,7 +109,7 @@ appOp =
     pure $ \x, y => Application x y
 
 -- the main parser
--- starts in expr
+-- starts in top
 mutual
     -- <simpleExpr> ::=
     --     <arrow>

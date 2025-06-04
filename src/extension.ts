@@ -262,7 +262,6 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
                 client
                 .sendRequest("workspace/executeCommand", { command: "repl", arguments: [":doc (" + syms[i] + ")"]})
                 .then((my_res: any) => {
-                  // console.log(my_res);
                   const splitedbyn: string[] = my_res.toString().split("\n");
                   // search for "Fixity Declaration"
                   var infopos : integer = 0;
@@ -272,11 +271,11 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
                     }
                   }
                   const splitedbyspace: string[] = splitedbyn[infopos].split(" ").filter((x : string) => x !== "");
-                  // console.log(splitedbyspace);
+                  
                   var assoc : string = splitedbyspace[2];
-                  // console.log(assoc);
+                  
                   var prec : string = splitedbyspace[5];
-                  // console.log(prec);
+                  
                   var op : object = {symbol : syms[i],assoc : assoc, prec : prec};
                   ops.push(op);
                   g(syms, i + 1, max);
@@ -308,43 +307,7 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
             g(syms, 0, syms.length);
           }
         };
-        // console.log(tops);
         f(tops, 0, tops.length);
-
-        
-        // client
-        //   .sendRequest("workspace/executeCommand", { command: "repl", arguments: [code] })
-        //   .then(
-        //     (res) => {
-        //       const code = res as string;
-        //       return {
-        //         hover: new MarkdownString().appendCodeblock(sigs.toString(), 'idris'),
-        //         preview: sigs.toString()
-        //       };
-        //     },
-        //     (e) => {
-        //       const error = `${e}`;
-        //       return {
-        //         hover: new MarkdownString().appendText(error),
-        //         preview: error
-        //       };
-        //     }
-        //   )
-        //   .then((res) => {
-        //     console.log(`>${res.preview}<`);
-        //     editor.setDecorations(
-        //       replDecorationType,
-        //       [{
-        //         range: editor.selection,
-        //         hoverMessage: res.hover,
-        //         renderOptions: {
-        //           after: {
-        //             contentText: ' => ' + inlineReplPreviewFor(res.preview) + ' ',
-        //           },
-        //         }
-        //       }]
-        //     );
-        //   });
       }
     )
   );

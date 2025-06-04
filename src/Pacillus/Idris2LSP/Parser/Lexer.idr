@@ -107,7 +107,7 @@ disposeUntilLparen str = last $ split (\c => c == '(') str
 
 -- TokenType implementation contains defining their value type and value
 -- symbol and identifier has their value as its own id.
--- nat has the corresponding Nat value.
+-- ~Literal has the corresponding Literal Type value.
 export
 TokenKind SimpleExprTokenKind where
   TokType SEIdentifier = String
@@ -203,12 +203,9 @@ doubleLit
 
 
 -- from cookbook
--- need a support on underscore
 nameLexer : Lexer
 nameLexer =
     alpha <+> many (alphaNum <|> is '_' <|> is '\'')
-  -- <|>
-  --   is '(' <+> many spaces <+> symbolLexer <+> many spaces <+> is ')'
 
 memberLexer : Lexer
 memberLexer = is '.' <+> nameLexer
@@ -229,7 +226,7 @@ idLexer =
 -- <SELParen> ::= \(
 -- <SERParen> ::= \)
 -- <SEIdentifier> ::= [a-zA-Z][a-zA-Z0-9]*
--- <SEIgnore> ::= [空白文字]+
+-- <SEIgnore> ::= [spaces]+
 -- <SEBackquote> ::= `
 -- <SEIntLiteral> ::= [0-9]+
 -- <SEDoubleLiteral> ::= [0-9]+\\.[0-9]([e][+-]?[0-9]+)?
