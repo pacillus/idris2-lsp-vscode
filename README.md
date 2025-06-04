@@ -23,7 +23,7 @@ To configure the command used to start the Idris language server, `idris2-lsp` b
 
 ## Debugging the extension
 
-- Run `npm install` in this folder
+- Run `bash compile.sh` in this folder
 - Open VS Code on this folder
 - Press `Ctrl+Shift+D` / `Cmd+Shift+D` to reveal the everything Debug viewlet
 - Select `Launch Client` from the drop down
