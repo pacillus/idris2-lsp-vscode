@@ -207,11 +207,20 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
         }
 
         console.log("code:".concat(code))
+        var targetInfo : object = {
+          start : {
+            line : String(ln),
+            character : String(ch)
+          },
+          text : code
+        }
 
-        var str : string = String(Pacillus_Idris2LSP_Lex_lexAndOutput(code))
-        console.log("str:".concat(str))
+        console.log("sending to idris:".concat(JSON.stringify(targetInfo)))
+
+        var str : string = String(Pacillus_Idris2LSP_Lex_lexAndOutput(JSON.stringify(targetInfo)))
+        console.log("informations from idris:".concat(str))
         var json = JSON.parse(str)
-        var tops : number[] = json.pos.map((x : string) => parseInt(x));
+        var tops : {line : number, character : number}[] = json.pos.map((x : {line : string, character : string}) => ({line : parseInt(x.line), character : parseInt(x.character)}));
         var sigs : string[] = new Array();
         var ops : object[] = new Array();
         var syms :string[] = json.syms;
@@ -219,17 +228,25 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
         
         // magic code that makes all well
         // made with recursion
-        const f = (tops : number [], i: number, max: number) => {
+        const f = (tops : {line : number, character : number} [], i: number, max: number) => {
           if (i < max) {
             client
-            .sendRequest('textDocument/hover', {textDocument: {uri: "file://" + uri}, position: {line: ln, character: ch + tops[i]}})
+            .sendRequest('textDocument/hover', {textDocument: {uri: "file://" + uri}, position: {line: tops[i].line, character: tops[i].character}})
             .then((my_res: any) => {
                 console.log(my_res);
                 if(my_res != null) {
                 const splited: any[] = my_res.contents.value.split("\n");
                 var sig = String(splited[splited.length - 2].trim())
                 sigs.push(sig);
-                var str : string = String(Pacillus_Idris2LSP_Lex_lexAndOutput(sig));
+                var sig_for_input = {
+                  start : {
+                    line : "0",
+                    character : "0"
+                  },
+                  text : sig
+                }
+                console.log("lex for ops input :".concat(JSON.stringify(sig_for_input)));
+                var str : string = Pacillus_Idris2LSP_Lex_lexAndOutput(JSON.stringify(sig_for_input));
                 console.log(str);
                 var json = JSON.parse(str);
                 console.log(json);

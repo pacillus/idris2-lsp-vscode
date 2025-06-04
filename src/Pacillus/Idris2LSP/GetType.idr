@@ -12,6 +12,8 @@ import Pacillus.Idris2LSP.Parser.Sugared
 import Pacillus.Idris2LSP.Parser.Desugared
 import Pacillus.Idris2LSP.TypeTree.TypeTree
 import Pacillus.Idris2LSP.TypeTree.Output
+import Pacillus.Idris2LSP.Util
+
 
 convertInList2ListIn : Monad f => List (f b) -> f (List b)
 convertInList2ListIn [] = pure []
@@ -20,10 +22,6 @@ convertInList2ListIn (mnd :: mnds) =
     x <- mnd
     xs <- convertInList2ListIn mnds
     pure $ x :: xs
-
-findFirst : String -> (a -> Either String b) -> List a -> Either String b
-findFirst errtxt f [] = Left errtxt
-findFirst errtxt f (x :: xs) = either (const $ findFirst errtxt f xs) Right (f x)
 
 json2OpMap : JSON -> Either String OpRecord
 json2OpMap (JObject xs) =

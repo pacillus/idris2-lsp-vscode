@@ -3,10 +3,10 @@ module Pacillus.Idris2LSP.Protocol
 "Right $ MkSignature result_name $ assign applied"
 
 js->idr
-"Right $ MkSignature result_name $ assign applied"
+{"start":{"line":10, "character":4} "text":"Right $ MkSignature result_name $ assign applied"}
 
 idr->js
-"{\"pos\" : [\"0\",\"6\",\"8\",...], syms : [\"$\"]}"
+{\"pos\" : [{"line":"10", character:"4"},{"line":"10", "character":"10"}, {"line":"10", "character""8"},...], syms : ["$"]}
 
 js->idr
 "
