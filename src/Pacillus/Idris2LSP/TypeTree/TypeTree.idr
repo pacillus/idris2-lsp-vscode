@@ -5,6 +5,7 @@ import Data.Vect
 import Pacillus.Idris2LSP.Parser.Basic
 import Pacillus.Idris2LSP.TypeTree.Output
 
+-- replacing the index which were bound implicitly to holes
 replaceIndex : Nat -> Nat -> Desugared WithHole -> Desugared WithHole
 replaceIndex index holes_count (Constant x) = Constant x
 replaceIndex index holes_count e@(Index name k) with (index == k)
@@ -26,6 +27,7 @@ replaceIndex index holes_count (Literal x y) = Literal x y
 replaceIndex index holes_count e@(ImplicitHole _ _) = e
 replaceIndex index holes_count e@(Assumption _ _) = e
 
+-- converting Desugared into WithHole by converting all WildCard to holes
 toWithHole : Nat -> Desugared NoHole -> (Nat, Desugared WithHole)
 toWithHole holes_count (Constant x) = (holes_count, Constant x)
 toWithHole holes_count (Index name k) = (holes_count, Index name k)
@@ -62,9 +64,7 @@ toWithHole holes_count_a (Binder Implicit id ty e) =
 toWithHole holes_count (Literal t x) = (holes_count, Literal t x)
 toWithHole holes_count Wildcard = (S holes_count, ImplicitHole (MkIdentifier NameId "_") holes_count)
 
--- toWithHole' : Desugared NoHole -> (Nat, Desugared WithHole)
--- toWithHole' = toWithHole 0
-
+-- convert implicit binders to holes
 openImplicitHoles : Nat -> Desugared WithHole -> (Nat, Desugared WithHole)
 openImplicitHoles holes_count e@(Constant _) = (holes_count, e)
 openImplicitHoles holes_count e@(Index _ _) = (holes_count, e)
@@ -213,8 +213,6 @@ simpleEval (Binder bty id ty e) = Binder bty id (simpleEval ty) (simpleEval e)
 simpleEval e@(Literal t x) = e
 simpleEval e@(ImplicitHole x k) = e
 simpleEval e@(Assumption x k) = e
--- simpleEval (Application (Binder Lambda _ _ applying) applied) = substituteToIndex 0 applied applying
--- simpleEval e = e
 
 applyConstraints : Constraints -> Desugared WithHole -> Either String (Desugared WithHole)
 applyConstraints [] e = Right e
@@ -252,45 +250,56 @@ skipAuto x with (getSubgoal x)
 typeId : ExprSignature
 typeId = MkExprSignature (Constant $ MkIdentifier NameId "Type") $ Constant $ MkIdentifier NameId "Type"
 
-getPartialTypeMain : List (Desugared WithHole) -> List (DesugaredSignature WithHole) -> Desugared WithHole -> Either String TypeTree
-getPartialTypeMain _ [] (Constant y) = Left $ "could not find the type of identifier " ++ show y
-getPartialTypeMain assumption_types (MkDSig x ty :: xs) e@(Constant y) = 
+record GetPartialTypeEnv where
+  constructor MkGetPartialTypeEnv
+  assumptionTypes : List (Desugared WithHole)
+  signatures : List (DesugaredSignature WithHole)
+  holesCount : Nat
+
+typeOfConstant : Identifier -> List (DesugaredSignature WithHole) -> Either String (Desugared WithHole)
+typeOfConstant x [] = Left $ "could not find the type of identifier " ++ show x
+typeOfConstant x (MkDSig y ty :: sigs) = 
   if x == y
-    then Right $ Start $ MkExprSignature e ty
-    else getPartialTypeMain assumption_types xs e
-getPartialTypeMain assumption_types _ e@(Index _ k) with (getAt k assumption_types)
-  getPartialTypeMain assumption_types _ e@(Index _ k) | Nothing = Left "corrputedly bound variable found"
-  getPartialTypeMain assumption_types _ e@(Index _ k) | (Just x) = Right $ Start $ MkExprSignature e x -- Eq Int => \y : b => 1
-getPartialTypeMain assumption_types sigs e@(Application f x) = 
+    then Right ty
+    else typeOfConstant x sigs
+
+getPartialTypeMain : GetPartialTypeEnv -> Desugared WithHole -> Either String (GetPartialTypeEnv, TypeTree)
+getPartialTypeMain env e@(Constant x) =
+  do
+    ty <- typeOfConstant x env.signatures
+    Right $ (env, Start $ MkExprSignature e ty)
+getPartialTypeMain env e@(Index _ k) with (getAt k env.assumptionTypes)
+  getPartialTypeMain env e@(Index _ k) | Nothing = Left "corrputedly bound variable found"
+  getPartialTypeMain env e@(Index _ k) | (Just x) = Right $ (env, Start $ MkExprSignature e x)
+getPartialTypeMain env e@(Application f x) =
   do  
-    f' <- getPartialTypeMain assumption_types sigs f
-    x' <- getPartialTypeMain assumption_types sigs x
+    (env', f') <- getPartialTypeMain env f
+    (env'', x') <- getPartialTypeMain env' x
     -----
     f'' <- Right $ skipAuto f'
     x'' <- Right $ skipAuto x'
-    -- ==> let f'' = skipAuto f'; x'' = skipAuto x' in
+    ----- ==> let f'' = skipAuto f'; x'' = skipAuto x' in
     appty <- getAppliedType (getSubgoal f'') (getSubgoal x'')
-    Right $  Subgoal [f'', x''] appty
-
-getPartialTypeMain assumption_types _ e@(Binder Pi y z w) = Right $ Start typeId
-getPartialTypeMain assumption_types sigs e@(Binder Lambda id ty e2) = 
+    Right $ (env'', Subgoal [f'', x''] appty)
+getPartialTypeMain env e@(Binder Pi y z w) = Right $ (env, Start typeId)
+getPartialTypeMain env e@(Binder Lambda id ty e2) =
   do
-    typetree <- getPartialTypeMain (ty :: assumption_types) sigs (binderToAssumption e2)
+    (env', typetree) <- getPartialTypeMain ({assumptionTypes $= (ty ::)} env) (binderToAssumption e2)
     retty <- Right $ assumptionToBinder $ (getSubgoal typetree).type
-    Right $ Subgoal [typetree] $ (MkExprSignature e (Binder Pi id ty retty))
-getPartialTypeMain assumption_types _ e@(Binder Auto y z w) = Right $ Start typeId
-getPartialTypeMain assumption_types _ e@(Binder Implicit y z w) = Right $ Start typeId
-getPartialTypeMain _ _ e@(Literal IntegerL x) = Right $ Start $ MkExprSignature e $ Constant $ MkIdentifier NameId "Integer"
-getPartialTypeMain _ _ e@(Literal DoubleL x) = Right $ Start $ MkExprSignature e $ Constant $ MkIdentifier NameId "Double"
-getPartialTypeMain _ _ e@(Literal CharL x) = Right $ Start $ MkExprSignature e $ Constant $ MkIdentifier NameId "Char"
-getPartialTypeMain _ _ e@(Literal StringL x) = Right $ Start $ MkExprSignature e $ Constant $ MkIdentifier NameId "String"
-getPartialTypeMain _ _ e@(ImplicitHole _ k) = ?getPartialTypeMain_rhs_5
-getPartialTypeMain assumption_types _ e@(Assumption _ k) with (getAt k assumption_types)
-  getPartialTypeMain assumption_types _ e@(Assumption _ k) | Nothing = Left "corrputed assumption"
-  getPartialTypeMain assumption_types _ e@(Assumption _ k) | (Just ty) = Right $ Start (MkExprSignature e ty)
+    Right $ (env', Subgoal [typetree] $ (MkExprSignature e (Binder Pi id ty retty)))
+getPartialTypeMain env e@(Binder Auto y z w) = Right $ (env, Start typeId)
+getPartialTypeMain env e@(Binder Implicit y z w) = Right $ (env, Start typeId)
+getPartialTypeMain env e@(Literal IntegerL x) = Right $ (env, Start $ MkExprSignature e $ Constant $ MkIdentifier NameId "Integer")
+getPartialTypeMain env e@(Literal DoubleL x) = Right $ (env, Start $ MkExprSignature e $ Constant $ MkIdentifier NameId "Double")
+getPartialTypeMain env e@(Literal CharL x) = Right $ (env, Start $ MkExprSignature e $ Constant $ MkIdentifier NameId "Char")
+getPartialTypeMain env e@(Literal StringL x) = Right $ (env, Start $ MkExprSignature e $ Constant $ MkIdentifier NameId "String")
+getPartialTypeMain env e@(ImplicitHole _ k) = Right $ ({holesCount $= S} env, Start $ MkExprSignature e $ ImplicitHole (MkIdentifier NameId "_") env.holesCount)
+getPartialTypeMain env e@(Assumption _ k) with (getAt k env.assumptionTypes)
+  getPartialTypeMain env e@(Assumption _ k) | Nothing = Left "corrputed assumption"
+  getPartialTypeMain env e@(Assumption _ k) | (Just ty) = Right $ (env, Start (MkExprSignature e ty))
 
-convertSigs : Nat -> List (DesugaredSignature WithHole) -> List (DesugaredSignature NoHole) -> List (DesugaredSignature WithHole)
-convertSigs n acc [] = acc
+convertSigs : Nat -> List (DesugaredSignature WithHole) -> List (DesugaredSignature NoHole) -> (Nat, List (DesugaredSignature WithHole))
+convertSigs n acc [] = (n, acc)
 convertSigs n acc (MkDSig id x :: xs) =
   let
     (n', x') = toWithHole n x
@@ -304,14 +313,7 @@ getPartialType sigs x =
   let
     (n, x') = toWithHole 0 x
     (n', x'') = openImplicitHoles n x'
-    -- listWithHole =
-    sigs' = convertSigs n' [] sigs
+    (n'', sigs') = convertSigs n' [] sigs
   in
-    getPartialTypeMain [] sigs' x''
-
-
--- f : a -> Type
---  : (\x =>  f x) x_a ==> f x_a
---  : {0 g : Type} -> (\y => g) x_a ==> {0 g : Type} -> g
-
---
+  do
+    map snd $ getPartialTypeMain (MkGetPartialTypeEnv [] sigs' n'') x''

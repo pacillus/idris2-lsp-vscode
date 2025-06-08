@@ -8,8 +8,8 @@ import System
 import Text.Parser.Expression
 
 import Pacillus.Idris2LSP.Parser.Basic
-import Pacillus.Idris2LSP.Parser.Sugared
 import Pacillus.Idris2LSP.Parser.Desugared
+import Pacillus.Idris2LSP.Parser.Sugared
 import Pacillus.Idris2LSP.TypeTree.TypeTree
 import Pacillus.Idris2LSP.TypeTree.Output
 import Pacillus.Idris2LSP.Util
@@ -73,9 +73,6 @@ json2Info input@(JObject (xs)) =
         convstrarr _ = Left #"Error : Non string at "sigs" in input JSON"#
 json2Info _ = Left "Invalid input JSON form"
 
-
-
-
 parseInput : String -> Either String (String, InOperatorMap, List String)
 parseInput str =
   case Language.JSON.parse str of
@@ -117,6 +114,11 @@ process str =
           "Builtin.fromDouble : FromDouble ty => Double -> ty" ::
           "Builtin.fromChar : FromChar ty => Char -> ty" ::
           "Builtin.fromString : FromString ty => String -> ty" ::
+          "String : Type" ::
+          "Char : Type" ::
+          "Int : Type" ::
+          "Integer : Type" ::
+          "Double : Type" ::
             types)
 
 main : IO ()

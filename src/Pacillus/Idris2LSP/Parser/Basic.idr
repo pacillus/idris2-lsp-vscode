@@ -12,7 +12,10 @@ LiteralTypeOf CharL = Char
 LiteralTypeOf StringL = String
 
 public export
-data IdentifierType = NameId | OperatorId | MemberId
+data IdentifierType = 
+          NameId -- id
+        | OperatorId -- +
+        | MemberId -- .fun
 
 public export
 Eq IdentifierType where
@@ -42,8 +45,11 @@ data Member = MkMember String
 
 namespace Sugared
     public export
-    data ArrowType = SingleLine | DoubleLine
+    data ArrowType =
+          SingleLine -- ->
+        | DoubleLine -- =>
 
+    -- in the data type Sugared, there are two sub type Expression(Expr) and Signature(Sig)
     public export
     data SubSyntaxGroup = Sig | Expr
 
@@ -69,15 +75,13 @@ namespace Sugared
         -- signature
         Signature : Identifier -> Sugared Expr -> Sugared Sig -- x : a
 
-
-
 namespace Desugared
     public export
-    data BinderType = Pi | Lambda | Auto | Implicit
-    -- (x : a) -> b
-    -- \x => e
-    -- (x : a) => b
-    -- {x : a} -> b(x)
+    data BinderType = 
+          Pi -- (x : a) -> b
+        | Lambda -- \x => e
+        | Auto -- (x : a) => b, (auto x : a) -> b
+        | Implicit -- {x : a} -> b(x)
 
     public export
     Eq BinderType where
@@ -121,6 +125,7 @@ namespace Desugared
         Binder : BinderType -> BinderName -> Desugared t -> Desugared t -> Desugared t
         Literal : (t : LiteralType) -> LiteralTypeOf t -> Desugared dt
         Wildcard : Desugared NoHole -- _
+        -- below are used internally to derive type
         ImplicitHole : Identifier -> Nat -> Desugared WithHole -- 
         Assumption : Identifier -> Nat -> Desugared WithHole  
 

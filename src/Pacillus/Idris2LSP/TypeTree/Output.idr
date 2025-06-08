@@ -1,7 +1,6 @@
 module Pacillus.Idris2LSP.TypeTree.Output
 
 import Pacillus.Idris2LSP.Parser.Basic
--- import Pacillus.Idris2LSP.TypeTree.TypeTree
 import Data.String
 
 namespace Identifier
