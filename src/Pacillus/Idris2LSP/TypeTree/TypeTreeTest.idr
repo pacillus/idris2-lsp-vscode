@@ -34,21 +34,34 @@ convertInList2ListIn (mnd :: mnds) =
 data TestCase : Type where
     MkCase : (expr : String) -> (types : List String) -> TestCase
 
+toPatterns : List (List1 (DesugaredSignature NoHole)) -> List1 (List (DesugaredSignature NoHole))
+toPatterns [] = [] ::: []
+toPatterns (xs :: xss) = [x :: pat | x <- xs, pat <- toPatterns xss]
+
+showResultsMain : List String -> List String -> List (Either String TypeTree) -> String
+showResultsMain fails [] [] = unlines ("Derivation failed; Below are the errors" :: fails)
+showResultsMain _ succs@(_ :: _) [] = unlines succs
+showResultsMain fails succs (Left x :: xs) = showResultsMain (x :: fails) succs xs
+showResultsMain fails succs (Right x :: xs) = showResultsMain fails (output x :: succs) xs
+
+showResults : List1 (Either String TypeTree) -> String
+showResults = showResultsMain [] [] . forget
+
 testSingleCase : TestCase -> String
 testSingleCase (MkCase expr types) =
   let
-    target = parse opMap expr
     ty_list = map (parseSig opMap) types
     sigs = convertInList2ListIn ty_list
-    result =
+    result = 
       do
-        target <- target
-        des_sigs <- map (map (head . desugarSig)) sigs
-        getPartialType des_sigs (head $ desugar target)
+        sigs <- convertInList2ListIn ty_list
+        target <- parse opMap expr
+        des_sigs_pats <- Right $ toPatterns (map desugarSig sigs)
+        Right $ [getPartialType des_sigs target' | des_sigs <- des_sigs_pats, target' <- desugar target]
   in
-    case result of
-        Left error => error
-        Right tree => output tree
+  case result of
+    (Left error) => error
+    (Right results) => showResults results
 
 testAllCase : List TestCase -> String
 testAllCase xs =
@@ -206,6 +219,16 @@ testCases =
           "Builtin.DPair.DPair.fst : DPair a p -> a",
           "Main.MkInverse : (f : (a -> b)) -> (g : (b -> a)) -> ((x : a) -> g (f x) = x) -> ((y : b) -> f (g y) = y) -> Inverse f g",
           "f : a -> b"
+        ],
+        MkCase "((_ ** Refl), (_ ** Refl))" [
+          "Builtin.Refl : x = x",
+          "Builtin.Pair : Type -> Type -> Type",
+          "Builtin.MkPair : a -> b -> Pair a b",
+          "Builtin.DPair.MkDPair : (fst : a) -> p fst -> DPair a p"
+        ],
+        MkCase "()" [
+          "Builtin.MkUnit : Unit",
+          "Builtin.Unit : Type"
         ]
         -- 課題:暗黙の引数の情報を明記する必要がある場合がある
 

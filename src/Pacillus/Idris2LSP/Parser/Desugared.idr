@@ -77,9 +77,10 @@ desugarWithContext xs Wildcard = pure $ Wildcard
 desugarWithContext xs UnitSugar = (Constant $ MkIdentifier NameId "Unit") ::: [Constant $ MkIdentifier NameId "MkUnit"]
 desugarWithContext xs (PairSugar x y) =
   [
-    Application (Application (Constant $ MkIdentifier NameId "Pair") x') y' |
+    Application (Application (Constant $ MkIdentifier NameId candidate) x') y' |
     x' <- desugarWithContext xs x,
-    y' <- desugarWithContext xs y
+    y' <- desugarWithContext xs y,
+    candidate <- "Pair" ::: ["MkPair"]
   ]
 desugarWithContext xs (OpInfixSugar x op y) = 
   [
