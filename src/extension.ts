@@ -153,7 +153,6 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
       'idris2-lsp.repl.typeat',
       (editor: TextEditor, _edit: TextEditorEdit, customCode) => {
         const code: string = customCode || editor.document.getText(editor.selection);
-        const uri = editor.document.uri.fsPath
         const pos = editor.selection.start;
         const ln = pos.line;
         const ch = pos.character;
@@ -215,7 +214,7 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
         }
 
         console.log("code:".concat(code))
-        var targetInfo : object = {
+        const targetInfo : object = {
           start : {
             line : String(ln),
             character : String(ch)
@@ -225,13 +224,13 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
 
         console.log("sending to idris:".concat(JSON.stringify(targetInfo)))
 
-        var str : string = String(Pacillus_Idris2LSP_Lex_lexAndOutput(JSON.stringify(targetInfo)))
+        const str : string = String(Pacillus_Idris2LSP_Lex_lexAndOutput(JSON.stringify(targetInfo)))
         console.log("informations from idris:".concat(str))
-        var json = JSON.parse(str)
-        var tops : {line : number, character : number}[] = json.pos.map((x : {line : string, character : string}) => ({line : parseInt(x.line), character : parseInt(x.character)}));
-        var sigs : string[] = new Array();
-        var ops : object[] = new Array();
-        var syms :string[] = json.syms;
+        const json = JSON.parse(str)
+        const tops : {line : number, character : number}[] = json.pos.map((x : {line : string, character : string}) => ({line : parseInt(x.line), character : parseInt(x.character)}));
+        const sigs : string[] = [];
+        const ops : object[] = [];
+        let syms :string[] = json.syms;
 
         // an odd code reproducing the for loop
         // magic code that makes all well
@@ -240,13 +239,13 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
           if (i < max) {
             client
             .sendRequest('textDocument/hover', {textDocument: {uri: "file://" + uri}, position: {line: tops[i].line, character: tops[i].character}})
-            .then((my_res: any) => {
+            .then((my_res: {contents}) => {
                 console.log(my_res);
                 if(my_res != null) {
-                const splited: any[] = my_res.contents.value.split("\n");
-                var sig = String(splited[splited.length - 2].trim())
+                const splited: string[] = my_res.contents.value.split("\n");
+                const sig = String(splited[splited.length - 2].trim())
                 sigs.push(sig);
-                var sig_for_input = {
+                const sig_for_input = {
                   start : {
                     line : "0",
                     character : "0"
@@ -254,9 +253,9 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
                   text : sig
                 }
                 console.log("lex for ops input :".concat(JSON.stringify(sig_for_input)));
-                var str : string = Pacillus_Idris2LSP_Lex_lexAndOutput(JSON.stringify(sig_for_input));
+                const str : string = Pacillus_Idris2LSP_Lex_lexAndOutput(JSON.stringify(sig_for_input));
                 console.log(str);
-                var json = JSON.parse(str);
+                const json = JSON.parse(str);
                 console.log(json);
                 console.log(json.syms);
                 syms = syms.concat(json.syms);
@@ -269,10 +268,10 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
               if (i < max) {
                 client
                 .sendRequest("workspace/executeCommand", { command: "repl", arguments: [":doc (" + syms[i] + ")"]})
-                .then((my_res: any) => {
+                .then((my_res) => {
                   const splitedbyn: string[] = my_res.toString().split("\n");
                   // search for "Fixity Declaration"
-                  var infopos : integer = 0;
+                  let infopos : integer = 0;
                   for (let i = 0; i < splitedbyn.length; i++){
                     if (splitedbyn[i].includes("Fixity Declaration")){
                       infopos = i
@@ -280,23 +279,23 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
                   }
                   const splitedbyspace: string[] = splitedbyn[infopos].split(" ").filter((x : string) => x !== "");
                   
-                  var assoc : string = splitedbyspace[2];
+                  const assoc : string = splitedbyspace[2];
                   
-                  var prec : string = splitedbyspace[5];
+                  const prec : string = splitedbyspace[5];
                   
-                  var op : object = {symbol : syms[i],assoc : assoc, prec : prec};
+                  const op : object = {symbol : syms[i],assoc : assoc, prec : prec};
                   ops.push(op);
                   g(syms, i + 1, max);
                 })
               } else {
-                var inputobj : object = {
+                const inputobj : object = {
                   expr : code,
                   ops : ops,
                   sigs : sigs.filter(x => x != null)
                 };
                 console.log(inputobj);
                 console.log(JSON.stringify(inputobj));
-                var output = Pacillus_Idris2LSP_GetType_process(JSON.stringify(inputobj));
+                const output = Pacillus_Idris2LSP_GetType_process(JSON.stringify(inputobj));
                   editor.setDecorations(
                     replDecorationType,
                     [{
