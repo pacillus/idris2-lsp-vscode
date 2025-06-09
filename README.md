@@ -15,8 +15,18 @@ Basic information of the upstream is [here](https://github.com/bamboo/idris2-lsp
 
 It can also be built and installed locally from the checkout directory with:
 
-    $ vsce package
-    $ code --install-extension idris2-lsp-${version}.vsix
+```sh
+npm install
+./sync-engine-version.sh update-in-place
+npm install
+rm -f *.vsix
+version=$(jq -r '.version' package.json)
+npm run lint
+npm run compile
+npm run esbuild
+vsce package
+code --install-extension "idris2-lsp-${version}.vsix" --force
+```
 
 ## How to run the TyDeViewer command
 Select the expression to derive type (like by click-and-dragging).
