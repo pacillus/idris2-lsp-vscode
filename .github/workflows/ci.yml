@@ -28,7 +28,7 @@ jobs:
 
       - name: Compile Idris files
         run: |
-          cd src
+          # cd src
           idris2
           # idris2 --cg node Pacillus/Idris2LSP/Lex.idr -o echolex.js -p contrib
           # idris2 --cg node Pacillus/Idris2LSP/GetType.idr -o echotype.js -p contrib
