@@ -1,21 +1,26 @@
-# Idris 2 Language Server Extension
+# Idris 2 Language Server Extension TyDeViewer fork
 
-A Visual Studio Code extension that enables the [Idris 2 language server](https://github.com/idris-community/idris2-lsp) on Idris source files.
+A [TyDeViewer](https://github.com/pacillus/TypeDerivationViewer) implementation for VS Code Extension.
 
-In order to simplify testing at this early stage, the extension was made standalone by taking the Idris syntax files from [meraymond2/idris-vscode](https://github.com/meraymond2/idris-vscode).
+Basic information of the upstream is [here](https://github.com/bamboo/idris2-lsp-vscode)
 
 ## Requirements
 
-`idris2-lsp` must be available locally. Refer to the [Idris 2 language server repository](https://github.com/idris-community/idris2-lsp) for instructions.
+- [vsce](https://code.visualstudio.com/api/working-with-extensions/publishing-extension#vsce)(Requires Node.js for installation)
+- [Idris2LSP Server](https://github.com/idris-community/idris2-lsp)(Includes Idris2 itself)
 
 ## Installing the extension
 
-The `idris2-lsp` extension can be installed from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=bamboo.idris2-lsp).
+~~The `idris2-lsp` extension can be installed from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=bamboo.idris2-lsp).~~
 
 It can also be built and installed locally from the checkout directory with:
 
     $ vsce package
     $ code --install-extension idris2-lsp-${version}.vsix
+
+## How to run the TyDeViewer command
+Select the expression to derive type (like by click-and-dragging).
+Then go to command palette(by pressing `Ctrl + Shift + P` (Windows/Linux) or `Command + Shift + P` (Mac)) and select or type in `Idris: Show the Type Derivation Tree of selection` to show the Type Derivation Tree.
 
 ## Configuring the extension
 
