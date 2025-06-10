@@ -19,6 +19,7 @@ isNoType (Tok SERBracket _) = True
 isNoType (Tok SEIdentifier text) = False
 isNoType (Tok SEOperator text) = False
 isNoType (Tok SEMember text) = False
+isNoType (Tok SEMemberId text) = False
 isNoType (Tok SEBackquote text) = True
 isNoType (Tok SEArrow text) = True
 isNoType (Tok SEDoubleArrow text) = True
