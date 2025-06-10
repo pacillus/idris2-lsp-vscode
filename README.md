@@ -16,7 +16,7 @@ Basic information of the upstream is [here](https://github.com/bamboo/idris2-lsp
 It can also be built and installed locally from the checkout directory with:
 
 ```sh
-npm install
+bash compile.sh
 ./sync-engine-version.sh update-in-place
 npm install
 rm -f *.vsix
