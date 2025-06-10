@@ -17,6 +17,7 @@ data SimpleExprTokenKind =
     | SEIdentifier
     | SEOperator
     | SEMember
+    | SEMemberId
     | SEBackquote
     | SEArrow
     | SEDoubleArrow
@@ -47,6 +48,7 @@ Eq SimpleExprTokenKind where
   (==) SEIdentifier SEIdentifier = True
   (==) SEOperator SEOperator = True
   (==) SEMember SEMember = True
+  SEMemberId == SEMemberId = True
   (==) SEBackquote SEBackquote = True
   (==) SEArrow SEArrow = True
   (==) SEDoubleArrow SEDoubleArrow = True
@@ -74,6 +76,7 @@ Show SimpleExprTokenKind where
     show SEIdentifier = "SEIdentifier"
     show SEOperator = "SEOperator"
     show SEMember = "SEMember"
+    show SEMemberId = "SEMemberId"
     show SEBackquote = "SEBackquote"
     show SEArrow =  "SEArrow"
     show SEDoubleArrow = "SEDoubleArrow"
@@ -113,6 +116,7 @@ TokenKind SimpleExprTokenKind where
   TokType SEIdentifier = String
   TokType SEOperator = String
   TokType SEMember = String
+  TokType SEMemberId = String
   TokType SESymbol = String
   TokType SEIntLiteral = Integer
   TokType SEDoubleLiteral = Double
@@ -131,8 +135,10 @@ TokenKind SimpleExprTokenKind where
     let s' = disposeUntilLparen s in
       trim $ strSubstr 0 ((cast $ length s') - 1) s'
   tokValue SEMember s =
+      strSubstr 1 ((cast $ length s) - 1) s
+  tokValue SEMemberId s =
     let s' = disposeUntilLparen s in
-      trim $ strSubstr 0 ((cast $ length s') - 1) s'
+      trim $ strSubstr 1 ((cast $ length s') - 2) s'
   tokValue SEBackquote _ = ()
   tokValue SEArrow _ = ()
   tokValue SEDoubleArrow _ = ()
@@ -235,8 +241,9 @@ simpleExprTokenMap : TokenMap SimpleExprToken
 simpleExprTokenMap =
     toTokenMap [(spaces, SEIgnore)] ++
     toTokenMap [(idLexer, SEIdentifier )] ++
+    toTokenMap [(memberLexer, SEMember)] ++
     toTokenMap [(symbolIdLexer, SEOperator)] ++
-    toTokenMap [(memberIdLexer, SEMember)] ++
+    toTokenMap [(memberIdLexer, SEMemberId)] ++
     [(symbolLexer, \s =>
       case lookup s reservedSyms of
         (Just kind) => Tok kind s

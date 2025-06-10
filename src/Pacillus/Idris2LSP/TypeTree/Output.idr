@@ -45,7 +45,7 @@ namespace Desugared
     output' level (Application (Application (Constant (MkIdentifier OperatorId w)) z) y) = 
         withParen (level < Operator) (output' Application z ++ " " ++ w ++ " " ++ output' Application y)
     output' level (Application (Constant (MkIdentifier MemberId w)) y) = 
-        withParen (level < Term) "\{output' Term y}.\{show w}"
+        withParen (level < Term) "\{output' Term y}.\{w}"
     output' level (Application x@(Application (Constant str) z) y@(Binder Lambda w v s)) with (str == MkIdentifier NameId "DPair")
       output' level (Application x@(Application (Constant str) z) y@(Binder Lambda w v s)) | False = 
         withParen (level < Application) "\{output' Application x} \{output' Term y}"

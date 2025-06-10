@@ -137,7 +137,7 @@ mutual
     tOperators optable = operation optable
 
     tApp : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
-    tApp optable = app optable <|> term optable
+    tApp optable = app optable <|> memberOrAtom optable
 
     -- <dependentPair> ::= <SELParen> <identifier> <SEColon> <tArrows> <SEDoubleStar> <tDepPair> <SERParen>
     dependentPair : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
@@ -167,22 +167,10 @@ mutual
     signature : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Sig)
     signature optable = 
       do
-        id <- match SEIdentifier
+        id <- identifier
         match SEColon
         e <- tArrows optable
-        pure $ Signature (MkIdentifier NameId id) e
-      <|>
-      do
-        id <- match SEOperator
-        match SEColon
-        e <- tArrows optable
-        pure $ Signature (MkIdentifier OperatorId id) e
-      <|>
-      do
-        id <- match SEMember
-        match SEColon
-        e <- tArrows optable
-        pure $ Signature (MkIdentifier MemberId id) e
+        pure $ Signature id e
 
     ignoreZero : Grammar state SimpleExprToken False ()
     ignoreZero = 
@@ -265,7 +253,7 @@ mutual
     operation optable =
         buildExpressionParser (optable ++ [[Infix equality AssocNone, Infix appOp AssocRight]]) (tApp optable)
       <|>
-        term optable
+        memberOrAtom optable -- TODO do we need this
 
     -- left most part of application must be a identifier
     -- <app> ::=
@@ -278,14 +266,9 @@ mutual
     app optable =
       -- the first two sytax corresponds to this part
       do
-        id <- map IdentifierTerm identifier
-        t <- term optable
-        appSub1 optable $ Application id t
-      <|>
-      do
-        a <- paren optable
-        t <- term optable
-        appSub1 optable (Application a t)
+        t1 <- memberOrAtom optable
+        t2 <- memberOrAtom optable
+        appSub1 optable $ Application t1 t2
 
     -- subfunction for app
     appSub1 : OperatorTable state SimpleExprToken (Sugared Expr) -> Sugared Expr -> Grammar state SimpleExprToken False (Sugared Expr)
@@ -293,9 +276,25 @@ mutual
 
     -- subfunction for app
     appSub2 : OperatorTable state SimpleExprToken (Sugared Expr) -> Sugared Expr -> Grammar state SimpleExprToken True (Sugared Expr)
-    appSub2 optable app = do
-      t <- term optable
-      appSub1 optable $ Application app t
+    appSub2 optable app = 
+      do
+        t <- memberOrAtom optable
+        appSub1 optable $ Application app t
+
+    memberOrAtom : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
+    memberOrAtom optable =
+      do
+        e <- atom optable
+        memberOrAtomSub optable e
+
+    
+    memberOrAtomSub : OperatorTable state SimpleExprToken (Sugared Expr) -> Sugared Expr -> Grammar state SimpleExprToken False (Sugared Expr)
+    memberOrAtomSub optable f =
+      do
+        x <- match SEMember
+        memberOrAtomSub optable $ MemberSugar f (MkMember x)
+      <|>
+        pure f
 
     -- <term> ::=
     --     <unit>
@@ -303,17 +302,18 @@ mutual
     --     <var>
     --   | <literal>
     --   | <paren>
-    term : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
-    term optable =
+    atom : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
+    atom optable =
       do
         match SELParen
         match SERParen
         pure UnitSugar
       <|> pair optable
       <|> map IdentifierTerm identifier
-      <|> literal 
+      <|> literal
       <|> wildcard
       <|> paren optable
+      -- <|> member optable
 
     pair : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
     pair optable = 
@@ -342,11 +342,9 @@ mutual
     identifier =
         map (MkIdentifier NameId) (match SEIdentifier)
       <|>
-      do
-        match SELParen
-        id <- identifier
-        match SERParen
-        pure id -- TODO do we need this?
+        map (MkIdentifier OperatorId) (match SEOperator)
+      <|>
+        map (MkIdentifier MemberId) (match SEMemberId)
 
     -- <literal> ::=
     --     <SEIntLiteral>

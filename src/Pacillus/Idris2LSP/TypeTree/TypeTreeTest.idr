@@ -229,6 +229,12 @@ testCases =
         MkCase "()" [
           "Builtin.MkUnit : Unit",
           "Builtin.Unit : Type"
+        ],
+        MkCase "(.fun) x.y .z" [
+          "x : String",
+          "(.y) : String -> Nat",
+          "(.z) : Nat -> Char",
+          "(.fun) : Char -> Type"
         ]
         -- 課題:暗黙の引数の情報を明記する必要がある場合がある
 
