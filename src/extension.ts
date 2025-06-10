@@ -238,7 +238,7 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
         const f = (tops : {line : number, character : number} [], i: number, max: number) => {
           if (i < max) {
             client
-            .sendRequest('textDocument/hover', {textDocument: {uri: "file://" + uri}, position: {line: tops[i].line, character: tops[i].character}})
+            .sendRequest('textDocument/hover', {textDocument: {uri: "file://" + uri}, position: {line: tops[i].line, character: tops[i].character + 1}})
             .then((my_res: {contents}) => {
                 console.log(my_res);
                 if(my_res != null) {
