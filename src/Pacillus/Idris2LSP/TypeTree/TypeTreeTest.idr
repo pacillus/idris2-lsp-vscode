@@ -235,6 +235,11 @@ testCases =
           "(.y) : String -> Nat",
           "(.z) : Nat -> Char",
           "(.fun) : Char -> Type"
+        ],   
+        MkCase "append ?n x xs" [
+          "append : (n : Nat) -> a -> Vect n a -> Vect (S n) a",
+          "x : String",
+          "xs : Vect 8 String"
         ]
         -- 課題:暗黙の引数の情報を明記する必要がある場合がある
 

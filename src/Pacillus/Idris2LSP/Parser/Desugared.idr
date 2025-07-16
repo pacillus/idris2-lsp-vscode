@@ -46,19 +46,19 @@ desugarWithContext xs (Arrow DoubleLine ty e) =
     ty' <- desugarWithContext xs ty,
     e' <- desugarWithContext (AnonymousBinder :: xs) e
   ]
-desugarWithContext xs (SignatureArrow SingleLine (Signature id ty) e) = 
+desugarWithContext xs (SignatureArrow SingleLine id ty e) = 
   [
     Binder Pi (NamedBinder id) ty' e' |
     ty' <- desugarWithContext xs ty,
     e' <- desugarWithContext (NamedBinder id :: xs) e
   ]
-desugarWithContext xs (SignatureArrow DoubleLine (Signature id ty) e) = 
+desugarWithContext xs (SignatureArrow DoubleLine id ty e) = 
   [
     Binder Auto (NamedBinder id) ty' e' |
     ty' <- desugarWithContext xs ty,
     e' <- desugarWithContext (NamedBinder id :: xs) e
   ]
-desugarWithContext xs (BracketArrow (Signature id ty) e) = 
+desugarWithContext xs (BracketArrow id ty e) = 
   [
     Binder Implicit (NamedBinder id) ty' e' |
     ty' <- desugarWithContext xs ty,
@@ -74,6 +74,7 @@ desugarWithContext xs (Literal DoubleL x) = pure $ Application (Constant (MkIden
 desugarWithContext xs (Literal CharL x) = pure $ Application (Constant (MkIdentifier NameId "fromChar")) (Literal CharL x)
 desugarWithContext xs (Literal StringL x) = pure $ Application (Constant (MkIdentifier NameId "fromString")) (Literal StringL x) -- pure $ Literal a x
 desugarWithContext xs Wildcard = pure $ Wildcard
+desugarWithContext xs (HoleTerm hole) = pure $ HoleTerm hole
 desugarWithContext xs UnitSugar = (Constant $ MkIdentifier NameId "Unit") ::: [Constant $ MkIdentifier NameId "MkUnit"]
 desugarWithContext xs (PairSugar x y) =
   [
@@ -152,13 +153,14 @@ getImplicitList _ (IdentifierTerm (MkIdentifier _ _)) = []
 getImplicitList ids (Application (IdentifierTerm _) e) = getImplicitList ids e
 getImplicitList ids (Application e1 e2) = nub $ getImplicitList ids e1 ++ getImplicitList ids e2
 getImplicitList ids (Arrow _ ty e) = nub $ getImplicitList ids ty ++ getImplicitList ids e
-getImplicitList ids (SignatureArrow _ (Signature id ty) e) = 
+getImplicitList ids (SignatureArrow _ id ty e) = 
     nub $ getImplicitList ids ty ++ getImplicitList (id :: ids) e
-getImplicitList ids (BracketArrow (Signature id ty) e) =
+getImplicitList ids (BracketArrow id ty e) =
     nub $ getImplicitList ids ty ++ getImplicitList (id :: ids) e
 getImplicitList ids (AnonymousFunction _ e) = getImplicitList ids e
 getImplicitList _ (Literal _ _) = []
 getImplicitList _ Wildcard = []
+getImplicitList _ (HoleTerm _) = []
 getImplicitList _ UnitSugar = []
 getImplicitList ids (PairSugar e1 e2) = nub $ getImplicitList ids e1 ++ getImplicitList ids e2
 getImplicitList ids (OpInfixSugar e1 _ e2) = nub $ getImplicitList ids e1 ++ getImplicitList ids e2
@@ -172,7 +174,7 @@ getImplicitList ids (MemberSugar e _) = nub $ getImplicitList ids e
 
 addImplictsFromList : List Identifier -> Sugared Expr -> Sugared Expr
 addImplictsFromList [] e = e
-addImplictsFromList (id :: ids) e = addImplictsFromList ids $ BracketArrow (Signature id Wildcard) e
+addImplictsFromList (id :: ids) e = addImplictsFromList ids $ BracketArrow id Wildcard e
 
 addImplicits : Sugared Expr -> Sugared Expr
 addImplicits e = addImplictsFromList (getImplicitList [] e) e

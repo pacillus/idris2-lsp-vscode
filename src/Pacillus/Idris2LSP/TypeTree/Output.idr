@@ -2,13 +2,14 @@ module Pacillus.Idris2LSP.TypeTree.Output
 
 import Pacillus.Idris2LSP.Parser.Basic
 import Data.String
+import Language.JSON
 
 namespace Identifier
     public export
     output : Identifier -> String
     output (MkIdentifier NameId str) = str
     output (MkIdentifier OperatorId str) = "(\{str})"
-    output (MkIdentifier MemberId str) = "." ++ str
+    output (MkIdentifier MemberId str) = ".\{str}"
 
 data SyntaxLevel = Term | Application | Operator | Arrows 
 
@@ -39,7 +40,6 @@ namespace Desugared
     output' : SyntaxLevel -> Desugared WithHole -> String
     output' _ (Constant id) = output id
     output' _ (Index id _) = show id
-
     output' level (Application (Application (Constant (MkIdentifier OperatorId "===")) z) y) = 
         withParen (level < Operator) ("\{output' Application z} = \{output' Application y}")
     output' level (Application (Application (Constant (MkIdentifier OperatorId w)) z) y) = 
@@ -72,10 +72,10 @@ namespace Desugared
         withParen (level < Arrows) "(\{show id} : \{output' Arrows ty}) -> \{output' Arrows e}"
     output' level (Binder Pi AnonymousBinder ty e) = 
         withParen (level < Arrows) "\{output' Operator ty} -> \{output' Arrows e}"
-    output' level (Binder Lambda id ty@(ImplicitHole (MkIdentifier x str) k) e) with (str == "_")
-      output' level (Binder Lambda id ty@(ImplicitHole (MkIdentifier x str) k) e) | False =
+    output' level (Binder Lambda id ty@(ImplicitVariable (MkIdentifier x str) k) e) with (str == "_")
+      output' level (Binder Lambda id ty@(ImplicitVariable (MkIdentifier x str) k) e) | False =
         withParen (level < Arrows) "\\\{show id} : \{output' Arrows ty} => \{output' Arrows e}"
-      output' level (Binder Lambda id ty@(ImplicitHole (MkIdentifier x str) k) e) | True = 
+      output' level (Binder Lambda id ty@(ImplicitVariable (MkIdentifier x str) k) e) | True = 
         withParen (level < Arrows) "\\\{show id} => \{output' Arrows e}"
     output' level (Binder Lambda id ty e) =
         withParen (level < Arrows) "\\\{show id} : \{output' Arrows ty} => \{output' Arrows e}"
@@ -83,7 +83,7 @@ namespace Desugared
         withParen (level < Arrows) "(\{show id} : (\{output' Arrows ty})) => \{output' Arrows e}"
     output' level (Binder Auto AnonymousBinder ty e) = 
         withParen (level < Arrows) "\{output' Operator ty} => \{output' Arrows e}"
-    output' level (Binder Implicit (NamedBinder id) (ImplicitHole _ _) e) = 
+    output' level (Binder Implicit (NamedBinder id) (ImplicitVariable _ _) e) = 
         withParen (level < Arrows) "\{show id} -> \{output' Arrows e}"
     output' level (Binder Implicit (NamedBinder id) ty e) = 
         withParen (level < Arrows) "(\{show id} : \{output' Arrows ty}) -> \{output' Arrows e}"
@@ -93,7 +93,7 @@ namespace Desugared
     output' _ (Literal DoubleL x) = show x
     output' _ (Literal CharL x) = show x
     output' _ (Literal StringL x) = show x
-    output' _ (ImplicitHole id _) = show id -- "?" ++ show id --
+    output' _ (ImplicitVariable id _) = show id -- "?" ++ show id --
     output' _ (Assumption id n) = show id -- "#" ++ show id
 
     export
@@ -110,7 +110,7 @@ Show (Desugared WithHole) where
     show (Literal DoubleL x) = show x
     show (Literal CharL x) = show x
     show (Literal StringL x) = show x
-    show (ImplicitHole x k) = "(Hole : \{show k}(\{show x}))"
+    show (ImplicitVariable x k) = "(ImplicitVar : \{show k}(\{show x}))"
     show (Assumption x k) = "(Assumption : \{show k}(\{show x}))"
 
 namespace ExprSignature
@@ -119,11 +119,11 @@ namespace ExprSignature
     output (MkExprSignature x y) = "\{output x} : \{output y}"
 
 namespace TypeTree
+    output' : TypeTree -> JSON
+    output' (Start sig) = JString $ output sig
+    output' (Subgoal xs x) =
+        JObject $ ("Conclusion", JString $ output x) :: ("Premises", JArray $ map output' xs) :: []
+
     export
     output : TypeTree -> String
-    output (Start sig) = output sig
-    output (Subgoal xs x) =
-      let
-        pres = map ((++) "| ") $ foldl (++) [] $ map (lines . output) xs
-      in
-        unlines $ output x :: "+---------" :: pres
+    output tree = show $ output' tree

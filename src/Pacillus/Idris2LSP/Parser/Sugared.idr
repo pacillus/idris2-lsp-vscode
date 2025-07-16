@@ -144,7 +144,7 @@ mutual
     dependentPair optable = 
       do
         match SELParen
-        id <- identifier
+        id <- map (MkIdentifier NameId) (match SEIdentifier)
         match SEColon
         ty <- tArrows optable
         match SEDoubleStar
@@ -197,11 +197,13 @@ mutual
       do
         match SELParen
         ignoreZero
-        sig <- signature optable
+        id <- identifier
+        match SEColon
+        ty <- tArrows optable
         match SERParen
         match SEArrow
         e <- tArrows optable
-        pure $ SignatureArrow SingleLine sig e
+        pure $ SignatureArrow SingleLine id ty e
     
     darrow : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
     darrow optable =
@@ -215,28 +217,32 @@ mutual
       do
         match SELParen
         ignoreZero
-        sig <- signature optable
+        id <- identifier
+        match SEColon
+        ty <- tArrows optable
         match SERParen
         match SEDoubleArrow
         e <- tArrows optable
-        pure $ SignatureArrow DoubleLine sig e
+        pure $ SignatureArrow DoubleLine id ty e
 
     barrow : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
     barrow optable = 
       do
         ignoreZero
         match SELBracket -- {
-        sig <- signature optable
+        id <- identifier
+        match SEColon
+        ty <- tArrows optable
         match SERBracket
         match SEArrow
         e <- tArrows optable
-        pure $ BracketArrow sig e
+        pure $ BracketArrow id ty e
 
     anonymousFunction : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
     anonymousFunction optable = 
       do
         match SEBackslash
-        id <- identifier
+        id <- map (MkIdentifier NameId) (match SEIdentifier)
         match SEDoubleArrow
         e <-  top optable
         pure $ AnonymousFunction id e
@@ -310,6 +316,7 @@ mutual
         pure UnitSugar
       <|> pair optable
       <|> map IdentifierTerm identifier
+      <|> map HoleTerm hole
       <|> literal
       <|> wildcard
       <|> paren optable
@@ -345,6 +352,9 @@ mutual
         map (MkIdentifier OperatorId) (match SEOperator)
       <|>
         map (MkIdentifier MemberId) (match SEMemberId)
+    
+    hole : Grammar state SimpleExprToken True Hole
+    hole = map MkHole (match SEHole)
 
     -- <literal> ::=
     --     <SEIntLiteral>

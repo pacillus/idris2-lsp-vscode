@@ -18,6 +18,7 @@ data SimpleExprTokenKind =
     | SEOperator
     | SEMember
     | SEMemberId
+    | SEHole
     | SEBackquote
     | SEArrow
     | SEDoubleArrow
@@ -49,6 +50,7 @@ Eq SimpleExprTokenKind where
   (==) SEOperator SEOperator = True
   (==) SEMember SEMember = True
   SEMemberId == SEMemberId = True
+  SEHole == SEHole = True
   (==) SEBackquote SEBackquote = True
   (==) SEArrow SEArrow = True
   (==) SEDoubleArrow SEDoubleArrow = True
@@ -77,6 +79,7 @@ Show SimpleExprTokenKind where
     show SEOperator = "SEOperator"
     show SEMember = "SEMember"
     show SEMemberId = "SEMemberId"
+    show SEHole = "SEHole"
     show SEBackquote = "SEBackquote"
     show SEArrow =  "SEArrow"
     show SEDoubleArrow = "SEDoubleArrow"
@@ -117,6 +120,7 @@ TokenKind SimpleExprTokenKind where
   TokType SEOperator = String
   TokType SEMember = String
   TokType SEMemberId = String
+  TokType SEHole = String
   TokType SESymbol = String
   TokType SEIntLiteral = Integer
   TokType SEDoubleLiteral = Double
@@ -139,6 +143,8 @@ TokenKind SimpleExprTokenKind where
   tokValue SEMemberId s =
     let s' = disposeUntilLparen s in
       trim $ strSubstr 1 ((cast $ length s') - 2) s'
+  tokValue SEHole s =
+    strSubstr 1 ((cast $ length s) - 1) s
   tokValue SEBackquote _ = ()
   tokValue SEArrow _ = ()
   tokValue SEDoubleArrow _ = ()
@@ -226,6 +232,9 @@ idLexer : Lexer
 idLexer =
   many (pred isUpper <+> many alphaNum <+> is '.') <+> nameLexer
 
+holeLexer : Lexer
+holeLexer =
+  is '?' <+> nameLexer
 
 -- token map to tell what lexes to what
 -- <SESymbol> ::= [:!#$%&*+./<=>\?@\\^|-~]+
@@ -242,6 +251,7 @@ simpleExprTokenMap =
     toTokenMap [(spaces, SEIgnore)] ++
     toTokenMap [(idLexer, SEIdentifier )] ++
     toTokenMap [(memberLexer, SEMember)] ++
+    toTokenMap [(holeLexer, SEHole)] ++
     toTokenMap [(symbolIdLexer, SEOperator)] ++
     toTokenMap [(memberIdLexer, SEMemberId)] ++
     [(symbolLexer, \s =>

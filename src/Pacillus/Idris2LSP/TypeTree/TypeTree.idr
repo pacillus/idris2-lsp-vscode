@@ -10,7 +10,7 @@ replaceIndex : Nat -> Nat -> Desugared WithHole -> Desugared WithHole
 replaceIndex index holes_count (Constant x) = Constant x
 replaceIndex index holes_count e@(Index name k) with (index == k)
   replaceIndex index holes_count e@(Index _ _) | False = e
-  replaceIndex index holes_count e@(Index name k) | True = ImplicitHole name holes_count
+  replaceIndex index holes_count e@(Index name k) | True = ImplicitVariable name holes_count
 replaceIndex index holes_count (Application f x) = 
   let
     f' = replaceIndex index holes_count f
@@ -24,7 +24,7 @@ replaceIndex index holes_count (Binder t id ty e) =
   in
     Binder t id ty' e'
 replaceIndex index holes_count (Literal x y) = Literal x y
-replaceIndex index holes_count e@(ImplicitHole _ _) = e
+replaceIndex index holes_count e@(ImplicitVariable _ _) = e
 replaceIndex index holes_count e@(Assumption _ _) = e
 
 -- converting Desugared into WithHole by converting all WildCard to holes
@@ -62,7 +62,8 @@ toWithHole holes_count_a (Binder Implicit id ty e) =
   in
     (holes_count_c, (Binder Implicit id ty' e'))
 toWithHole holes_count (Literal t x) = (holes_count, Literal t x)
-toWithHole holes_count Wildcard = (S holes_count, ImplicitHole (MkIdentifier NameId "_") holes_count)
+toWithHole holes_count Wildcard = (S holes_count, ImplicitVariable (MkIdentifier NameId "_") holes_count)
+toWithHole holes_count (HoleTerm name) = (S holes_count, ImplicitVariable (MkIdentifier NameId "?\{show name}") holes_count)
 
 -- convert implicit binders to holes
 openImplicitHoles : Nat -> Desugared WithHole -> (Nat, Desugared WithHole)
@@ -83,7 +84,7 @@ openImplicitHoles holes_count (Binder Auto id ty e) =
 openImplicitHoles holes_count (Binder Implicit _ _ e) = 
     openImplicitHoles (S holes_count) $ replaceIndex 0 holes_count e
 openImplicitHoles holes_count e@(Literal _ _) = (holes_count, e)
-openImplicitHoles holes_count e@(ImplicitHole _ _) = (holes_count, e)
+openImplicitHoles holes_count e@(ImplicitVariable _ _) = (holes_count, e)
 openImplicitHoles holes_count e@(Assumption _ _) = (holes_count, e)
 
 Constraints : Type
@@ -108,9 +109,9 @@ substituteToImplicit k sub_with (Binder t id ty e) =
   in
     Binder t id ty' e'
 substituteToImplicit k sub_with (Literal t x) = Literal t x
-substituteToImplicit k sub_with e@(ImplicitHole _ j) with (k == j)
-  substituteToImplicit k sub_with e@(ImplicitHole _ j) | False = e
-  substituteToImplicit k sub_with e@(ImplicitHole _ j) | True = sub_with
+substituteToImplicit k sub_with e@(ImplicitVariable _ j) with (k == j)
+  substituteToImplicit k sub_with e@(ImplicitVariable _ j) | False = e
+  substituteToImplicit k sub_with e@(ImplicitVariable _ j) | True = sub_with
 substituteToImplicit k sub_with e@(Assumption _ _) = e
 
 substituteToIndex : Nat -> Desugared WithHole -> Desugared WithHole -> Desugared WithHole
@@ -131,7 +132,7 @@ substituteToIndex k sub_with (Binder t id ty e) =
   in
     Binder t id ty' e'
 substituteToIndex k sub_with e@(Literal _ _) = e
-substituteToIndex k sub_with e@(ImplicitHole _ _) = e
+substituteToIndex k sub_with e@(ImplicitVariable _ _) = e
 substituteToIndex k sub_with e@(Assumption _ _) = e
 
 substituteToConstraints : Nat -> Desugared WithHole -> Constraints -> Constraints
@@ -145,7 +146,7 @@ binderToAssumptionMain j e@(Index id k) with (j == k)
 binderToAssumptionMain k (Application f x) = Application (binderToAssumptionMain k f) (binderToAssumptionMain k x)
 binderToAssumptionMain k (Binder bty id ty e) = Binder bty id (binderToAssumptionMain k ty) (binderToAssumptionMain (S k) e)
 binderToAssumptionMain _ e@(Literal _ _) = e
-binderToAssumptionMain _ e@(ImplicitHole _ _) = e
+binderToAssumptionMain _ e@(ImplicitVariable _ _) = e
 binderToAssumptionMain _ (Assumption id k) = Assumption id (S k)
 
 binderToAssumption : Desugared WithHole -> Desugared WithHole
@@ -157,7 +158,7 @@ assumptionToBinderMain _ e@(Index _ _) = e
 assumptionToBinderMain k (Application x y) = Application (assumptionToBinderMain k x) (assumptionToBinderMain k y)
 assumptionToBinderMain k (Binder bty id ty e) = Binder bty id (assumptionToBinderMain k ty) (assumptionToBinderMain (S k) e)
 assumptionToBinderMain k e@(Literal t x) = e
-assumptionToBinderMain k e@(ImplicitHole _ _) = e
+assumptionToBinderMain k e@(ImplicitVariable _ _) = e
 assumptionToBinderMain k (Assumption id 0) = Index id k
 assumptionToBinderMain j (Assumption id (S k)) = Assumption id k
 
@@ -189,12 +190,12 @@ unify ((e1@(Literal CharL x), e2@(Literal CharL y)) :: xs) with (x == y)
 unify ((e1@(Literal StringL x), e2@(Literal StringL y)) :: xs) with (x == y)
   unify ((e1@(Literal StringL x), e2@(Literal StringL y)) :: xs) | False = unifyError e1 e2
   unify ((e1@(Literal StringL x), e2@(Literal StringL y)) :: xs) | True = unify xs
-unify ((l@(ImplicitHole _ k), r) :: xs) =
+unify ((l@(ImplicitVariable _ k), r) :: xs) =
   let
     substitutedToImplicit = substituteToConstraints k r xs -- TODO Maybe 
   in
     unify substitutedToImplicit >>= (\xs => Right $ (l, r) :: xs)
-unify ((l, r@(ImplicitHole _ k)) :: xs) = 
+unify ((l, r@(ImplicitVariable _ k)) :: xs) = 
   let
     substitutedToImplicit = substituteToConstraints k l xs
   in
@@ -211,18 +212,18 @@ simpleEval (Application (Binder Lambda _ _ applying) applied) = substituteToInde
 simpleEval (Application f x) = Application (simpleEval f) (simpleEval x)
 simpleEval (Binder bty id ty e) = Binder bty id (simpleEval ty) (simpleEval e)
 simpleEval e@(Literal t x) = e
-simpleEval e@(ImplicitHole x k) = e
+simpleEval e@(ImplicitVariable x k) = e
 simpleEval e@(Assumption x k) = e
 
 applyConstraints : Constraints -> Desugared WithHole -> Either String (Desugared WithHole)
 applyConstraints [] e = Right e
-applyConstraints ((ImplicitHole _ k, x) :: xs) e = 
+applyConstraints ((ImplicitVariable _ k, x) :: xs) e = 
   let
     xs' = substituteToConstraints k x xs
     e' = substituteToImplicit k x e
   in
    applyConstraints xs' e'
-applyConstraints ((x, ImplicitHole _ k) :: xs) e = 
+applyConstraints ((x, ImplicitVariable _ k) :: xs) e = 
   let
     xs' = substituteToConstraints k x xs
     e' = substituteToImplicit k x e
@@ -293,7 +294,7 @@ getPartialTypeMain env e@(Literal IntegerL x) = Right $ (env, Start $ MkExprSign
 getPartialTypeMain env e@(Literal DoubleL x) = Right $ (env, Start $ MkExprSignature e $ Constant $ MkIdentifier NameId "Double")
 getPartialTypeMain env e@(Literal CharL x) = Right $ (env, Start $ MkExprSignature e $ Constant $ MkIdentifier NameId "Char")
 getPartialTypeMain env e@(Literal StringL x) = Right $ (env, Start $ MkExprSignature e $ Constant $ MkIdentifier NameId "String")
-getPartialTypeMain env e@(ImplicitHole _ k) = Right $ ({holesCount $= S} env, Start $ MkExprSignature e $ ImplicitHole (MkIdentifier NameId "_") env.holesCount)
+getPartialTypeMain env e@(ImplicitVariable _ k) = Right $ ({holesCount $= S} env, Start $ MkExprSignature e $ ImplicitVariable (MkIdentifier NameId "_") env.holesCount)
 getPartialTypeMain env e@(Assumption _ k) with (getAt k env.assumptionTypes)
   getPartialTypeMain env e@(Assumption _ k) | Nothing = Left "corrputed assumption"
   getPartialTypeMain env e@(Assumption _ k) | (Just ty) = Right $ (env, Start (MkExprSignature e ty))

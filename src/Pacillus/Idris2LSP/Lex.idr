@@ -30,6 +30,7 @@ isNoType (Tok SEComma text) = True
 isNoType (Tok SEDollar text) = True
 isNoType (Tok SEDoubleStar _) = True
 isNoType (Tok SEWildcard _) = True
+isNoType (Tok SEHole _) = False
 isNoType (Tok SEIntLiteral text) = True
 isNoType (Tok SEDoubleLiteral text) = True
 isNoType (Tok SECharLiteral text) = True

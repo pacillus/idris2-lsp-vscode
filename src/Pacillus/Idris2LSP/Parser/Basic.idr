@@ -38,6 +38,17 @@ Eq Identifier where
     (MkIdentifier tl strl) == (MkIdentifier tr strr) = tl == tr && strl == strr
 
 public export
+data Hole = MkHole String
+
+export
+Show Hole where
+    show (MkHole id) = id
+
+export
+Eq Hole where
+    MkHole strl == MkHole strr = strl == strr
+
+public export
 data Operator = MkOperator String
 
 public export
@@ -59,11 +70,12 @@ namespace Sugared
         IdentifierTerm : Identifier -> Sugared Expr -- ex) id
         Application : Sugared Expr -> Sugared Expr -> Sugared Expr -- ex) f x
         Arrow : ArrowType -> Sugared Expr -> Sugared Expr -> Sugared Expr -- ex) a -> b A => B
-        SignatureArrow : ArrowType -> Sugared Sig -> Sugared Expr -> Sugared Expr -- ex) (x : a) -> B(x) (x : A) => B
-        BracketArrow : Sugared Sig -> Sugared Expr -> Sugared Expr -- ex) {x : a} -> B(x)
+        SignatureArrow : ArrowType -> Identifier -> Sugared Expr -> Sugared Expr -> Sugared Expr -- ex) (x : a) -> B(x) (x : A) => B
+        BracketArrow : Identifier -> Sugared Expr -> Sugared Expr -> Sugared Expr -- ex) {x : a} -> B(x)
         AnonymousFunction : Identifier -> Sugared Expr -> Sugared Expr -- \x => e
         Literal : (t : LiteralType) -> LiteralTypeOf t -> Sugared Expr
         Wildcard : Sugared Expr -- _
+        HoleTerm : Hole -> Sugared Expr
         UnitSugar : Sugared Expr -- () MkUnit Unit
         PairSugar : Sugared Expr -> Sugared Expr -> Sugared Expr -- (a, b) Pair a b Mkpair a b
         OpInfixSugar : Sugared Expr -> Operator -> Sugared Expr -> Sugared Expr -- 1 + 2
@@ -125,8 +137,9 @@ namespace Desugared
         Binder : BinderType -> BinderName -> Desugared t -> Desugared t -> Desugared t
         Literal : (t : LiteralType) -> LiteralTypeOf t -> Desugared dt
         Wildcard : Desugared NoHole -- _
+        HoleTerm : Hole -> Desugared NoHole
         -- below are used internally to derive type
-        ImplicitHole : Identifier -> Nat -> Desugared WithHole -- 
+        ImplicitVariable : Identifier -> Nat -> Desugared WithHole --
         Assumption : Identifier -> Nat -> Desugared WithHole  
 
     public export
