@@ -15,6 +15,7 @@ import {
   Position as VSCodePosition,
   Selection,
 } from 'vscode';
+import * as vscode from 'vscode';
 
 import {
   CodeAction,
@@ -197,6 +198,8 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
       }
     )
   );
+
+  const treeDataProvider = new TreeDataProvider();
   context.subscriptions.push(
     commands.registerTextEditorCommand(
       'idris2-lsp.pacillus.derivetype',
@@ -235,6 +238,7 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
         // an odd code reproducing the for loop
         // magic code that makes all well
         // made with recursion
+        // contact the author if any smarter way is possible
         const f = (tops : {line : number, character : number} [], i: number, max: number) => {
           if (i < max) {
             client
@@ -315,8 +319,18 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
           }
         };
         f(tops, 0, tops.length);
+
+        vscode.window.createTreeView('typeTreeView', {
+            treeDataProvider: treeDataProvider,
+            showCollapseAll: true
+          });
+        vscode.commands.executeCommand('workbench.view.extension.customTreeContainer');
+        
+        vscode.window.showInformationMessage('Tree View を作成しました（エクスプローラーの最下部に表示されます）');
       }
+      
     )
+    
   );
 
   context.subscriptions.push(
@@ -430,7 +444,6 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
       }
     )
   );
-
 }
 
 function inlineReplPreviewFor(res: string) {
@@ -568,4 +581,48 @@ function rootPath(): string | undefined {
     return folder.uri.fsPath;
   }
   return undefined;
+}
+
+class TreeNode extends vscode.TreeItem {
+  constructor(
+    public readonly label: string,
+    public readonly collapsibleState: vscode.TreeItemCollapsibleState,
+    public readonly children: TreeNode[] = []
+  ) {
+    super(label, collapsibleState);
+  }
+}
+
+class TreeDataProvider implements vscode.TreeDataProvider<TreeNode> {
+  private _onDidChangeTreeData = new vscode.EventEmitter<TreeNode | undefined>();
+  readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
+
+  getTreeItem(element: TreeNode): vscode.TreeItem {
+    return element;
+  }
+
+  getChildren(element?: TreeNode): Thenable<TreeNode[]> {
+    if (!element) {
+      return Promise.resolve(this.getRoot());
+    }
+    return Promise.resolve(element.children);
+  }
+
+  private getRoot(): TreeNode[] {
+    return [
+      new TreeNode("xs ++ (y :: ys) : Vect (4 + S 2) Nat", vscode.TreeItemCollapsibleState.Expanded, [
+        new TreeNode("(++) xs : (ys : Vect n Nat) -> Vect (4 + n) Nat", vscode.TreeItemCollapsibleState.Collapsed, [
+          new TreeNode("(++) : (xs : Vect m elem) -> (ys : Vect n elem) -> Vect (m + n) elem", vscode.TreeItemCollapsibleState.None),
+          new TreeNode("xs : Vect 4 Nat", vscode.TreeItemCollapsibleState.None)
+        ]),
+        new TreeNode("y :: ys : Vect (S 2) Nat", vscode.TreeItemCollapsibleState.Collapsed, [
+          new TreeNode("(::) y : Vect len Nat -> Vect (S len) Nat", vscode.TreeItemCollapsibleState.Collapsed, [
+            new TreeNode("(::) : elem -> Vect len elem -> Vect (S len) elem", vscode.TreeItemCollapsibleState.None),
+            new TreeNode("y : Nat", vscode.TreeItemCollapsibleState.None)
+          ]),
+          new TreeNode("ys : Vect 2 Nat", vscode.TreeItemCollapsibleState.None)
+        ])
+      ])
+    ];
+  }
 }
