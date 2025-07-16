@@ -206,7 +206,24 @@
           "meta.embedded.block.idris": "idris"
         }
       }
-    ]
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "typeTreeViewContainer",
+          "title": "TyDeViewer",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "typeTreeViewContainer": [
+        {
+          "id": "typeTreeView",
+          "name": "Type Tree View"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run -S esbuild-base -- --minify",

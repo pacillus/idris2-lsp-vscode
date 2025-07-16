@@ -300,18 +300,17 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
                 console.log(inputobj);
                 console.log(JSON.stringify(inputobj));
                 const output = Pacillus_Idris2LSP_GetType_process(JSON.stringify(inputobj));
-                  editor.setDecorations(
-                    replDecorationType,
-                    [{
-                      range: editor.selection,
-                      hoverMessage: new MarkdownString().appendCodeblock(output, 'idris')
-                      // renderOptions: {
-                      //   after: {
-                      //     contentText: ' => ' + inlineReplPreviewFor(res.preview) + ' ',
-                      //   },
-                      // }
-                    }]
-                  );
+                console.log(output);
+                const outputjson = JSON.parse(output)
+                const output_tree = convertJSONToTypeDerivationTree(outputjson)
+                console.log(output_tree);
+                const treeDataProvider = new TypeDerivationTreeDataProvider(output_tree)
+                  vscode.window.createTreeView('typeTreeView', {
+                    treeDataProvider: treeDataProvider,
+                    showCollapseAll: true
+                  });
+                vscode.commands.executeCommand('workbench.view.extension.typeTreeViewContainer');
+                vscode.window.showInformationMessage('Tree View を作成しました（エクスプローラーの最下部に表示されます）');
               }
             };
             console.log(syms);
@@ -320,13 +319,13 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
         };
         f(tops, 0, tops.length);
 
-        vscode.window.createTreeView('typeTreeView', {
-            treeDataProvider: treeDataProvider,
-            showCollapseAll: true
-          });
-        vscode.commands.executeCommand('workbench.view.extension.customTreeContainer');
+        // vscode.window.createTreeView('typeTreeView', {
+        //     treeDataProvider: treeDataProvider,
+        //     showCollapseAll: true
+        //   });
+        // vscode.commands.executeCommand('workbench.view.extension.customTreeContainer');
         
-        vscode.window.showInformationMessage('Tree View を作成しました（エクスプローラーの最下部に表示されます）');
+        // vscode.window.showInformationMessage('Tree View を作成しました（エクスプローラーの最下部に表示されます）');
       }
       
     )
@@ -581,6 +580,43 @@ function rootPath(): string | undefined {
     return folder.uri.fsPath;
   }
   return undefined;
+}
+
+class TypeDerivationTree {
+  constructor(
+    public readonly conclusion: string,
+    public readonly premises: TypeDerivationTree[]
+  ){}
+}
+
+function convertJSONToTypeDerivationTree(json: any): TypeDerivationTree{
+  if (json.Conclusion) {
+    return new TypeDerivationTree(json.Conclusion, json.Premises.map(convertJSONToTypeDerivationTree))
+  }
+  return new TypeDerivationTree(json, [])
+}
+
+class TypeDerivationTreeDataProvider implements vscode.TreeDataProvider<TypeDerivationTree> {
+  private _onDidChangeTreeData = new vscode.EventEmitter<{conclusion: string, premises} | undefined>();
+  readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
+
+  constructor(public readonly tree: TypeDerivationTree){}
+
+  getTreeItem(element: TypeDerivationTree): vscode.TreeItem {
+    if(element.premises.length == 0){
+      return new vscode.TreeItem(element.conclusion, vscode.TreeItemCollapsibleState.None);
+    } else {
+      return new vscode.TreeItem(element.conclusion, vscode.TreeItemCollapsibleState.Collapsed);
+    }
+    
+  }
+
+  getChildren(element?: TypeDerivationTree): Thenable<TypeDerivationTree[]> {
+    if (!element) {
+      return Promise.resolve([this.tree]);
+    }
+    return Promise.resolve(element.premises);
+  }
 }
 
 class TreeNode extends vscode.TreeItem {
