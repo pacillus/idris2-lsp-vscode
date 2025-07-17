@@ -591,7 +591,7 @@ class TypeDerivationTree {
   ){}
 }
 
-function convertJSONToTypeDerivationTree(json: any): TypeDerivationTree{
+function convertJSONToTypeDerivationTree(json): TypeDerivationTree{
   if (json.conclusion) {
     return new TypeDerivationTree(new ExpressionSignature(json.conclusion.expression, json.conclusion.type), json.premises.map(convertJSONToTypeDerivationTree))
   }
