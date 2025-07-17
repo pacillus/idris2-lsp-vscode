@@ -8,7 +8,8 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # runs-on: ubuntu-latest
+    runs-on: macos-latest # to use brew to do a workaround on installing idris
     steps:
       - uses: actions/checkout@v4
 
@@ -17,7 +18,9 @@ jobs:
           node-version: "22"
           
       - name: Install idris
-        uses: sergeyshpadyrev/setup-idris@v1.2
+        run: |
+          brew update
+          brew install idris2
 
       - name: Install dependencies
         run: |
