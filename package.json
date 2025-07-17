@@ -220,7 +220,7 @@
       "typeTreeViewContainer": [
         {
           "id": "typeTreeView",
-          "name": "Type Tree View"
+          "name": "Type Derivation View"
         }
       ]
     }

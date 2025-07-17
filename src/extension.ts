@@ -199,7 +199,6 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
     )
   );
 
-  const treeDataProvider = new TreeDataProvider();
   context.subscriptions.push(
     commands.registerTextEditorCommand(
       'idris2-lsp.pacillus.derivetype',
@@ -318,14 +317,6 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
           }
         };
         f(tops, 0, tops.length);
-
-        // vscode.window.createTreeView('typeTreeView', {
-        //     treeDataProvider: treeDataProvider,
-        //     showCollapseAll: true
-        //   });
-        // vscode.commands.executeCommand('workbench.view.extension.customTreeContainer');
-        
-        // vscode.window.showInformationMessage('Tree View を作成しました（エクスプローラーの最下部に表示されます）');
       }
       
     )
@@ -582,31 +573,45 @@ function rootPath(): string | undefined {
   return undefined;
 }
 
+class ExpressionSignature {
+  constructor(
+    public readonly expression: string,
+    public readonly type: string
+  ){}
+
+  show(): vscode.TreeItemLabel{
+    return {label: this.expression.concat(" : ").concat(this.type), highlights: [[this.expression.length + 3, this.expression.length + this.type.length + 3]]}
+  }
+}
+
 class TypeDerivationTree {
   constructor(
-    public readonly conclusion: string,
+    public readonly conclusion: ExpressionSignature,
     public readonly premises: TypeDerivationTree[]
   ){}
 }
 
 function convertJSONToTypeDerivationTree(json: any): TypeDerivationTree{
-  if (json.Conclusion) {
-    return new TypeDerivationTree(json.Conclusion, json.Premises.map(convertJSONToTypeDerivationTree))
+  if (json.conclusion) {
+    return new TypeDerivationTree(new ExpressionSignature(json.conclusion.expression, json.conclusion.type), json.premises.map(convertJSONToTypeDerivationTree))
   }
-  return new TypeDerivationTree(json, [])
+  if (json.expression){
+    return new TypeDerivationTree(new ExpressionSignature(json.expression, json.type), [])
+  }
 }
 
 class TypeDerivationTreeDataProvider implements vscode.TreeDataProvider<TypeDerivationTree> {
-  private _onDidChangeTreeData = new vscode.EventEmitter<{conclusion: string, premises} | undefined>();
+  private _onDidChangeTreeData = new vscode.EventEmitter<TypeDerivationTree | undefined>();
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
   constructor(public readonly tree: TypeDerivationTree){}
 
   getTreeItem(element: TypeDerivationTree): vscode.TreeItem {
     if(element.premises.length == 0){
-      return new vscode.TreeItem(element.conclusion, vscode.TreeItemCollapsibleState.None);
+      const item = new vscode.TreeItem(element.conclusion.show(), vscode.TreeItemCollapsibleState.None)
+      return item;
     } else {
-      return new vscode.TreeItem(element.conclusion, vscode.TreeItemCollapsibleState.Collapsed);
+      return new vscode.TreeItem(element.conclusion.show(), vscode.TreeItemCollapsibleState.Collapsed);
     }
     
   }
@@ -616,49 +621,5 @@ class TypeDerivationTreeDataProvider implements vscode.TreeDataProvider<TypeDeri
       return Promise.resolve([this.tree]);
     }
     return Promise.resolve(element.premises);
-  }
-}
-
-class TreeNode extends vscode.TreeItem {
-  constructor(
-    public readonly label: string,
-    public readonly collapsibleState: vscode.TreeItemCollapsibleState,
-    public readonly children: TreeNode[] = []
-  ) {
-    super(label, collapsibleState);
-  }
-}
-
-class TreeDataProvider implements vscode.TreeDataProvider<TreeNode> {
-  private _onDidChangeTreeData = new vscode.EventEmitter<TreeNode | undefined>();
-  readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
-
-  getTreeItem(element: TreeNode): vscode.TreeItem {
-    return element;
-  }
-
-  getChildren(element?: TreeNode): Thenable<TreeNode[]> {
-    if (!element) {
-      return Promise.resolve(this.getRoot());
-    }
-    return Promise.resolve(element.children);
-  }
-
-  private getRoot(): TreeNode[] {
-    return [
-      new TreeNode("xs ++ (y :: ys) : Vect (4 + S 2) Nat", vscode.TreeItemCollapsibleState.Expanded, [
-        new TreeNode("(++) xs : (ys : Vect n Nat) -> Vect (4 + n) Nat", vscode.TreeItemCollapsibleState.Collapsed, [
-          new TreeNode("(++) : (xs : Vect m elem) -> (ys : Vect n elem) -> Vect (m + n) elem", vscode.TreeItemCollapsibleState.None),
-          new TreeNode("xs : Vect 4 Nat", vscode.TreeItemCollapsibleState.None)
-        ]),
-        new TreeNode("y :: ys : Vect (S 2) Nat", vscode.TreeItemCollapsibleState.Collapsed, [
-          new TreeNode("(::) y : Vect len Nat -> Vect (S len) Nat", vscode.TreeItemCollapsibleState.Collapsed, [
-            new TreeNode("(::) : elem -> Vect len elem -> Vect (S len) elem", vscode.TreeItemCollapsibleState.None),
-            new TreeNode("y : Nat", vscode.TreeItemCollapsibleState.None)
-          ]),
-          new TreeNode("ys : Vect 2 Nat", vscode.TreeItemCollapsibleState.None)
-        ])
-      ])
-    ];
   }
 }
