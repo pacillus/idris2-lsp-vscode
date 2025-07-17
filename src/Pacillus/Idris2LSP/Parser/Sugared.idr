@@ -182,6 +182,15 @@ mutual
       <|>
         pure ()
 
+    ignoreUnderscoreBinder : Grammar state SimpleExprToken False ()
+    ignoreUnderscoreBinder =
+      do
+        match SEWildcard
+        match SEColon
+        pure ()
+      <|>
+        pure()
+
     -- <arrow> ::= 
     --   | <operation> <SEArrow> <expr>
     --   | <SELParen> <signature> <SERParen> <SEArrow> <expr>
@@ -204,11 +213,23 @@ mutual
         match SEArrow
         e <- tArrows optable
         pure $ SignatureArrow SingleLine id ty e
+      <|>
+      do
+        match SELParen
+        ignoreZero
+        match SEWildcard
+        match SEColon
+        ty <- tArrows optable
+        match SERParen
+        match SEArrow
+        e <- tArrows optable
+        pure $ SignatureArrow SingleLine (MkIdentifier NameId "_") ty e
     
     darrow : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
     darrow optable =
       do
         ignoreZero
+        ignoreUnderscoreBinder
         e1 <- tOperators optable
         match SEDoubleArrow
         e2 <- tArrows optable
@@ -224,9 +245,20 @@ mutual
         match SEDoubleArrow
         e <- tArrows optable
         pure $ SignatureArrow DoubleLine id ty e
+      <|>
+      do
+        match SELParen
+        ignoreZero
+        match SEWildcard
+        match SEColon
+        ty <- tArrows optable
+        match SERParen
+        match SEDoubleArrow
+        e <- tArrows optable
+        pure $ SignatureArrow DoubleLine (MkIdentifier NameId "_") ty e
 
     barrow : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
-    barrow optable = 
+    barrow optable =
       do
         ignoreZero
         match SELBracket -- {
@@ -237,6 +269,17 @@ mutual
         match SEArrow
         e <- tArrows optable
         pure $ BracketArrow id ty e
+      <|>
+      do
+        match SELBracket
+        ignoreZero
+        match SEWildcard
+        match SEColon
+        ty <- tArrows optable
+        match SERBracket
+        match SEArrow
+        e <- tArrows optable
+        pure $ BracketArrow (MkIdentifier NameId "_") ty e
 
     anonymousFunction : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
     anonymousFunction optable = 

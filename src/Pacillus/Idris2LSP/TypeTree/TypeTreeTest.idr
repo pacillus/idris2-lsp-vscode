@@ -240,6 +240,9 @@ testCases =
           "append : (n : Nat) -> a -> Vect n a -> Vect (S n) a",
           "x : String",
           "xs : Vect 8 String"
+        ],
+        MkCase "sym" [
+          "Builtin.sym : (0 _ : x = y) -> y = x"
         ]
         -- 課題:暗黙の引数の情報を明記する必要がある場合がある
 
