@@ -106,7 +106,7 @@ appOp : Grammar state SimpleExprToken True (Sugared Expr -> Sugared Expr -> Suga
 appOp =
   do
     match SEDollar
-    pure $ \x, y => Application x y
+    pure $ \x, y => DollarSugar x y
 
 -- the main parser
 -- starts in top
@@ -197,7 +197,6 @@ mutual
     arrow : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
     arrow optable =
       do
-        ignoreZero
         e1 <- tOperators optable
         match SEArrow
         e2 <- tArrows optable
@@ -260,8 +259,8 @@ mutual
     barrow : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
     barrow optable =
       do
-        ignoreZero
         match SELBracket -- {
+        ignoreZero
         id <- identifier
         match SEColon
         ty <- tArrows optable
@@ -369,23 +368,23 @@ mutual
     pair optable = 
       do
         match SELParen
-        p <- pairSub optable
+        e <- pairSub optable
         match SERParen
-        pure p
+        pure $ PairSugar (fst e) (fst $ snd e) (snd $ snd e)
 
-    pairSub : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
+    pairSub : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr, Sugared Expr, List (Sugared Expr))
     pairSub optable =
       do
-        e <- top optable
+        e1 <- top optable
         match SEComma
-        p <- pairSub optable
-        pure $ PairSugar e p
+        e <- pairSub optable
+        pure (e1, (fst e), ((fst $ snd e) :: (snd $ snd e)))
       <|>
       do
         e1 <- top optable
         match SEComma
         e2 <- top optable
-        pure $ PairSugar e1 e2
+        pure $ (e1, e2, [])
 
     -- <identifier> ::= <SEIdentifier>
     identifier : Grammar state SimpleExprToken True Identifier
@@ -436,7 +435,7 @@ mutual
         match SELParen
         e <-  top optable
         match SERParen
-        pure e
+        pure $ Parenthesis e
 
 
 

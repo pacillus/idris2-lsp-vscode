@@ -9,32 +9,32 @@ import Text.Lexer
 import Pacillus.Idris2LSP.Parser.Lexer
 import Pacillus.Idris2LSP.Util
 
-isNoType : SimpleExprToken -> Bool
-isNoType (Tok SESymbol text) = False
-isNoType (Tok SEIgnore text) = True
-isNoType (Tok SELParen text) = True
-isNoType (Tok SERParen text) = True
-isNoType (Tok SELBracket _) = True
-isNoType (Tok SERBracket _) = True
-isNoType (Tok SEIdentifier text) = False
-isNoType (Tok SEOperator text) = False
-isNoType (Tok SEMember text) = False
-isNoType (Tok SEMemberId text) = False
-isNoType (Tok SEBackquote text) = True
-isNoType (Tok SEArrow text) = True
-isNoType (Tok SEDoubleArrow text) = True
-isNoType (Tok SEBackslash text) = True
-isNoType (Tok SEEqual text) = True
-isNoType (Tok SEColon text) = True
-isNoType (Tok SEComma text) = True
-isNoType (Tok SEDollar text) = True
-isNoType (Tok SEDoubleStar _) = True
-isNoType (Tok SEWildcard _) = True
-isNoType (Tok SEHole _) = True
-isNoType (Tok SEIntLiteral text) = True
-isNoType (Tok SEDoubleLiteral text) = True
-isNoType (Tok SECharLiteral text) = True
-isNoType (Tok SEStringLiteral text) = True
+-- isNoType : SimpleExprToken -> Bool
+-- isNoType (Tok SESymbol text) = False
+-- isNoType (Tok SEIgnore text) = True
+-- isNoType (Tok SELParen text) = True
+-- isNoType (Tok SERParen text) = True
+-- isNoType (Tok SELBracket _) = True
+-- isNoType (Tok SERBracket _) = True
+-- isNoType (Tok SEIdentifier text) = False
+-- isNoType (Tok SEOperator text) = False
+-- isNoType (Tok SEMember text) = False
+-- isNoType (Tok SEMemberId text) = False
+-- isNoType (Tok SEBackquote text) = True
+-- isNoType (Tok SEArrow text) = True
+-- isNoType (Tok SEDoubleArrow text) = True
+-- isNoType (Tok SEBackslash text) = True
+-- isNoType (Tok SEEqual text) = True
+-- isNoType (Tok SEColon text) = True
+-- isNoType (Tok SEComma text) = True
+-- isNoType (Tok SEDollar text) = True
+-- isNoType (Tok SEDoubleStar _) = True
+-- isNoType (Tok SEWildcard _) = True
+-- isNoType (Tok SEHole _) = True
+-- isNoType (Tok SEIntLiteral text) = True
+-- isNoType (Tok SEDoubleLiteral text) = True
+-- isNoType (Tok SECharLiteral text) = True
+-- isNoType (Tok SEStringLiteral text) = True
 
 absolutePos : (Int, Int) -> (Int, Int) -> (Int, Int)
 absolutePos start@(line, start_character) (0, character) = (line, start_character + character)
@@ -80,41 +80,43 @@ parseInput str with (Language.JSON.parse str)
 -- parseInput _ = 
 
 
-getTokPos' : (Int, Int) -> List (WithBounds SimpleExprToken) -> (List (Int, Int), List String)
-getTokPos' start [] = ([], [])
-getTokPos' start ((MkBounded val@(Tok SESymbol sym) isIrrelevant (MkBounds startLine startCol endLine endCol)) :: xs) =
-  if isNoType val
-    then getTokPos' start xs
-    else
-      let
-        pr = getTokPos' start xs
-      in
-        (absolutePos start (startLine, startCol) :: fst pr, sym :: snd pr)
-getTokPos' start ((MkBounded val isIrrelevant (MkBounds startLine startCol endLine endCol)) :: xs) =
-  if isNoType val
-    then getTokPos' start xs
-    else
-      let
-        pr = getTokPos' start xs
-      in
-        (absolutePos start (startLine, startCol) :: fst pr, snd pr)
+getTokPos' : (Int, Int) -> List (WithBounds SimpleExprToken) -> (List ((Int, Int), (Int, Int)), List String)
+getTokPos' head [] = ([], [])
+getTokPos' head ((MkBounded val@(Tok SESymbol sym) isIrrelevant (MkBounds startLine startCol endLine endCol)) :: xs) =
+  let
+    pr = getTokPos' head xs
+    start = absolutePos head (startLine, startCol)
+    end = absolutePos head (endLine, endCol)
+  in
+    ((start, end) :: fst pr, sym :: snd pr)
+getTokPos' head ((MkBounded val@(Tok SEIgnore _) isIrrelevant (MkBounds startLine startCol endLine endCol)) :: xs) =
+    getTokPos' head xs
+getTokPos' head ((MkBounded val isIrrelevant (MkBounds startLine startCol endLine endCol)) :: xs) =
+  let
+    pr = getTokPos' head xs
+    start = absolutePos head (startLine, startCol)
+    end = absolutePos head (endLine, endCol)
+  in
+    ((start, end) :: fst pr, snd pr)
 
 
-getTokPos : (Int, Int) -> List (WithBounds SimpleExprToken) -> (List (Int, Int), List String)
+getTokPos : (Int, Int) -> List (WithBounds SimpleExprToken) -> (List ((Int, Int), (Int, Int)), List String)
 getTokPos start xs =
   let
     pr = getTokPos' start xs
   in
     (fst pr, nub $ snd pr)
 
-output : Maybe (List (Int, Int), List String) -> JSON
+output : Maybe (List ((Int, Int), (Int, Int)), List String) -> JSON
 output Nothing = JString "*Error : lex failed"
 output (Just (x, y)) = 
   let
     convertPos : (Int, Int) -> JSON
     convertPos (line, character) = JObject [("line", JString $ show line), ("character", JString $ show character)]
+    convertRange : ((Int, Int), (Int, Int)) -> JSON
+    convertRange (start, end) = JObject [("start", convertPos start), ("end", convertPos end)]
   in
-    (JObject [("pos", JArray $ map convertPos x), ("syms", JArray $ map JString y)])
+    (JObject [("pos", JArray $ map convertRange x), ("syms", JArray $ map JString y)])
 
 lexAndOutput : String -> String
 lexAndOutput str with (parseInput str)

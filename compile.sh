@@ -2,14 +2,14 @@
 
 cd src
 
-idris2 --cg node Pacillus/Idris2LSP/Lex.idr -o echolex.js -p contrib
-idris2 --cg node Pacillus/Idris2LSP/GetType.idr -o echotype.js -p contrib
+idris2 --cg node Pacillus/Idris2LSP/Lex.idr -o lex.js -p contrib
+idris2 --cg node Pacillus/Idris2LSP/Range.idr -o range.js -p contrib
 
-cp build/exec/echolex.js echolex.js
-cp build/exec/echotype.js echotype.js
+cp build/exec/lex.js lex.js
+cp build/exec/range.js range.js
 
-echo -e -n "exports.Pacillus_Idris2LSP_Lex_lexAndOutput = Pacillus_Idris2LSP_Lex_lexAndOutput\n" >> echolex.js
-echo -e -n "exports.Pacillus_Idris2LSP_GetType_process = Pacillus_Idris2LSP_GetType_process\n" >> echotype.js
+echo -e -n "exports.Pacillus_Idris2LSP_Lex_lexAndOutput = Pacillus_Idris2LSP_Lex_lexAndOutput\n" >> lex.js
+echo -e -n "exports.Pacillus_Idris2LSP_Range_process = Pacillus_Idris2LSP_Range_process\n" >> range.js
 
 cd ../
 

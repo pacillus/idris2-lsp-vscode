@@ -74,16 +74,19 @@ namespace Sugared
         BracketArrow : Identifier -> Sugared Expr -> Sugared Expr -> Sugared Expr -- ex) {x : a} -> B(x)
         AnonymousFunction : Identifier -> Sugared Expr -> Sugared Expr -- \x => e
         Literal : (t : LiteralType) -> LiteralTypeOf t -> Sugared Expr
+        Parenthesis : Sugared Expr -> Sugared Expr
         Wildcard : Sugared Expr -- _
         HoleTerm : Hole -> Sugared Expr
         UnitSugar : Sugared Expr -- () MkUnit Unit
-        PairSugar : Sugared Expr -> Sugared Expr -> Sugared Expr -- (a, b) Pair a b Mkpair a b
+        PairSugar : Sugared Expr -> Sugared Expr -> List (Sugared Expr) -> Sugared Expr
+        -- PairSugar : Sugared Expr -> Sugared Expr -> Sugared Expr -- (a, b) Pair a b Mkpair a b
         OpInfixSugar : Sugared Expr -> Operator -> Sugared Expr -> Sugared Expr -- 1 + 2
         InfixSugar : Sugared Expr -> Identifier -> Sugared Expr -> Sugared Expr -- 1 'function' 2
         DependentPairSugar : Identifier -> Sugared Expr -> Sugared Expr -> Sugared Expr -- (x : A ** B)
         DependentPairConstructorSugar : Sugared Expr -> Sugared Expr -> Sugared Expr-- (x ** y) MkDPair
         EqualSugar : Sugared Expr -> Sugared Expr -> Sugared Expr -- x = y
         MemberSugar : Sugared Expr -> Member -> Sugared Expr -- x.fst (.fst)
+        DollarSugar : Sugared Expr -> Sugared Expr -> Sugared Expr
         -- signature
         Signature : Identifier -> Sugared Expr -> Sugared Sig -- x : a
 

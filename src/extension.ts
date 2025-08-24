@@ -19,6 +19,8 @@ import * as vscode from 'vscode';
 
 import {
   CodeAction,
+  Hover,
+  HoverRequest,
   LanguageClient,
   LanguageClientOptions,
   ServerOptions,
@@ -29,8 +31,10 @@ import {
 import { Readable } from 'stream';
 import * as process from 'process'
 
-import {Pacillus_Idris2LSP_Lex_lexAndOutput} from './echolex.js';
-import {Pacillus_Idris2LSP_GetType_process} from './echotype.js';
+import { Pacillus_Idris2LSP_Lex_lexAndOutput } from './lex.js';
+import { Pacillus_Idris2LSP_Range_process } from './range.js';
+import { start } from 'repl';
+import { sign } from 'crypto';
 
 const baseName = 'Idris 2 LSP';
 
@@ -202,125 +206,163 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
   context.subscriptions.push(
     commands.registerTextEditorCommand(
       'idris2-lsp.pacillus.derivetype',
-      (editor: TextEditor, _edit: TextEditorEdit, customCode) => {
-        const code: string = customCode || editor.document.getText(editor.selection);
-        const uri = editor.document.uri.fsPath
+      async (editor: TextEditor, _edit: TextEditorEdit, customCode) => {
+        const SYSTEM_REPLACING_VARIABLE = '__systemTmpHole'
+        const document = editor.document
+        const code = editor.document.getText();
+        const target: string = customCode || editor.document.getText(editor.selection);
+        const uri = editor.document.uri
         const pos = editor.selection.start;
-        const ln = pos.line;
-        const ch = pos.character;
+        const target_start_line = pos.line;
+        const target_start_char = pos.character;
 
-        if (code.length == 0) {
+        if (target.length == 0) {
           // clear decorations
           editor.setDecorations(replDecorationType, []);
           return;
         }
 
-        console.log("code:".concat(code))
-        const targetInfo : object = {
-          start : {
-            line : String(ln),
-            character : String(ch)
+        console.log("code:" + target)
+        const targetInfo: object = {
+          start: {
+            line: String(target_start_line),
+            character: String(target_start_char)
           },
-          text : code
+          text: target
         }
 
-        console.log("sending to idris:".concat(JSON.stringify(targetInfo)))
+        console.log("sending to idris:" + JSON.stringify(targetInfo))
 
-        const str : string = String(Pacillus_Idris2LSP_Lex_lexAndOutput(JSON.stringify(targetInfo)))
-        console.log("informations from idris:".concat(str))
+        const str: string = String(Pacillus_Idris2LSP_Lex_lexAndOutput(JSON.stringify(targetInfo)))
+        console.log("informations from idris:" + str)
         const json = JSON.parse(str)
-        const tops : {line : number, character : number}[] = json.pos.map((x : {line : string, character : string}) => ({line : parseInt(x.line), character : parseInt(x.character)}));
-        const sigs : string[] = [];
-        const ops : object[] = [];
-        let syms :string[] = json.syms;
+        const token_pos: {
+          start: { line: number, character: number }
+          end: { line: number, character: number }
+        }[] = json.pos.map(
+          (x: { start: { line: string, character: string }, end: { line: string, character: string } }) =>
+            ({ start: ({ line: parseInt(x.start.line), character: parseInt(x.start.character) }), end: ({ line: parseInt(x.end.line), character: parseInt(x.end.character) }) })
+        );
+        const ops: object[] = [];
+        let syms: string[] = json.syms;
 
-        // an odd code reproducing the for loop
-        // magic code that makes all well
-        // made with recursion
-        // contact the author if any smarter way is possible
-        const f = (tops : {line : number, character : number} [], i: number, max: number) => {
-          if (i < max) {
-            client
-            .sendRequest('textDocument/hover', {textDocument: {uri: "file://" + uri}, position: {line: tops[i].line, character: tops[i].character + 1}})
-            .then((my_res: {contents}) => {
-                console.log(my_res);
-                if(my_res != null) {
-                const splited: string[] = my_res.contents.value.split("\n");
-                const sig = String(splited[splited.length - 2].trim())
-                sigs.push(sig);
-                const sig_for_input = {
-                  start : {
-                    line : "0",
-                    character : "0"
-                  },
-                  text : sig
-                }
-                console.log("lex for ops input :".concat(JSON.stringify(sig_for_input)));
-                const str : string = Pacillus_Idris2LSP_Lex_lexAndOutput(JSON.stringify(sig_for_input));
-                console.log(str);
-                const json = JSON.parse(str);
-                console.log(json);
-                console.log(json.syms);
-                syms = syms.concat(json.syms);
-              }
-              f(tops, i + 1, max);
-            })
-          } else {
+        console.log("syms :", syms);
 
-            const g = (syms : string[], i: number, max: number) => {
-              if (i < max) {
-                client
-                .sendRequest("workspace/executeCommand", { command: "repl", arguments: [":doc (" + syms[i] + ")"]})
-                .then((my_res) => {
-                  const splitedbyn: string[] = my_res.toString().split("\n");
-                  // search for "Fixity Declaration"
-                  let infopos : integer = 0;
-                  for (let i = 0; i < splitedbyn.length; i++){
-                    if (splitedbyn[i].includes("Fixity Declaration")){
-                      infopos = i
-                    }
-                  }
-                  const splitedbyspace: string[] = splitedbyn[infopos].split(" ").filter((x : string) => x !== "");
-                  
-                  const assoc : string = splitedbyspace[2];
-                  
-                  const prec : string = splitedbyspace[5];
-                  
-                  const op : object = {symbol : syms[i],assoc : assoc, prec : prec};
-                  ops.push(op);
-                  g(syms, i + 1, max);
-                })
-              } else {
-                const inputobj : object = {
-                  expr : code,
-                  ops : ops,
-                  sigs : sigs.filter(x => x != null)
-                };
-                console.log(inputobj);
-                console.log(JSON.stringify(inputobj));
-                const output = Pacillus_Idris2LSP_GetType_process(JSON.stringify(inputobj));
-                console.log(output);
-                const outputjson = JSON.parse(output)
-                const output_tree = convertJSONToTypeDerivationTree(outputjson)
-                console.log(output_tree);
-                const treeDataProvider = new TypeDerivationTreeDataProvider(output_tree)
-                  vscode.window.createTreeView('typeTreeView', {
-                    treeDataProvider: treeDataProvider,
-                    showCollapseAll: true
-                  });
-                vscode.commands.executeCommand('workbench.view.extension.typeTreeViewContainer');
-                vscode.window.showInformationMessage('Tree View を作成しました（エクスプローラーの最下部に表示されます）');
-              }
-            };
-            console.log(syms);
-            g(syms, 0, syms.length);
+        for (const sym of syms) {
+          console.log("sym :", sym);
+          const response = await client.sendRequest("workspace/executeCommand", { command: "repl", arguments: [":doc (" + sym + ")"] })
+
+          console.log("lex response :", response);
+
+          const splitedbyn: string[] = response.toString().split("\n");
+          // search for "Fixity Declaration"
+          let infopos: integer = 0;
+          for (let i = 0; i < splitedbyn.length; i++) {
+            if (splitedbyn[i].includes("Fixity Declaration")) {
+              infopos = i
+            }
           }
+          const splitedbyspace: string[] = splitedbyn[infopos].split(" ").filter((x: string) => x !== "");
+
+          const assoc: string = splitedbyspace[2];
+          const prec: string = splitedbyspace[5];
+          const op: object = { symbol: sym, assoc: assoc, prec: prec };
+          ops.push(op);
+        }
+
+        const inputobj: object = {
+          expr: target,
+          ops: ops
         };
-        f(tops, 0, tops.length);
+        console.log(inputobj);
+
+        const output: Tree<TokenRange> = JSON.parse(Pacillus_Idris2LSP_Range_process(JSON.stringify(inputobj)));
+        console.log("range information : ", output);
+
+        async function askType(selection: TokenRange): Promise<ExpressionSignature> {
+          const lines = code.split(/\r?\n/);
+          const line_start = token_pos[selection.start].start.line
+          const char_start = token_pos[selection.start].start.character
+          const line_end = token_pos[selection.end - 1].end.line
+          const char_end = token_pos[selection.end - 1].end.character
+          let expression = "";
+          if (line_start === line_end) {
+              expression = lines[line_start].substring(char_start, char_end);
+          } else {
+              expression += lines[line_start].substring(char_start) + "\n";
+              for (let i = line_start + 1; i < line_end; i++) {
+                  expression += lines[i] + "\n";
+              }
+              expression += lines[line_end].substring(0, char_end);
+          }
+          const replacement = '?' + SYSTEM_REPLACING_VARIABLE
+          await editor.edit(editBuilder => {
+              const range = new vscode.Range(line_start, char_start, line_end, char_end);
+              editBuilder.replace(range, replacement);
+          });
+
+          
+          const doc = await vscode.workspace.openTextDocument(uri); // 最新の TextDocument を取得
+          await doc.save();
+          await client.onReady();
+
+          await new Promise(resolve => setTimeout(resolve, 200));
+
+          const response: Hover = await client.sendRequest(HoverRequest.type, {
+            textDocument: { uri: "file://" + uri.fsPath}, position: { line: line_start, character: char_start + 1} 
+          })
+
+          // --- 元に戻す ---
+          await editor.edit(editBuilder => {
+              const range = new vscode.Range(
+                  line_start, char_start,
+                  line_end, char_start + replacement.length // endCol ではなく置換長
+              );
+              editBuilder.replace(range, expression.split(/\r?\n/).join("\n"));
+          });
+
+          await document.save();
+
+          const response_string : string = Array.isArray(response.contents)
+                ? response.contents.map(c => (typeof c === 'string' ? c : c.value)).join('\n---\n')
+                : typeof response.contents === 'string'
+                ? response.contents
+                : response.contents.value;
+          const response_lines : string[] = response_string.split('\n')
+          const signature_line : string = response_lines[response_lines.length - 2]
+          const replacemnt_pos = signature_line.indexOf(SYSTEM_REPLACING_VARIABLE);
+          const signature = signature_line.slice(replacemnt_pos + (SYSTEM_REPLACING_VARIABLE + ' : ').length);
+
+          return new ExpressionSignature(expression, signature);
+        }
+
+        async function askTypesTree(tree: Tree<TokenRange>): Promise<Tree<ExpressionSignature>> {
+          if (tree.tag === "atom") {
+            const val = await askType(tree.value);
+            return { tag: "atom", value: val }
+          } else {
+              const val = await askType(tree.value);
+              const branches = [];
+
+              for(const branch of tree.branches){
+                branches.push(await askTypesTree(branch));
+              }
+              return { tag: "compound", value: val, branches: branches }
+          }
+        }
+
+        const output_tree = await askTypesTree(output)
+
+        console.log("output_tree : ", output_tree);
+        const treeDataProvider = new TypeDerivationTreeDataProvider(output_tree)
+        vscode.window.createTreeView('typeTreeView', {
+          treeDataProvider: treeDataProvider,
+          showCollapseAll: true
+        });
+        vscode.commands.executeCommand('workbench.view.extension.typeTreeViewContainer');
+        vscode.window.showInformationMessage('Tree View を作成しました（エクスプローラーの最下部に表示されます）');
       }
-      
     )
-    
   );
 
   context.subscriptions.push(
@@ -573,53 +615,54 @@ function rootPath(): string | undefined {
   return undefined;
 }
 
+type Tree<T> =
+  | {
+    value: T,
+    tag: "atom"
+  }
+  | {
+    value: T,
+    tag: "compound",
+    branches: Tree<T>[]
+  }
+type TokenRange = { start: integer, end: integer }
+
 class ExpressionSignature {
   constructor(
     public readonly expression: string,
     public readonly type: string
-  ){}
+  ) { }
 
-  show(): vscode.TreeItemLabel{
-    return {label: this.expression.concat(" : ").concat(this.type), highlights: [[this.expression.length + 3, this.expression.length + this.type.length + 3]]}
+  show(): vscode.TreeItemLabel {
+    return { label: this.expression.concat(" : ").concat(this.type), highlights: [[this.expression.length + 3, this.expression.length + this.type.length + 3]] }
   }
 }
 
-class TypeDerivationTree {
-  constructor(
-    public readonly conclusion: ExpressionSignature,
-    public readonly premises: TypeDerivationTree[]
-  ){}
-}
 
-function convertJSONToTypeDerivationTree(json): TypeDerivationTree{
-  if (json.conclusion) {
-    return new TypeDerivationTree(new ExpressionSignature(json.conclusion.expression, json.conclusion.type), json.premises.map(convertJSONToTypeDerivationTree))
-  }
-  if (json.expression){
-    return new TypeDerivationTree(new ExpressionSignature(json.expression, json.type), [])
-  }
-}
-
-class TypeDerivationTreeDataProvider implements vscode.TreeDataProvider<TypeDerivationTree> {
-  private _onDidChangeTreeData = new vscode.EventEmitter<TypeDerivationTree | undefined>();
+class TypeDerivationTreeDataProvider implements vscode.TreeDataProvider<Tree<ExpressionSignature>> {
+  private _onDidChangeTreeData = new vscode.EventEmitter<Tree<ExpressionSignature> | undefined>();
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
-  constructor(public readonly tree: TypeDerivationTree){}
+  constructor(public readonly tree: Tree<ExpressionSignature>) { }
 
-  getTreeItem(element: TypeDerivationTree): vscode.TreeItem {
-    if(element.premises.length == 0){
-      const item = new vscode.TreeItem(element.conclusion.show(), vscode.TreeItemCollapsibleState.None)
+  getTreeItem(element: Tree<ExpressionSignature>): vscode.TreeItem {
+    if (element.tag === "atom") {
+      const item = new vscode.TreeItem(element.value.show(), vscode.TreeItemCollapsibleState.None)
       return item;
     } else {
-      return new vscode.TreeItem(element.conclusion.show(), vscode.TreeItemCollapsibleState.Collapsed);
+      return new vscode.TreeItem(element.value.show(), vscode.TreeItemCollapsibleState.Collapsed);
     }
-    
+
   }
 
-  getChildren(element?: TypeDerivationTree): Thenable<TypeDerivationTree[]> {
+  getChildren(element?: Tree<ExpressionSignature>): Thenable<Tree<ExpressionSignature>[]> {
     if (!element) {
       return Promise.resolve([this.tree]);
     }
-    return Promise.resolve(element.premises);
+    if (element.tag === "atom"){
+      return Promise.resolve([]);
+    } else{
+      return Promise.resolve(element.branches);
+    }
   }
 }
