@@ -33,6 +33,8 @@ data SimpleExprTokenKind =
     | SECharLiteral
     | SEDoubleLiteral
     | SEStringLiteral
+    | SEKeywordRewrite 
+    | SEKeywordIn
 
 
 -- normal implementation.
@@ -65,6 +67,8 @@ Eq SimpleExprTokenKind where
   (==) SEDoubleLiteral SEDoubleLiteral = True
   (==) SECharLiteral SECharLiteral = True
   (==) SEStringLiteral SEStringLiteral = True
+  SEKeywordRewrite == SEKeywordRewrite = True
+  SEKeywordIn == SEKeywordIn = True
   (==) _ _ = False
 
   -- normal implementation
@@ -94,6 +98,8 @@ Show SimpleExprTokenKind where
     show SEDoubleLiteral = "SEDoubleLiteral"
     show SECharLiteral = "SECharLiteral"
     show SEStringLiteral = "SEStringLiteral"
+    show SEKeywordRewrite = "SEKeywordRewrite"
+    show SEKeywordIn = "SEKeywordIn"
 
  -- renaming Token type
 public export
@@ -163,6 +169,8 @@ TokenKind SimpleExprTokenKind where
       (x :: []) => '\0'
       (x :: (y :: ys)) => y
   tokValue SEStringLiteral s = Data.String.strSubstr 1 (strLength s - 2) s -- Kind of bad since strSubstr is Int -> Int -> String -> String
+  tokValue SEKeywordRewrite _ = ()
+  tokValue SEKeywordIn _ = ()
 
 --  ---lexer related functions---
 
@@ -236,6 +244,12 @@ holeLexer : Lexer
 holeLexer =
   is '?' <+> nameLexer
 
+keywords : List (String, SimpleExprTokenKind)
+keywords = [
+  ("rewrite", SEKeywordRewrite),
+  ("in", SEKeywordIn)
+]
+
 -- token map to tell what lexes to what
 -- <SESymbol> ::= [:!#$%&*+./<=>\?@\\^|-~]+
 -- <SELParen> ::= \(
@@ -248,8 +262,15 @@ holeLexer =
 -- <SEStringLiteral> ::= "(\\.|.)"
 simpleExprTokenMap : TokenMap SimpleExprToken
 simpleExprTokenMap =
+  let
+    keywordAndIdentifier =
+      \s => 
+        case lookup s keywords of
+          Nothing => Tok SEIdentifier s
+          (Just kind) => Tok kind s
+  in
     toTokenMap [(spaces, SEIgnore)] ++
-    toTokenMap [(idLexer, SEIdentifier )] ++
+    [(idLexer, keywordAndIdentifier)] ++
     toTokenMap [(memberLexer, SEMember)] ++
     toTokenMap [(holeLexer, SEHole)] ++
     toTokenMap [(symbolIdLexer, SEOperator)] ++

@@ -77,6 +77,7 @@ namespace Sugared
         Parenthesis : Sugared Expr -> Sugared Expr
         Wildcard : Sugared Expr -- _
         HoleTerm : Hole -> Sugared Expr
+        RewriteIn : Sugared Expr -> Sugared Expr -> Sugared Expr
         UnitSugar : Sugared Expr -- () MkUnit Unit
         PairSugar : Sugared Expr -> Sugared Expr -> List (Sugared Expr) -> Sugared Expr
         -- PairSugar : Sugared Expr -> Sugared Expr -> Sugared Expr -- (a, b) Pair a b Mkpair a b

@@ -131,6 +131,8 @@ mutual
       <|>
         anonymousFunction optable
       <|>
+        replaceIn optable
+      <|>
         tOperators optable
 
     tOperators : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
@@ -161,6 +163,15 @@ mutual
         e2 <- tArrows optable
         match SERParen
         pure $ DependentPairConstructorSugar e1 e2
+
+    replaceIn : OperatorTable state SimpleExprToken (Sugared Expr) -> Grammar state SimpleExprToken True (Sugared Expr)
+    replaceIn optable = 
+      do
+        match SEKeywordRewrite
+        prf <- tArrows optable
+        match SEKeywordIn
+        e <- tArrows optable
+        pure $ RewriteIn prf e
 
     -- <signature> ::= <SEIdentifier> <SEColon> <SimpleExpr>
     export

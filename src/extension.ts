@@ -276,7 +276,9 @@ function registerCommandHandlersFor(client: LanguageClient, context: ExtensionCo
         };
         console.log(inputobj);
 
-        const output: Tree<TokenRange> = JSON.parse(Pacillus_Idris2LSP_Range_process(JSON.stringify(inputobj)));
+        const response = Pacillus_Idris2LSP_Range_process(JSON.stringify(inputobj))
+        console.log("parse response :", response);
+        const output: Tree<TokenRange> = JSON.parse(response);
         console.log("range information : ", output);
 
         async function askType(selection: TokenRange): Promise<ExpressionSignature> {
@@ -634,7 +636,8 @@ class ExpressionSignature {
   ) { }
 
   show(): vscode.TreeItemLabel {
-    return { label: this.expression.concat(" : ").concat(this.type), highlights: [[this.expression.length + 3, this.expression.length + this.type.length + 3]] }
+    //return { label: this.expression.concat(" : ").concat(this.type), highlights: [[this.expression.length + 3, this.expression.length + this.type.length + 3]] }
+    return { label: this.expression.concat(" : ").concat(this.type) }
   }
 }
 

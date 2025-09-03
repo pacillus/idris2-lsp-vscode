@@ -102,6 +102,7 @@ countToken (Literal t x) = (1 ** _ ** Refl)
 countToken (Parenthesis e) = (2 + (countToken e).fst ** _ ** Refl)
 countToken Wildcard = (1 ** _ ** Refl)
 countToken (HoleTerm x) = (1 ** _ ** Refl)
+countToken (RewriteIn prf e) = (2 + (countToken prf).fst + (countToken e).fst ** _ ** Refl)
 countToken UnitSugar = (1 ** _ ** Refl)
 countToken (PairSugar e1 e2 es) = 
     let
@@ -109,7 +110,7 @@ countToken (PairSugar e1 e2 es) =
     in
         (3 + length es + (countToken e1).fst + (countToken e2).fst + es_count ** _ ** Refl)
 countToken (OpInfixSugar e1 _ e2) = (S ((countToken e1).fst + (countToken e2).fst) ** _ ** Refl)
-countToken (InfixSugar e1 _ e2) = (S ((countToken e1).fst + (countToken e2).fst) ** _ ** Refl)
+countToken (InfixSugar e1 _ e2) = (3 + ((countToken e1).fst + (countToken e2).fst) ** _ ** Refl)
 countToken (DependentPairSugar _ e1 e2) = 
     (5 + (countToken e1).fst + (countToken e2).fst ** _ ** Refl)
 countToken (DependentPairConstructorSugar e1 e2) = (3 + (countToken e1).fst + (countToken e2).fst ** _ ** Refl)
@@ -170,6 +171,16 @@ getTokenRange e@(Parenthesis e1) =
         appToAll (1 +) (getTokenRange e1)
 getTokenRange Wildcard = Atom (0, 1)
 getTokenRange (HoleTerm x) = Atom (0, 1)
+getTokenRange e@(RewriteIn prf e1) = 
+    let
+        (S end ** end ** Refl) = countToken e
+            | (Z ** _ ** prf) => absurd prf
+        (nprf@(S _) ** _ ** Refl) = countToken prf
+            | (Z ** _ ** prf) => absurd prf
+        (n1@(S _) ** _ ** Refl) = countToken e1
+            | (Z ** _ ** prf) => absurd prf
+    in
+        Compound (0, S end) $ appToAll (1 +) (getTokenRange prf) ::: [appToAll (2 + nprf +) (getTokenRange e1)]
 getTokenRange UnitSugar = Atom (0, 1)
 getTokenRange e@(PairSugar e1 e2 es) = 
     let
@@ -210,7 +221,7 @@ getTokenRange e@(InfixSugar e1 _ e2) =
         (n1@(S _) ** _ ** Refl) = countToken e1
             | (Z ** _ ** prf) => absurd prf
     in
-        Compound (0, S end) $ getTokenRange e1 ::: [appToAll (S n1 +) (getTokenRange e2)]
+        Compound (0, S end) $ getTokenRange e1 ::: [appToAll (3 + n1 +) (getTokenRange e2)]
 getTokenRange e@(DependentPairSugar _ e1 e2) = 
     let
         (S end ** _ ** Refl) = countToken e
